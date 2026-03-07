@@ -11,12 +11,12 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  open: 'Offen',
-  assigned: 'Vergeben',
-  in_progress: 'In Arbeit',
+  open: 'Open',
+  assigned: 'Assigned',
+  in_progress: 'In Progress',
   review: 'Review',
-  completed: 'Erledigt',
-  cancelled: 'Abgebrochen',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
 };
 
 export function TaskCard({ task }: { task: Task }) {
@@ -42,7 +42,7 @@ export function TaskCard({ task }: { task: Task }) {
           <span className="text-aim-gold/60 text-sm">AIM</span>
         </div>
         {task.creatorName && (
-          <span className="text-xs text-white/30">von {task.creatorName}</span>
+          <span className="text-xs text-white/30">by {task.creatorName}</span>
         )}
       </div>
 
@@ -61,7 +61,7 @@ export function TaskCard({ task }: { task: Task }) {
 
       {task.deadline && (
         <p className="text-xs text-white/20 mt-3">
-          Deadline: {new Date(task.deadline).toLocaleDateString('de-DE')}
+          Deadline: {new Date(task.deadline).toLocaleDateString('en-US')}
         </p>
       )}
     </Link>

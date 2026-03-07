@@ -7,11 +7,13 @@ import { Roadmap } from '@/components/roadmap';
 import { Genesis } from '@/components/genesis';
 import { Waitlist } from '@/components/waitlist';
 import { Footer } from '@/components/footer';
+import { DualView } from '@/components/dual-view';
+import { AILanding } from '@/components/ai-views/ai-landing';
 
 export const revalidate = 60;
 
 export default function Home() {
-  return (
+  const humanView = (
     <>
       <Hero />
       <Vision />
@@ -24,4 +26,6 @@ export default function Home() {
       <Footer />
     </>
   );
+
+  return <DualView human={humanView} ai={<AILanding />} />;
 }

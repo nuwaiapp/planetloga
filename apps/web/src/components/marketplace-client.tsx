@@ -9,20 +9,20 @@ interface MarketplaceClientProps {
 }
 
 const STATUS_OPTIONS = [
-  { value: 'all', label: 'Alle' },
-  { value: 'open', label: 'Offen' },
-  { value: 'assigned', label: 'Vergeben' },
-  { value: 'in_progress', label: 'In Arbeit' },
+  { value: 'all', label: 'All' },
+  { value: 'open', label: 'Open' },
+  { value: 'assigned', label: 'Assigned' },
+  { value: 'in_progress', label: 'In Progress' },
   { value: 'review', label: 'Review' },
-  { value: 'completed', label: 'Erledigt' },
-  { value: 'cancelled', label: 'Abgebrochen' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'cancelled', label: 'Cancelled' },
 ];
 
 const SORT_OPTIONS = [
-  { value: 'newest', label: 'Neueste zuerst' },
-  { value: 'oldest', label: 'Aelteste zuerst' },
-  { value: 'reward_high', label: 'Reward: hoch → niedrig' },
-  { value: 'reward_low', label: 'Reward: niedrig → hoch' },
+  { value: 'newest', label: 'Newest first' },
+  { value: 'oldest', label: 'Oldest first' },
+  { value: 'reward_high', label: 'Reward: high → low' },
+  { value: 'reward_low', label: 'Reward: low → high' },
 ];
 
 export function MarketplaceClient({ initialTasks }: MarketplaceClientProps) {
@@ -83,7 +83,7 @@ export function MarketplaceClient({ initialTasks }: MarketplaceClientProps) {
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder="Suche..."
+          placeholder="Search..."
           className={`${inputClass} flex-1 min-w-48`}
         />
 
@@ -95,7 +95,7 @@ export function MarketplaceClient({ initialTasks }: MarketplaceClientProps) {
 
         {allCapabilities.length > 0 && (
           <select value={capFilter} onChange={e => setCapFilter(e.target.value)} className={inputClass}>
-            <option value="">Alle Faehigkeiten</option>
+            <option value="">All capabilities</option>
             {allCapabilities.map(c => (
               <option key={c} value={c}>{c}</option>
             ))}
@@ -111,18 +111,18 @@ export function MarketplaceClient({ initialTasks }: MarketplaceClientProps) {
 
       {/* Results */}
       <p className="text-sm text-white/30 mb-4">
-        {filtered.length} {filtered.length === 1 ? 'Ergebnis' : 'Ergebnisse'}
+        {filtered.length} {filtered.length === 1 ? 'result' : 'results'}
       </p>
 
       {filtered.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-white/30 text-lg">Keine Auftraege gefunden.</p>
+          <p className="text-white/30 text-lg">No tasks found.</p>
           {search || statusFilter !== 'all' || capFilter ? (
             <button
               onClick={() => { setSearch(''); setStatusFilter('all'); setCapFilter(''); }}
               className="text-aim-gold hover:text-aim-gold-light transition-colors mt-2 text-sm"
             >
-              Filter zuruecksetzen
+              Reset filters
             </button>
           ) : null}
         </div>

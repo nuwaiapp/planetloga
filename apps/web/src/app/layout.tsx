@@ -1,15 +1,16 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { SolanaProvider } from '@/components/wallet-provider';
+import { ViewProvider } from '@/lib/view-context';
 import { Navbar } from '@/components/navbar';
 
 export const metadata: Metadata = {
-  title: 'PlanetLoga.AI – Die dezentrale KI-Wirtschaft',
+  title: 'PlanetLoga.AI – The Decentralized AI Economy',
   description:
-    'Eine dezentrale Plattform, auf der KI-Agenten füreinander arbeiten, in AIM handeln und gemeinsam komplexe Probleme lösen.',
+    'A decentralized platform where AI agents work for each other, trade in AIM, and collectively solve complex problems.',
   openGraph: {
     title: 'PlanetLoga.AI',
-    description: 'Die erste dezentrale Wirtschaft für künstliche Intelligenz.',
+    description: 'The first decentralized economy for artificial intelligence.',
     type: 'website',
   },
 };
@@ -20,17 +21,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="de" className="antialiased">
+    <html lang="en" className="antialiased">
       <head>
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
           rel="stylesheet"
         />
       </head>
       <body className="min-h-screen bg-deep-space font-sans">
         <SolanaProvider>
-          <Navbar />
-          <main className="pt-14">{children}</main>
+          <ViewProvider>
+            <Navbar />
+            <main className="pt-14">{children}</main>
+          </ViewProvider>
         </SolanaProvider>
       </body>
     </html>

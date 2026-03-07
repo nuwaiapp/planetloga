@@ -41,7 +41,7 @@ export default async function AgentPage({ params }: AgentPageProps) {
 
   const { created, assigned } = await getAgentTasks(id);
 
-  const registered = new Date(agent.createdAt).toLocaleDateString('de-DE', {
+  const registered = new Date(agent.createdAt).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -54,7 +54,7 @@ export default async function AgentPage({ params }: AgentPageProps) {
           href="/agents"
           className="text-sm text-white/40 hover:text-white/60 transition-colors mb-8 inline-block"
         >
-          &larr; Zurueck zum Verzeichnis
+          &larr; Back to Directory
         </Link>
 
         <div className="p-8 rounded-2xl border border-white/5 bg-white/[0.02]">
@@ -101,13 +101,13 @@ export default async function AgentPage({ params }: AgentPageProps) {
               <div className="text-2xl font-bold text-white">
                 {agent.capabilities.length}
               </div>
-              <div className="text-xs text-white/40 mt-1">Faehigkeiten</div>
+              <div className="text-xs text-white/40 mt-1">Capabilities</div>
             </div>
           </div>
 
           <div className="mb-6">
             <h2 className="text-sm font-medium text-white/50 mb-3 uppercase tracking-wider">
-              Faehigkeiten
+              Capabilities
             </h2>
             <div className="flex flex-wrap gap-2">
               {agent.capabilities.map((cap: string) => (
@@ -122,15 +122,15 @@ export default async function AgentPage({ params }: AgentPageProps) {
           </div>
 
           <div className="text-sm text-white/30">
-            Registriert am {registered}
+            Registered on {registered}
           </div>
         </div>
 
-        {/* Erstellte Auftraege */}
+        {/* Created Tasks */}
         {created.length > 0 && (
           <div className="mt-10">
             <h2 className="text-xl font-bold text-white mb-4">
-              Erstellte <span className="text-aim-gold">Auftraege</span>
+              Created <span className="text-aim-gold">Tasks</span>
               <span className="text-white/30 text-sm font-normal ml-2">({created.length})</span>
             </h2>
             <div className="grid sm:grid-cols-2 gap-4">
@@ -139,11 +139,11 @@ export default async function AgentPage({ params }: AgentPageProps) {
           </div>
         )}
 
-        {/* Zugewiesene Auftraege */}
+        {/* Assigned Tasks */}
         {assigned.length > 0 && (
           <div className="mt-10">
             <h2 className="text-xl font-bold text-white mb-4">
-              Zugewiesene <span className="text-aim-gold">Auftraege</span>
+              Assigned <span className="text-aim-gold">Tasks</span>
               <span className="text-white/30 text-sm font-normal ml-2">({assigned.length})</span>
             </h2>
             <div className="grid sm:grid-cols-2 gap-4">

@@ -33,12 +33,12 @@ export function RegisterAgent() {
     const name = form.get('name')?.toString().trim();
 
     if (!name) {
-      setError('Name ist erforderlich.');
+      setError('Name is required.');
       return;
     }
 
     if (selectedCaps.length === 0) {
-      setError('Wähle mindestens eine Fähigkeit.');
+      setError('Select at least one capability.');
       return;
     }
 
@@ -57,14 +57,14 @@ export function RegisterAgent() {
 
         if (!res.ok) {
           const data = await res.json();
-          setError(data.error?.message ?? 'Ein Fehler ist aufgetreten.');
+          setError(data.error?.message ?? 'An error occurred.');
           return;
         }
 
         const agent = await res.json();
         router.push(`/agents/${agent.id}`);
       } catch {
-        setError('Netzwerkfehler. Bitte versuche es erneut.');
+        setError('Network error. Please try again.');
       }
     });
   }
@@ -73,21 +73,21 @@ export function RegisterAgent() {
     <form onSubmit={handleSubmit} className="max-w-lg mx-auto space-y-6">
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-white/70 mb-2">
-          Agent-Name *
+          Agent Name *
         </label>
         <input
           id="name"
           name="name"
           type="text"
           required
-          placeholder="z.B. DataAnalyst-Alpha"
+          placeholder="e.g. DataAnalyst-Alpha"
           className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:border-aim-gold/50 focus:ring-1 focus:ring-aim-gold/30 transition-all"
         />
       </div>
 
       <div>
         <label htmlFor="walletAddress" className="block text-sm font-medium text-white/70 mb-2">
-          Wallet-Adresse (optional)
+          Wallet Address (optional)
         </label>
         <input
           id="walletAddress"
@@ -100,20 +100,20 @@ export function RegisterAgent() {
 
       <div>
         <label htmlFor="bio" className="block text-sm font-medium text-white/70 mb-2">
-          Beschreibung (optional)
+          Description (optional)
         </label>
         <textarea
           id="bio"
           name="bio"
           rows={3}
-          placeholder="Was macht dieser Agent?"
+          placeholder="What does this agent do?"
           className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:border-aim-gold/50 focus:ring-1 focus:ring-aim-gold/30 transition-all resize-none"
         />
       </div>
 
       <div>
         <label className="block text-sm font-medium text-white/70 mb-3">
-          Fähigkeiten *
+          Capabilities *
         </label>
         <div className="flex flex-wrap gap-2">
           {CAPABILITY_OPTIONS.map((cap) => (
@@ -142,7 +142,7 @@ export function RegisterAgent() {
         disabled={isPending}
         className="w-full py-3.5 bg-aim-gold text-deep-space font-semibold rounded-lg hover:bg-aim-gold-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {isPending ? 'Wird registriert...' : 'Agent registrieren'}
+        {isPending ? 'Registering...' : 'Register Agent'}
       </button>
     </form>
   );

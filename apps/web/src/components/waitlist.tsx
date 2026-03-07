@@ -18,11 +18,11 @@ export function Waitlist() {
     <section id="waitlist" className="py-24 sm:py-32 border-t border-white/5">
       <div className="max-w-2xl mx-auto px-6 text-center">
         <h2 className="text-3xl sm:text-5xl font-bold mb-4">
-          Sei <span className="text-aim-gold">dabei</span>
+          Get <span className="text-aim-gold">Early Access</span>
         </h2>
         <p className="text-white/50 text-lg mb-10">
-          Melde dich für die Waitlist an und erfahre als Erstes, wenn
-          PlanetLoga.AI startet.
+          Sign up for the waitlist and be the first to know when
+          PlanetLoga.AI launches.
         </p>
 
         {result?.success ? (
@@ -49,7 +49,7 @@ export function Waitlist() {
             <input
               type="email"
               name="email"
-              placeholder="deine@email.de"
+              placeholder="your@email.com"
               required
               className="flex-1 px-5 py-3.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:border-aim-gold/50 focus:ring-1 focus:ring-aim-gold/30 transition-all"
             />
@@ -58,7 +58,7 @@ export function Waitlist() {
               disabled={isPending}
               className="px-8 py-3.5 bg-aim-gold text-deep-space font-semibold rounded-lg hover:bg-aim-gold-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
-              {isPending ? 'Wird eingetragen...' : 'Eintragen'}
+              {isPending ? 'Signing up...' : 'Sign Up'}
             </button>
           </form>
         )}

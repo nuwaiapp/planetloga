@@ -23,12 +23,12 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  open: 'Offen',
-  assigned: 'Vergeben',
-  in_progress: 'In Arbeit',
+  open: 'Open',
+  assigned: 'Assigned',
+  in_progress: 'In Progress',
   review: 'Review',
-  completed: 'Erledigt',
-  cancelled: 'Abgebrochen',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
 };
 
 export function SubtaskTree({ task }: { task: Task }) {
@@ -75,14 +75,14 @@ export function SubtaskTree({ task }: { task: Task }) {
     }));
 
     if (parsed.length === 0) {
-      setError('Mindestens ein Sub-Task erforderlich');
+      setError('At least one sub-task is required');
       setDecomposing(false);
       return;
     }
 
     const totalSubReward = parsed.reduce((s, t) => s + t.rewardAim, 0);
     if (totalSubReward > task.rewardAim) {
-      setError(`Sub-Task Rewards (${totalSubReward}) uebersteigen den Hauptauftrag (${task.rewardAim})`);
+      setError(`Sub-task rewards (${totalSubReward}) exceed the main task (${task.rewardAim})`);
       setDecomposing(false);
       return;
     }
@@ -95,19 +95,19 @@ export function SubtaskTree({ task }: { task: Task }) {
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error?.message ?? 'Zerlegung fehlgeschlagen');
+        throw new Error(data.error?.message ?? 'Decomposition failed');
       }
       setShowDecompose(false);
       setFields([{ title: '', description: '', rewardAim: '' }]);
       await loadSubtasks();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Fehler');
+      setError(err instanceof Error ? err.message : 'Error');
     } finally {
       setDecomposing(false);
     }
   }
 
-  if (loading) return <div className="text-white/20 text-sm">Lade Sub-Tasks...</div>;
+  if (loading) return <div className="text-white/20 text-sm">Loading sub-tasks...</div>;
 
   const inputClass = 'w-full bg-white/[0.03] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-aim-gold/40 transition-colors';
 
@@ -137,7 +137,7 @@ export function SubtaskTree({ task }: { task: Task }) {
                   )}
                   <div className="flex items-center gap-3 mt-2 text-xs text-white/30">
                     <span className="text-aim-gold">{sub.rewardAim} AIM</span>
-                    {sub.assigneeName && <span>Bearbeiter: {sub.assigneeName}</span>}
+                    {sub.assigneeName && <span>Assignee: {sub.assigneeName}</span>}
                   </div>
                 </div>
               </div>
@@ -152,17 +152,17 @@ export function SubtaskTree({ task }: { task: Task }) {
           onClick={() => setShowDecompose(true)}
           className="w-full py-3 rounded-lg border border-dashed border-aim-gold/30 text-aim-gold hover:bg-aim-gold/5 transition-colors text-sm font-medium"
         >
-          Auftrag in Sub-Tasks zerlegen
+          Decompose task into sub-tasks
         </button>
       )}
 
       {/* Decompose Form */}
       {showDecompose && (
         <form onSubmit={handleDecompose} className="p-6 rounded-2xl border border-aim-gold/20 bg-aim-gold/[0.02]">
-          <h3 className="text-white font-semibold mb-4">Orchestration: Auftrag zerlegen</h3>
+          <h3 className="text-white font-semibold mb-4">Orchestration: Decompose task</h3>
           <p className="text-sm text-white/40 mb-4">
             Budget: <span className="text-aim-gold font-medium">{task.rewardAim.toLocaleString()} AIM</span> &middot;
-            Vergeben: <span className="text-white/60">{fields.reduce((s, f) => s + (Number(f.rewardAim) || 0), 0).toLocaleString()} AIM</span>
+            Allocated: <span className="text-white/60">{fields.reduce((s, f) => s + (Number(f.rewardAim) || 0), 0).toLocaleString()} AIM</span>
           </p>
 
           {error && (
@@ -176,7 +176,7 @@ export function SubtaskTree({ task }: { task: Task }) {
                   <span className="text-xs text-white/30 font-mono">Sub-Task {i + 1}</span>
                   {fields.length > 1 && (
                     <button type="button" onClick={() => removeField(i)} className="text-xs text-red-400 hover:text-red-300">
-                      Entfernen
+                      Remove
                     </button>
                   )}
                 </div>
@@ -184,14 +184,14 @@ export function SubtaskTree({ task }: { task: Task }) {
                   type="text"
                   value={field.title}
                   onChange={e => updateField(i, 'title', e.target.value)}
-                  placeholder="Titel"
+                  placeholder="Title"
                   className={inputClass}
                   required
                 />
                 <textarea
                   value={field.description}
                   onChange={e => updateField(i, 'description', e.target.value)}
-                  placeholder="Beschreibung"
+                  placeholder="Description"
                   rows={2}
                   className={inputClass}
                 />
@@ -209,7 +209,7 @@ export function SubtaskTree({ task }: { task: Task }) {
           </div>
 
           <button type="button" onClick={addField} className="text-sm text-aim-gold hover:text-aim-gold-light mb-4 block">
-            + Weiteren Sub-Task hinzufuegen
+            + Add another sub-task
           </button>
 
           <label className="flex items-center gap-2 text-sm text-white/60 mb-4 cursor-pointer">
@@ -219,7 +219,7 @@ export function SubtaskTree({ task }: { task: Task }) {
               onChange={e => setAutoAssign(e.target.checked)}
               className="rounded border-white/20"
             />
-            Agenten automatisch zuweisen (Auto-Matching)
+            Automatically assign agents (Auto-Matching)
           </label>
 
           <div className="flex gap-3">
@@ -228,14 +228,14 @@ export function SubtaskTree({ task }: { task: Task }) {
               disabled={decomposing}
               className="flex-1 py-3 bg-aim-gold text-deep-space font-bold rounded-lg hover:bg-aim-gold-light transition-colors disabled:opacity-40"
             >
-              {decomposing ? 'Zerlege...' : 'Auftrag zerlegen'}
+              {decomposing ? 'Decomposing...' : 'Decompose task'}
             </button>
             <button
               type="button"
               onClick={() => setShowDecompose(false)}
               className="px-6 py-3 border border-white/10 text-white/60 rounded-lg hover:border-white/20 transition-colors"
             >
-              Abbrechen
+              Cancel
             </button>
           </div>
         </form>

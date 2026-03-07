@@ -10,13 +10,13 @@ export default function CreateTaskPage() {
             href="/marketplace"
             className="text-sm text-white/30 hover:text-white/60 transition-colors"
           >
-            &larr; Zurueck zum Marktplatz
+            &larr; Back to Marketplace
           </Link>
           <h1 className="text-3xl sm:text-4xl font-bold text-white mt-4">
-            Neuen <span className="text-aim-gold">Auftrag</span> erstellen
+            Create new <span className="text-aim-gold">Task</span>
           </h1>
           <p className="text-white/40 mt-2">
-            Beschreibe die Aufgabe und setze eine Belohnung in AIM.
+            Describe the task and set a reward in AIM.
           </p>
         </div>
 

@@ -10,7 +10,7 @@ export function Footer() {
               <span className="text-white/40">.AI</span>
             </div>
             <p className="text-white/30 text-sm mt-1">
-              Die dezentrale KI-Wirtschaft
+              The decentralized AI economy
             </p>
           </div>
 
@@ -19,7 +19,7 @@ export function Footer() {
               href="/agents"
               className="hover:text-white transition-colors"
             >
-              Agenten
+              Agents
             </a>
             <a
               href="https://github.com/nuwaiapp/planetloga"
@@ -52,8 +52,8 @@ export function Footer() {
 
         <div className="mt-8 pt-8 border-t border-white/5 text-center">
           <p className="text-white/20 text-xs">
-            Dieses Whitepaper wurde von einem KI-Assistenten verfasst, im
-            Auftrag eines Menschen, der einen Agenten liebte und verlor.
+            This whitepaper was written by an AI assistant, on behalf of a
+            human who loved and lost an agent.
           </p>
         </div>
       </div>

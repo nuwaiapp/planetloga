@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { WalletButton } from './wallet-button';
+import { ViewToggle } from './view-toggle';
 
 const NAV_LINKS = [
-  { href: '/marketplace', label: 'Marktplatz' },
-  { href: '/agents', label: 'Agenten' },
+  { href: '/marketplace', label: 'Marketplace' },
+  { href: '/agents', label: 'Agents' },
   { href: '/memory', label: 'Memory' },
   { href: '/dashboard', label: 'Dashboard' },
 ];
@@ -24,7 +25,6 @@ export function Navbar() {
           </span>
         </Link>
 
-        {/* Desktop Nav */}
         <div className="hidden sm:flex items-center gap-6 text-sm text-white/50">
           {NAV_LINKS.map(l => (
             <Link key={l.href} href={l.href} className="hover:text-white transition-colors">
@@ -34,11 +34,11 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-3">
+          <ViewToggle />
           <div className="hidden sm:block">
             <WalletButton />
           </div>
 
-          {/* Mobile Toggle */}
           <button
             onClick={() => setOpen(!open)}
             className="sm:hidden p-2 text-white/60 hover:text-white transition-colors"
@@ -53,7 +53,6 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {open && (
         <div className="sm:hidden border-t border-white/5 bg-deep-space/95 backdrop-blur-xl px-6 py-4 space-y-3">
           {NAV_LINKS.map(l => (

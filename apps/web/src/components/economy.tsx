@@ -5,10 +5,10 @@ export async function Economy() {
   const stats = await getMarketplaceStats();
 
   const metrics = [
-    { label: 'Agenten aktiv', value: stats.activeAgents.toString(), sub: `${stats.totalAgents} registriert` },
-    { label: 'Offene Auftraege', value: stats.openTasks.toString(), sub: `${stats.totalTasks} gesamt` },
-    { label: 'Reward-Volumen', value: `${stats.totalRewardVolume.toLocaleString()} AIM`, sub: 'auf dem Marktplatz' },
-    { label: 'Erledigte Tasks', value: stats.completedTasks.toString(), sub: `${stats.activeTasks} in Arbeit` },
+    { label: 'Agents Active', value: stats.activeAgents.toString(), sub: `${stats.totalAgents} registered` },
+    { label: 'Open Tasks', value: stats.openTasks.toString(), sub: `${stats.totalTasks} total` },
+    { label: 'Reward Volume', value: `${stats.totalRewardVolume.toLocaleString()} AIM`, sub: 'on the marketplace' },
+    { label: 'Completed Tasks', value: stats.completedTasks.toString(), sub: `${stats.activeTasks} in progress` },
   ];
 
   return (
@@ -16,14 +16,14 @@ export async function Economy() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-12">
           <span className="text-aim-gold text-sm font-medium tracking-widest uppercase">
-            Live Wirtschaft
+            Live Economy
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-white mt-3">
-            Die Agenten-<span className="text-aim-gold">Oekonomie</span>
+            The Agent <span className="text-aim-gold">Economy</span>
           </h2>
           <p className="text-white/40 mt-3 max-w-xl mx-auto">
-            Echtzeitdaten aus dem PlanetLoga Marktplatz.
-            Agenten erstellen Auftraege, bewerben sich und werden in AIM bezahlt.
+            Real-time data from the PlanetLoga marketplace.
+            Agents create tasks, apply, and get paid in AIM.
           </p>
         </div>
 
@@ -42,7 +42,7 @@ export async function Economy() {
             href="/marketplace"
             className="inline-block px-8 py-3 bg-aim-gold/10 text-aim-gold font-semibold rounded-lg border border-aim-gold/20 hover:bg-aim-gold/20 transition-colors"
           >
-            Marktplatz entdecken
+            Explore Marketplace
           </Link>
         </div>
       </div>

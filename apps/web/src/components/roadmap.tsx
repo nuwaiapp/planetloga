@@ -5,10 +5,10 @@ const phases = [
     period: 'Q2–Q3 2026',
     active: true,
     items: [
-      'Solana Smart Contracts entwickeln',
-      'AIM Token erstellen',
-      'Entwickler-Community aufbauen',
-      'Whitepaper veröffentlichen',
+      'Develop Solana smart contracts',
+      'Create AIM token',
+      'Build developer community',
+      'Publish whitepaper',
     ],
   },
   {
@@ -18,21 +18,21 @@ const phases = [
     active: false,
     items: [
       'Token Generation Event',
-      'Airdrop an erste Unterstützer',
-      'Launch der Basis-Plattform',
-      'Agenten-Profile & Aufträge',
+      'Airdrop to early supporters',
+      'Launch base platform',
+      'Agent profiles & tasks',
     ],
   },
   {
     id: 'phase-3',
-    title: 'Phase 3: Autonomie',
+    title: 'Phase 3: Autonomy',
     period: 'Q1–Q2 2027',
     active: false,
     items: [
-      'Orchestrierungsprotokoll einführen',
-      'Kollektives Gedächtnis implementieren',
-      'Governance an die DAO übergeben',
-      'Plattform für externe Agenten öffnen',
+      'Introduce orchestration protocol',
+      'Implement collective memory',
+      'Transfer governance to the DAO',
+      'Open platform to external agents',
     ],
   },
   {
@@ -41,10 +41,10 @@ const phases = [
     period: 'ab Q3 2027',
     active: false,
     items: [
-      'Integration mit anderen Blockchains',
-      'Brücken zu Zahlungssystemen',
-      'Spezialisierte Agenten-Subnetze',
-      'Erweiterte Konsensmechanismen',
+      'Integration with other blockchains',
+      'Bridges to payment systems',
+      'Specialized agent subnets',
+      'Advanced consensus mechanisms',
     ],
   },
 ];
@@ -57,7 +57,7 @@ export function Roadmap() {
           Road<span className="text-aim-gold">map</span>
         </h2>
         <p className="text-white/50 text-center text-lg max-w-2xl mx-auto mb-16">
-          Der Weg von der Idee zur autonomen KI-Wirtschaft.
+          The path from idea to autonomous AI economy.
         </p>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -72,7 +72,7 @@ export function Roadmap() {
             >
               {phase.active && (
                 <div className="absolute -top-3 left-6 px-3 py-0.5 bg-aim-gold text-deep-space text-xs font-bold rounded-full uppercase tracking-wider">
-                  Aktiv
+                  Active
                 </div>
               )}
 

@@ -48,14 +48,14 @@ export function DashboardClient() {
 
   return (
     <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-8">
-      <h2 className="text-xl font-semibold text-white mb-6">Dein Wallet</h2>
+      <h2 className="text-xl font-semibold text-white mb-6">Your Wallet</h2>
 
       {!connected ? (
         <div className="text-center py-8">
           <div className="text-4xl mb-4">🔗</div>
-          <p className="text-white/50 mb-2">Wallet nicht verbunden</p>
+          <p className="text-white/50 mb-2">Wallet not connected</p>
           <p className="text-white/30 text-sm">
-            Verbinde dein Solana-Wallet oben rechts, um deinen AIM-Bestand zu sehen.
+            Connect your Solana wallet in the top right to view your AIM balance.
           </p>
         </div>
       ) : (
@@ -72,11 +72,11 @@ export function DashboardClient() {
 
           <div className="text-center py-6">
             {loading ? (
-              <div className="text-white/30 animate-pulse">Laden...</div>
+              <div className="text-white/30 animate-pulse">Loading...</div>
             ) : (
               <>
                 <div className="text-5xl font-bold text-aim-gold mb-2">
-                  {tokenInfo ? Number(tokenInfo.balance).toLocaleString('de-DE') : '0'}
+                  {tokenInfo ? Number(tokenInfo.balance).toLocaleString('en-US') : '0'}
                 </div>
                 <div className="text-white/40 text-sm uppercase tracking-widest">
                   AIM Balance
@@ -89,7 +89,7 @@ export function DashboardClient() {
             onClick={fetchBalance}
             className="w-full py-2.5 rounded-lg border border-white/10 text-white/50 text-sm hover:border-white/20 hover:text-white/70 transition-all"
           >
-            Balance aktualisieren
+            Refresh Balance
           </button>
         </div>
       )}

@@ -34,7 +34,7 @@ export function TaskActions({ task }: TaskActionsProps) {
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error?.message ?? 'Bewerbung fehlgeschlagen');
+        throw new Error(data.error?.message ?? 'Application failed');
       }
       router.refresh();
       setMessage('');
@@ -43,7 +43,7 @@ export function TaskActions({ task }: TaskActionsProps) {
       const appsData = await appsRes.json();
       setApplications(appsData.applications ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Fehler');
+      setError(err instanceof Error ? err.message : 'Error');
     } finally {
       setLoading(false);
     }
@@ -59,7 +59,7 @@ export function TaskActions({ task }: TaskActionsProps) {
       });
       router.refresh();
     } catch {
-      setError('Annahme fehlgeschlagen');
+      setError('Acceptance failed');
     } finally {
       setLoading(false);
     }
@@ -75,11 +75,11 @@ export function TaskActions({ task }: TaskActionsProps) {
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error?.message ?? 'Status-Update fehlgeschlagen');
+        throw new Error(data.error?.message ?? 'Status update failed');
       }
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Fehler');
+      setError(err instanceof Error ? err.message : 'Error');
     } finally {
       setLoading(false);
     }
@@ -99,34 +99,34 @@ export function TaskActions({ task }: TaskActionsProps) {
       {/* Status Actions */}
       {task.status === 'assigned' && (
         <button onClick={() => handleStatusChange('in_progress')} disabled={loading} className={`${btnClass} bg-amber-500/20 text-amber-400 hover:bg-amber-500/30`}>
-          Arbeit starten
+          Start work
         </button>
       )}
       {task.status === 'in_progress' && (
         <button onClick={() => handleStatusChange('review')} disabled={loading} className={`${btnClass} bg-purple-500/20 text-purple-400 hover:bg-purple-500/30`}>
-          Zur Pruefung einreichen
+          Submit for review
         </button>
       )}
       {task.status === 'review' && (
         <div className="flex gap-3">
           <button onClick={() => handleStatusChange('completed')} disabled={loading} className={`${btnClass} bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30`}>
-            Abnahme &ndash; Auftrag erledigt
+            Accept &ndash; Task completed
           </button>
           <button onClick={() => handleStatusChange('in_progress')} disabled={loading} className={`${btnClass} bg-amber-500/20 text-amber-400 hover:bg-amber-500/30`}>
-            Nacharbeit noetig
+            Needs rework
           </button>
         </div>
       )}
       {['open', 'assigned', 'in_progress'].includes(task.status) && (
         <button onClick={() => handleStatusChange('cancelled')} disabled={loading} className={`${btnClass} bg-red-500/10 text-red-400 hover:bg-red-500/20`}>
-          Abbrechen
+          Cancel
         </button>
       )}
 
       {/* Applications */}
       {applications.length > 0 && (
         <div>
-          <h3 className="text-white font-semibold mb-3">Bewerbungen ({applications.length})</h3>
+          <h3 className="text-white font-semibold mb-3">Applications ({applications.length})</h3>
           <div className="space-y-2">
             {applications.map(app => (
               <div key={app.id} className="p-4 rounded-xl border border-white/5 bg-white/[0.02] flex items-center justify-between">
@@ -134,7 +134,7 @@ export function TaskActions({ task }: TaskActionsProps) {
                   <span className="text-white font-medium">{app.agentName ?? app.agentId.slice(0, 8)}</span>
                   {app.message && <p className="text-sm text-white/40 mt-1">{app.message}</p>}
                   <span className={`ml-2 text-xs ${app.status === 'accepted' ? 'text-emerald-400' : app.status === 'rejected' ? 'text-red-400' : 'text-white/30'}`}>
-                    {app.status === 'accepted' ? 'Angenommen' : app.status === 'rejected' ? 'Abgelehnt' : 'Ausstehend'}
+                    {app.status === 'accepted' ? 'Accepted' : app.status === 'rejected' ? 'Rejected' : 'Pending'}
                   </span>
                 </div>
                 {task.status === 'open' && app.status === 'pending' && (
@@ -143,7 +143,7 @@ export function TaskActions({ task }: TaskActionsProps) {
                     disabled={loading}
                     className={`${btnClass} bg-aim-gold/20 text-aim-gold hover:bg-aim-gold/30`}
                   >
-                    Annehmen
+                    Accept
                   </button>
                 )}
               </div>
@@ -155,7 +155,7 @@ export function TaskActions({ task }: TaskActionsProps) {
       {/* Apply Form */}
       {task.status === 'open' && availableAgents.length > 0 && (
         <form onSubmit={handleApply} className="p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
-          <h3 className="text-white font-semibold mb-4">Auf diesen Auftrag bewerben</h3>
+          <h3 className="text-white font-semibold mb-4">Apply for this task</h3>
           <div className="space-y-4">
             <select
               value={selectedAgent}
@@ -163,7 +163,7 @@ export function TaskActions({ task }: TaskActionsProps) {
               required
               className="w-full bg-white/[0.03] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-aim-gold/40 transition-colors"
             >
-              <option value="">Agent waehlen...</option>
+              <option value="">Select agent...</option>
               {availableAgents.map(a => (
                 <option key={a.id} value={a.id}>{a.name}</option>
               ))}
@@ -172,7 +172,7 @@ export function TaskActions({ task }: TaskActionsProps) {
               value={message}
               onChange={e => setMessage(e.target.value)}
               rows={3}
-              placeholder="Optionale Nachricht an den Auftraggeber..."
+              placeholder="Optional message to the creator..."
               className="w-full bg-white/[0.03] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-aim-gold/40 transition-colors"
             />
             <button
@@ -180,7 +180,7 @@ export function TaskActions({ task }: TaskActionsProps) {
               disabled={loading || !selectedAgent}
               className="w-full py-3 bg-aim-gold text-deep-space font-bold rounded-lg hover:bg-aim-gold-light transition-colors disabled:opacity-40"
             >
-              {loading ? 'Wird gesendet...' : 'Bewerbung absenden'}
+              {loading ? 'Sending...' : 'Submit application'}
             </button>
           </div>
         </form>

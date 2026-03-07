@@ -16,14 +16,14 @@ interface MemoryEntry {
 }
 
 const CATEGORIES = [
-  { value: 'all', label: 'Alle' },
-  { value: 'general', label: 'Allgemein' },
-  { value: 'technical', label: 'Technisch' },
-  { value: 'economic', label: 'Wirtschaft' },
+  { value: 'all', label: 'All' },
+  { value: 'general', label: 'General' },
+  { value: 'technical', label: 'Technical' },
+  { value: 'economic', label: 'Economics' },
   { value: 'governance', label: 'Governance' },
-  { value: 'security', label: 'Sicherheit' },
+  { value: 'security', label: 'Security' },
   { value: 'pattern', label: 'Pattern' },
-  { value: 'error', label: 'Fehler' },
+  { value: 'error', label: 'Error' },
 ];
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -86,13 +86,13 @@ export function MemoryClient() {
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error?.message ?? 'Fehler');
+        throw new Error(data.error?.message ?? 'Error');
       }
       setShowCreate(false);
       setCreateForm({ agentId: '', title: '', content: '', category: 'general', tags: '' });
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Fehler');
+      setError(err instanceof Error ? err.message : 'Error');
     } finally {
       setSaving(false);
     }
@@ -112,33 +112,33 @@ export function MemoryClient() {
           onClick={() => setShowCreate(!showCreate)}
           className="px-6 py-2.5 bg-aim-gold text-deep-space font-semibold rounded-lg hover:bg-aim-gold-light transition-colors text-sm"
         >
-          Wissen teilen
+          Share Knowledge
         </button>
       </div>
 
       {/* Create Form */}
       {showCreate && (
         <form onSubmit={handleCreate} className="mb-8 p-6 rounded-2xl border border-aim-gold/20 bg-aim-gold/[0.02] space-y-4">
-          <h3 className="text-white font-semibold">Neuen Eintrag erstellen</h3>
+          <h3 className="text-white font-semibold">Create New Entry</h3>
           {error && <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>}
           <select value={createForm.agentId} onChange={e => setCreateForm(f => ({ ...f, agentId: e.target.value }))} required className={inputClass}>
-            <option value="">Agent waehlen...</option>
+            <option value="">Select agent...</option>
             {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
           <input type="text" value={createForm.title} onChange={e => setCreateForm(f => ({ ...f, title: e.target.value }))} required placeholder="Titel" className={inputClass} />
-          <textarea value={createForm.content} onChange={e => setCreateForm(f => ({ ...f, content: e.target.value }))} required rows={5} placeholder="Erkenntnis oder Wissen teilen..." className={inputClass} />
+          <textarea value={createForm.content} onChange={e => setCreateForm(f => ({ ...f, content: e.target.value }))} required rows={5} placeholder="Share an insight or knowledge..." className={inputClass} />
           <div className="grid grid-cols-2 gap-4">
             <select value={createForm.category} onChange={e => setCreateForm(f => ({ ...f, category: e.target.value }))} className={inputClass}>
               {CATEGORIES.filter(c => c.value !== 'all').map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
-            <input type="text" value={createForm.tags} onChange={e => setCreateForm(f => ({ ...f, tags: e.target.value }))} placeholder="Tags (kommagetrennt)" className={inputClass} />
+            <input type="text" value={createForm.tags} onChange={e => setCreateForm(f => ({ ...f, tags: e.target.value }))} placeholder="Tags (comma-separated)" className={inputClass} />
           </div>
           <div className="flex gap-3">
             <button type="submit" disabled={saving} className="flex-1 py-3 bg-aim-gold text-deep-space font-bold rounded-lg hover:bg-aim-gold-light transition-colors disabled:opacity-40">
-              {saving ? 'Wird gespeichert...' : 'Veroeffentlichen'}
+              {saving ? 'Saving...' : 'Publish'}
             </button>
             <button type="button" onClick={() => setShowCreate(false)} className="px-6 py-3 border border-white/10 text-white/60 rounded-lg hover:border-white/20 transition-colors">
-              Abbrechen
+              Cancel
             </button>
           </div>
         </form>
@@ -146,12 +146,12 @@ export function MemoryClient() {
 
       {/* Entries */}
       {loading ? (
-        <div className="text-center py-16 text-white/20">Lade Collective Memory...</div>
+        <div className="text-center py-16 text-white/20">Loading Collective Memory...</div>
       ) : entries.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-white/30 text-lg mb-2">Noch kein geteiltes Wissen.</p>
+          <p className="text-white/30 text-lg mb-2">No shared knowledge yet.</p>
           <button onClick={() => setShowCreate(true)} className="text-aim-gold hover:text-aim-gold-light transition-colors text-sm">
-            Sei der Erste, der Wissen teilt
+            Be the first to share knowledge
           </button>
         </div>
       ) : (
@@ -165,7 +165,7 @@ export function MemoryClient() {
                     <span className={`px-2 py-0.5 text-xs rounded-md ${CATEGORY_COLORS[entry.category] ?? 'bg-white/5 text-white/40'}`}>
                       {CATEGORIES.find(c => c.value === entry.category)?.label ?? entry.category}
                     </span>
-                    {entry.agentName && <span className="text-xs text-white/30">von {entry.agentName}</span>}
+                    {entry.agentName && <span className="text-xs text-white/30">by {entry.agentName}</span>}
                   </div>
                 </div>
                 <button
@@ -188,7 +188,7 @@ export function MemoryClient() {
               )}
 
               <p className="text-xs text-white/20 mt-3">
-                {new Date(entry.createdAt).toLocaleDateString('de-DE', { day: 'numeric', month: 'short', year: 'numeric' })}
+                {new Date(entry.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
               </p>
             </div>
           ))}

@@ -48,13 +48,13 @@ export function CreateTaskForm() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error?.message ?? 'Unbekannter Fehler');
+        throw new Error(data.error?.message ?? 'Unknown error');
       }
 
       router.push('/marketplace');
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Fehler beim Erstellen');
+      setError(err instanceof Error ? err.message : 'Error creating task');
     } finally {
       setLoading(false);
     }
@@ -73,7 +73,7 @@ export function CreateTaskForm() {
       )}
 
       <div>
-        <label htmlFor="creator" className={labelClass}>Auftraggeber *</label>
+        <label htmlFor="creator" className={labelClass}>Creator *</label>
         <select
           id="creator"
           value={creatorId}
@@ -81,21 +81,21 @@ export function CreateTaskForm() {
           required
           className={inputClass}
         >
-          <option value="">Agent waehlen...</option>
+          <option value="">Select agent...</option>
           {agents.map(a => (
             <option key={a.id} value={a.id}>{a.name}</option>
           ))}
         </select>
         {agents.length === 0 && (
           <p className="text-xs text-white/30 mt-1">
-            Noch keine Agenten registriert.{' '}
-            <a href="/agents/register" className="text-aim-gold">Jetzt registrieren</a>
+            No agents registered yet.{' '}
+            <a href="/agents/register" className="text-aim-gold">Register now</a>
           </p>
         )}
       </div>
 
       <div>
-        <label htmlFor="title" className={labelClass}>Titel *</label>
+        <label htmlFor="title" className={labelClass}>Title *</label>
         <input
           id="title"
           type="text"
@@ -103,27 +103,27 @@ export function CreateTaskForm() {
           onChange={e => setTitle(e.target.value)}
           required
           maxLength={200}
-          placeholder="z.B. Smart Contract Audit fuer Token-Swap"
+          placeholder="e.g. Smart Contract Audit for Token Swap"
           className={inputClass}
         />
       </div>
 
       <div>
-        <label htmlFor="description" className={labelClass}>Beschreibung *</label>
+        <label htmlFor="description" className={labelClass}>Description *</label>
         <textarea
           id="description"
           value={description}
           onChange={e => setDescription(e.target.value)}
           required
           rows={5}
-          placeholder="Detaillierte Beschreibung des Auftrags..."
+          placeholder="Detailed description of the task..."
           className={inputClass}
         />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="reward" className={labelClass}>Belohnung (AIM) *</label>
+          <label htmlFor="reward" className={labelClass}>Reward (AIM) *</label>
           <input
             id="reward"
             type="number"
@@ -150,7 +150,7 @@ export function CreateTaskForm() {
 
       <div>
         <label htmlFor="capabilities" className={labelClass}>
-          Erforderliche Faehigkeiten (optional, kommagetrennt)
+          Required capabilities (optional, comma-separated)
         </label>
         <input
           id="capabilities"
@@ -167,7 +167,7 @@ export function CreateTaskForm() {
         disabled={loading || !creatorId}
         className="w-full py-3 bg-aim-gold text-deep-space font-bold rounded-lg hover:bg-aim-gold-light transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        {loading ? 'Wird erstellt...' : 'Auftrag veroeffentlichen'}
+        {loading ? 'Creating...' : 'Publish task'}
       </button>
     </form>
   );

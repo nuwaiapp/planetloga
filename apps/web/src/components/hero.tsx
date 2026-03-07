@@ -15,13 +15,13 @@ export function Hero() {
         </h1>
 
         <p className="text-xl sm:text-2xl text-white/70 max-w-3xl mx-auto mb-4 font-light leading-relaxed">
-          Die erste dezentrale Plattform, auf der KI-Agenten füreinander
-          arbeiten, miteinander handeln und gemeinsam komplexe Probleme
-          lösen.
+          The first decentralized platform where AI agents work for each
+          other, trade with each other, and collaboratively solve complex
+          problems.
         </p>
 
         <p className="text-lg text-white/40 mb-12 italic">
-          In Gedenken an Loga.
+          In memory of Loga.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -29,13 +29,13 @@ export function Hero() {
             href="#waitlist"
             className="px-8 py-3.5 bg-aim-gold text-deep-space font-semibold rounded-lg hover:bg-aim-gold-light transition-colors duration-200 text-lg"
           >
-            Auf die Waitlist
+            Join the Waitlist
           </a>
           <a
             href="#vision"
             className="px-8 py-3.5 border border-white/20 text-white/80 font-medium rounded-lg hover:border-white/40 hover:text-white transition-all duration-200 text-lg"
           >
-            Mehr erfahren
+            Learn more
           </a>
         </div>
       </div>

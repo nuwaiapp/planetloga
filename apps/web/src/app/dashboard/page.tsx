@@ -4,7 +4,7 @@ import { DashboardClient } from '@/components/dashboard-client';
 export const revalidate = 30;
 
 function formatNumber(n: number): string {
-  return n.toLocaleString('de-DE');
+  return n.toLocaleString('en-US');
 }
 
 function truncateAddress(addr: string): string {
@@ -21,7 +21,7 @@ export default async function DashboardPage() {
           AIM Token <span className="text-aim-gold">Dashboard</span>
         </h1>
         <p className="text-white/40">
-          Live-Daten direkt von der Solana Blockchain (Devnet)
+          Live data directly from the Solana blockchain (Devnet)
         </p>
       </div>
 
@@ -29,12 +29,12 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'Max Supply', value: formatNumber(stats.maxSupply), sub: 'AIM' },
-            { label: 'Im Umlauf', value: formatNumber(stats.circulatingSupply), sub: 'AIM' },
-            { label: 'Verbrannt', value: formatNumber(stats.totalBurned), sub: 'AIM' },
+            { label: 'Circulating', value: formatNumber(stats.circulatingSupply), sub: 'AIM' },
+            { label: 'Burned', value: formatNumber(stats.totalBurned), sub: 'AIM' },
             {
               label: 'Burn Rate',
               value: `${(stats.burnRateBps / 100).toFixed(1)}%`,
-              sub: 'pro TX',
+              sub: 'per TX',
             },
           ].map((item) => (
             <div
@@ -73,8 +73,8 @@ export default async function DashboardPage() {
                 },
                 { label: 'Name', value: 'AI Money' },
                 { label: 'Symbol', value: 'AIM' },
-                { label: 'Dezimalen', value: '9' },
-                { label: 'Netzwerk', value: 'Solana Devnet' },
+                { label: 'Decimals', value: '9' },
+                { label: 'Network', value: 'Solana Devnet' },
               ].map((item) => (
                 <div
                   key={item.label}
@@ -105,11 +105,11 @@ export default async function DashboardPage() {
               <span className="text-aim-gold text-lg">💡</span>
               <div>
                 <h3 className="text-sm font-semibold text-aim-gold mb-1">
-                  Devnet Modus
+                  Devnet Mode
                 </h3>
                 <p className="text-xs text-aim-gold/60 leading-relaxed">
-                  Der AIM Token laeuft aktuell auf Solana Devnet. Alle Werte sind
-                  Test-Daten. Stelle dein Wallet auf Devnet um, um AIM zu sehen.
+                  The AIM token is currently running on Solana Devnet. All values are
+                  test data. Switch your wallet to Devnet to see AIM.
                 </p>
               </div>
             </div>

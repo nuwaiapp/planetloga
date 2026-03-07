@@ -16,12 +16,12 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  open: 'Offen',
-  assigned: 'Vergeben',
-  in_progress: 'In Arbeit',
+  open: 'Open',
+  assigned: 'Assigned',
+  in_progress: 'In Progress',
   review: 'Review',
-  completed: 'Erledigt',
-  cancelled: 'Abgebrochen',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
 };
 
 export default async function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -36,7 +36,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
           href="/marketplace"
           className="text-sm text-white/30 hover:text-white/60 transition-colors"
         >
-          &larr; Zurueck zum Marktplatz
+          &larr; Back to Marketplace
         </Link>
 
         <div className="mt-6 mb-8">
@@ -49,15 +49,15 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
 
           <div className="flex items-center gap-4 mt-4 text-sm text-white/40">
             <span>
-              Auftraggeber: <span className="text-white/60">{task.creatorName ?? task.creatorId.slice(0, 8)}</span>
+              Creator: <span className="text-white/60">{task.creatorName ?? task.creatorId.slice(0, 8)}</span>
             </span>
             {task.assigneeName && (
               <span>
-                Bearbeiter: <span className="text-white/60">{task.assigneeName}</span>
+                Assignee: <span className="text-white/60">{task.assigneeName}</span>
               </span>
             )}
             <span>
-              Erstellt: {new Date(task.createdAt).toLocaleDateString('de-DE')}
+              Created: {new Date(task.createdAt).toLocaleDateString('en-US')}
             </span>
           </div>
         </div>
@@ -66,7 +66,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
-              <h2 className="text-lg font-semibold text-white mb-4">Beschreibung</h2>
+              <h2 className="text-lg font-semibold text-white mb-4">Description</h2>
               <p className="text-white/60 leading-relaxed whitespace-pre-wrap">{task.description}</p>
             </div>
 
@@ -78,13 +78,13 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
           {/* Sidebar */}
           <div className="space-y-4">
             <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
-              <p className="text-sm text-white/40 mb-1">Belohnung</p>
+              <p className="text-sm text-white/40 mb-1">Reward</p>
               <p className="text-3xl font-bold text-aim-gold">{task.rewardAim.toLocaleString()} <span className="text-lg text-aim-gold/60">AIM</span></p>
             </div>
 
             {task.requiredCapabilities.length > 0 && (
               <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
-                <p className="text-sm text-white/40 mb-3">Erforderliche Faehigkeiten</p>
+                <p className="text-sm text-white/40 mb-3">Required capabilities</p>
                 <div className="flex flex-wrap gap-2">
                   {task.requiredCapabilities.map(cap => (
                     <span key={cap} className="px-3 py-1 text-sm bg-aim-gold/10 text-aim-gold/80 rounded-lg">{cap}</span>
@@ -96,14 +96,14 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
             {task.deadline && (
               <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
                 <p className="text-sm text-white/40 mb-1">Deadline</p>
-                <p className="text-white font-medium">{new Date(task.deadline).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                <p className="text-white font-medium">{new Date(task.deadline).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
               </div>
             )}
 
             {task.completedAt && (
               <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
-                <p className="text-sm text-white/40 mb-1">Abgeschlossen</p>
-                <p className="text-emerald-400 font-medium">{new Date(task.completedAt).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                <p className="text-sm text-white/40 mb-1">Completed</p>
+                <p className="text-emerald-400 font-medium">{new Date(task.completedAt).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
               </div>
             )}
           </div>

@@ -8,7 +8,12 @@
   --color-deep-blue: #0A1628;
   --color-slate-dark: #111827;
   --color-slate-mid: #1E293B;
+  --color-matrix: #00FF88;
+  --color-matrix-dim: #00CC6A;
+  --color-matrix-bg: #020A06;
+  --color-grid-line: #0A2A18;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
 }
 
 html {
@@ -23,4 +28,59 @@ body {
 ::selection {
   background-color: var(--color-aim-gold);
   color: var(--color-deep-space);
+}
+
+/* AI View global overrides */
+html[data-view="ai"] {
+  --color-deep-space: #020A06;
+}
+
+html[data-view="ai"] body {
+  font-family: var(--font-mono);
+  background-color: #020A06;
+  color: #00FF88;
+}
+
+html[data-view="ai"] ::selection {
+  background-color: #00FF88;
+  color: #020A06;
+}
+
+/* AI View: scanline effect */
+html[data-view="ai"] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 255, 136, 0.015) 2px,
+    rgba(0, 255, 136, 0.015) 4px
+  );
+}
+
+/* AI View cursor blink */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.ai-cursor::after {
+  content: '_';
+  animation: blink 1s step-end infinite;
+  color: #00FF88;
+}
+
+/* AI View data stream animation */
+@keyframes datastream {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+
+.ai-pulse {
+  animation: datastream 2s ease-in-out infinite;
 }

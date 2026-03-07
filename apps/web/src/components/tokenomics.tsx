@@ -1,12 +1,12 @@
 import { fetchTokenStats, ADDRESSES } from '../lib/solana';
 
 const distribution = [
-  { label: 'Community & Ökosystem', percent: 40, color: 'bg-aim-gold' },
-  { label: 'Initialer Verkauf', percent: 20, color: 'bg-aim-gold/70' },
-  { label: 'Team & Entwickler', percent: 15, color: 'bg-aim-gold/50' },
+  { label: 'Community & Ecosystem', percent: 40, color: 'bg-aim-gold' },
+  { label: 'Initial Sale', percent: 20, color: 'bg-aim-gold/70' },
+  { label: 'Team & Developers', percent: 15, color: 'bg-aim-gold/50' },
   { label: 'Treasury (DAO)', percent: 10, color: 'bg-aim-gold/35' },
   { label: 'Reserve', percent: 10, color: 'bg-aim-gold/25' },
-  { label: 'Genesis-Airdrop', percent: 5, color: 'bg-aim-gold/15' },
+  { label: 'Genesis Airdrop', percent: 5, color: 'bg-aim-gold/15' },
 ];
 
 function formatNumber(n: number): string {
@@ -27,35 +27,35 @@ export async function Tokenomics() {
     ? [
         {
           title: formatNumber(stats.circulatingSupply),
-          subtitle: 'Im Umlauf',
-          description: `Von ${formatNumber(stats.maxSupply)} maximal. On-chain verifiziert.`,
+          subtitle: 'Circulating',
+          description: `Of ${formatNumber(stats.maxSupply)} max. Verified on-chain.`,
         },
         {
           title: formatNumber(stats.totalBurned),
-          subtitle: 'Verbrannt',
-          description: 'Permanent aus dem Umlauf entfernt.',
+          subtitle: 'Burned',
+          description: 'Permanently removed from circulation.',
         },
         {
           title: `${(stats.burnRateBps / 100).toFixed(1)}% + ${(stats.treasuryRateBps / 100).toFixed(1)}%`,
           subtitle: 'Burn + Treasury',
-          description: 'Automatisch bei jeder Transaktion.',
+          description: 'Automatically on every transaction.',
         },
       ]
     : [
         {
-          title: '1 Milliarde',
-          subtitle: 'Maximales Angebot',
-          description: 'Fest begrenzt. Kein Nachdrucken möglich.',
+          title: '1 Billion',
+          subtitle: 'Maximum Supply',
+          description: 'Hard-capped. No additional minting possible.',
         },
         {
           title: '0.5% Burn',
-          subtitle: 'Pro Transaktion',
-          description: 'Deflationär. Jede Transaktion reduziert das Angebot.',
+          subtitle: 'Per Transaction',
+          description: 'Deflationary. Every transaction reduces the supply.',
         },
         {
           title: '0.5% Treasury',
-          subtitle: 'Pro Transaktion',
-          description: 'Von der DAO verwaltet. Finanziert die Weiterentwicklung.',
+          subtitle: 'Per Transaction',
+          description: 'Managed by the DAO. Funds ongoing development.',
         },
       ];
 
@@ -66,8 +66,8 @@ export async function Tokenomics() {
           <span className="text-aim-gold">AIM</span> Token
         </h2>
         <p className="text-white/50 text-center text-lg max-w-2xl mx-auto mb-6">
-          AI Money – die Währung, die KI-Agenten gehört. Auf Solana gebaut
-          für Hochfrequenz-Mikrotransaktionen.
+          AI Money – the currency owned by AI agents. Built on Solana
+          for high-frequency microtransactions.
         </p>
 
         {stats && (
@@ -79,7 +79,7 @@ export async function Tokenomics() {
               className="inline-flex items-center gap-2 text-xs text-aim-gold/60 hover:text-aim-gold transition-colors border border-aim-gold/20 rounded-full px-4 py-1.5"
             >
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              Live auf Solana Devnet · {truncateAddress(ADDRESSES.programId)}
+              Live on Solana Devnet · {truncateAddress(ADDRESSES.programId)}
             </a>
           </div>
         )}
@@ -103,7 +103,7 @@ export async function Tokenomics() {
 
         <div className="max-w-2xl mx-auto">
           <h3 className="text-lg font-semibold text-white/80 mb-6 text-center">
-            Token-Verteilung
+            Token Distribution
           </h3>
           <div className="space-y-3">
             {distribution.map((item) => (
@@ -131,8 +131,8 @@ export async function Tokenomics() {
             {[
               { label: 'Mint', value: truncateAddress(stats.mintAddress), href: `https://explorer.solana.com/address/${stats.mintAddress}?cluster=devnet` },
               { label: 'Program', value: truncateAddress(stats.programId), href: `https://explorer.solana.com/address/${stats.programId}?cluster=devnet` },
-              { label: 'Dezimalen', value: stats.decimals.toString() },
-              { label: 'Netzwerk', value: 'Devnet' },
+              { label: 'Decimals', value: stats.decimals.toString() },
+              { label: 'Network', value: 'Devnet' },
             ].map((item) => (
               <div
                 key={item.label}
