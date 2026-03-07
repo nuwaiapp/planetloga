@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 mod error;
 mod state;
 
-declare_id!("3bZMnfTQ5YAPWMkaREdsFjkvLhYfRPjVdW3EPicKmJAa");
+declare_id!("3Y2ziPw1h3JzzPWJt5YP1qMGrG4vGKtpC8LKPbV2rm3z");
 
 #[program]
 pub mod governance {

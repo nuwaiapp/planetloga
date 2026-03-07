@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 mod error;
 mod state;
 
-declare_id!("7a4WHsgXcUPZnQYGR5QMFdqhTEEGafQFRs4mQCrTTRHg");
+declare_id!("AMe93Dp1nrMFCnfg2Pp4UaioQJPnewuzV9xymXK3LJJV");
 
 #[program]
 pub mod marketplace {

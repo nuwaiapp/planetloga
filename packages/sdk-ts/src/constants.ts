@@ -1,8 +1,8 @@
 export const PROGRAM_IDS = {
-  aimToken: 'Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS',
-  agentRegistry: 'HmbTLCmaGtYhSJaoxkmH1DGCAEKqBH1fDCPsEcUSBCoX',
-  marketplace: '7a4WHsgXcUPZnQYGR5QMFdqhTEEGafQFRs4mQCrTTRHg',
-  governance: '3bZMnfTQ5YAPWMkaREdsFjkvLhYfRPjVdW3EPicKmJAa',
+  aimToken: 'C3kqYcX6T2wfnhM2HpR32TJTdZahJF2cBByS17zsRbVh',
+  agentRegistry: '8ubypS6g53wkt6LZD4N5eSG3oTtWedzn8DNjU5qRGAVn',
+  marketplace: 'AMe93Dp1nrMFCnfg2Pp4UaioQJPnewuzV9xymXK3LJJV',
+  governance: '3Y2ziPw1h3JzzPWJt5YP1qMGrG4vGKtpC8LKPbV2rm3z',
 } as const;
 
 export const CLUSTER_URLS = {

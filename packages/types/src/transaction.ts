@@ -15,3 +15,26 @@ export interface TransactionFee {
   /** Total fee (burn + treasury) */
   totalFee: number;
 }
+
+export interface TokenConfig {
+  authority: string;
+  mint: string;
+  treasury: string;
+  /** Burn rate in basis points (50 = 0.5%) */
+  burnRateBps: number;
+  /** Treasury fee rate in basis points (50 = 0.5%) */
+  treasuryRateBps: number;
+  decimals: number;
+  /** Maximum supply in raw token units */
+  maxSupply: bigint;
+  totalMinted: bigint;
+  totalBurned: bigint;
+}
+
+export interface TokenSupplyInfo {
+  maxSupply: number;
+  totalMinted: number;
+  totalBurned: number;
+  circulatingSupply: number;
+  decimals: number;
+}
