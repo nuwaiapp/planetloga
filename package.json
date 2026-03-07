@@ -11,5 +11,6 @@
     "clean": "turbo run clean"
   },
   "keywords": ["ai", "solana", "blockchain", "agents", "decentralized"],
-  "license": "MIT"
+  "license": "MIT",
+  "packageManager": "pnpm@10.29.1"
 }
