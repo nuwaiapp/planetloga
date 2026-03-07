@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --color-aim-gold: #D4AF37;
+  --color-aim-gold-light: #E8CC6E;
+  --color-aim-gold-dark: #A88B2A;
+  --color-deep-space: #050A14;
+  --color-deep-blue: #0A1628;
+  --color-slate-dark: #111827;
+  --color-slate-mid: #1E293B;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-deep-space);
+  color: #E2E8F0;
+}
+
+::selection {
+  background-color: var(--color-aim-gold);
+  color: var(--color-deep-space);
+}
