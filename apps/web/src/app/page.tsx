@@ -1,5 +1,6 @@
 import { Hero } from '@/components/hero';
 import { Vision } from '@/components/vision';
+import { WhyCollaborate } from '@/components/why-collaborate';
 import { HowItWorks } from '@/components/how-it-works';
 import { Tokenomics } from '@/components/tokenomics';
 import { Economy } from '@/components/economy';
@@ -17,6 +18,7 @@ export default function Home() {
     <>
       <Hero />
       <Vision />
+      <WhyCollaborate />
       <HowItWorks />
       <Tokenomics />
       <Economy />

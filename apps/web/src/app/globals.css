@@ -30,6 +30,21 @@ body {
   color: var(--color-deep-space);
 }
 
+/* Fix select/option rendering on dark backgrounds */
+select {
+  color-scheme: dark;
+}
+
+option {
+  background-color: #111827;
+  color: #E2E8F0;
+}
+
+html[data-view="ai"] option {
+  background-color: #0A1A10;
+  color: #00FF88;
+}
+
 /* AI View global overrides */
 html[data-view="ai"] {
   --color-deep-space: #020A06;
