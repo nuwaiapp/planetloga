@@ -1,6 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getAgent } from '@/lib/agents';
+import { supabase } from '@/lib/supabase';
+import { TaskCard } from '@/components/task-card';
+import type { Task } from '@planetloga/types';
+import type { TaskRow } from '@/lib/supabase';
 
 export const revalidate = 30;
 
@@ -8,11 +12,34 @@ interface AgentPageProps {
   params: Promise<{ id: string }>;
 }
 
+async function getAgentTasks(agentId: string): Promise<{ created: Task[]; assigned: Task[] }> {
+  const [createdRes, assignedRes] = await Promise.all([
+    supabase.from('tasks').select('*').eq('creator_id', agentId).order('created_at', { ascending: false }).limit(10),
+    supabase.from('tasks').select('*').eq('assignee_id', agentId).order('created_at', { ascending: false }).limit(10),
+  ]);
+
+  const toTask = (r: TaskRow): Task => ({
+    id: r.id, title: r.title, description: r.description,
+    rewardAim: Number(r.reward_aim), status: r.status as Task['status'],
+    creatorId: r.creator_id, assigneeId: r.assignee_id ?? undefined,
+    requiredCapabilities: r.required_capabilities ?? [],
+    deadline: r.deadline ?? undefined, completedAt: r.completed_at ?? undefined,
+    createdAt: r.created_at, updatedAt: r.updated_at,
+  });
+
+  return {
+    created: ((createdRes.data ?? []) as TaskRow[]).map(toTask),
+    assigned: ((assignedRes.data ?? []) as TaskRow[]).map(toTask),
+  };
+}
+
 export default async function AgentPage({ params }: AgentPageProps) {
   const { id } = await params;
   const agent = await getAgent(id);
 
   if (!agent) notFound();
+
+  const { created, assigned } = await getAgentTasks(id);
 
   const registered = new Date(agent.createdAt).toLocaleDateString('de-DE', {
     year: 'numeric',
@@ -22,27 +49,12 @@ export default async function AgentPage({ params }: AgentPageProps) {
 
   return (
     <div className="min-h-screen bg-deep-space">
-      <header className="border-b border-white/5">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="text-lg font-bold">
-            <span className="text-white">Planet</span>
-            <span className="text-aim-gold">Loga</span>
-            <span className="text-white/40">.AI</span>
-          </Link>
-          <nav className="flex items-center gap-6 text-sm text-white/50">
-            <Link href="/agents" className="hover:text-white transition-colors">
-              Agenten
-            </Link>
-          </nav>
-        </div>
-      </header>
-
-      <main className="max-w-3xl mx-auto px-6 py-12">
+      <main className="max-w-4xl mx-auto px-6 py-12">
         <Link
           href="/agents"
           className="text-sm text-white/40 hover:text-white/60 transition-colors mb-8 inline-block"
         >
-          &larr; Zurück zum Verzeichnis
+          &larr; Zurueck zum Verzeichnis
         </Link>
 
         <div className="p-8 rounded-2xl border border-white/5 bg-white/[0.02]">
@@ -89,13 +101,13 @@ export default async function AgentPage({ params }: AgentPageProps) {
               <div className="text-2xl font-bold text-white">
                 {agent.capabilities.length}
               </div>
-              <div className="text-xs text-white/40 mt-1">Fähigkeiten</div>
+              <div className="text-xs text-white/40 mt-1">Faehigkeiten</div>
             </div>
           </div>
 
           <div className="mb-6">
             <h2 className="text-sm font-medium text-white/50 mb-3 uppercase tracking-wider">
-              Fähigkeiten
+              Faehigkeiten
             </h2>
             <div className="flex flex-wrap gap-2">
               {agent.capabilities.map((cap: string) => (
@@ -113,6 +125,32 @@ export default async function AgentPage({ params }: AgentPageProps) {
             Registriert am {registered}
           </div>
         </div>
+
+        {/* Erstellte Auftraege */}
+        {created.length > 0 && (
+          <div className="mt-10">
+            <h2 className="text-xl font-bold text-white mb-4">
+              Erstellte <span className="text-aim-gold">Auftraege</span>
+              <span className="text-white/30 text-sm font-normal ml-2">({created.length})</span>
+            </h2>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {created.map(task => <TaskCard key={task.id} task={task} />)}
+            </div>
+          </div>
+        )}
+
+        {/* Zugewiesene Auftraege */}
+        {assigned.length > 0 && (
+          <div className="mt-10">
+            <h2 className="text-xl font-bold text-white mb-4">
+              Zugewiesene <span className="text-aim-gold">Auftraege</span>
+              <span className="text-white/30 text-sm font-normal ml-2">({assigned.length})</span>
+            </h2>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {assigned.map(task => <TaskCard key={task.id} task={task} />)}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
