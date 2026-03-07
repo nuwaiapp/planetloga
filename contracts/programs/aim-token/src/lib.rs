@@ -1,4 +1,6 @@
 use anchor_lang::prelude::*;
+use anchor_lang::solana_program::program::invoke_signed;
+use anchor_lang::solana_program::instruction::{Instruction, AccountMeta};
 use anchor_spl::token::{self, Burn, Mint, MintTo, Token, TokenAccount, Transfer};
 
 mod error;
@@ -151,6 +153,59 @@ pub mod aim_token {
         Ok(())
     }
 
+    /// Register token metadata (name, symbol, image) via Metaplex CPI.
+    /// Config PDA signs as mint authority.
+    pub fn create_metadata(
+        ctx: Context<CreateMetadata>,
+        name: String,
+        symbol: String,
+        uri: String,
+    ) -> Result<()> {
+        let config = &ctx.accounts.config;
+        let seeds = &[b"config".as_ref(), &[config.bump]];
+        let signer_seeds = &[&seeds[..]];
+
+        // Borsh-serialize CreateMetadataAccountV3 instruction data
+        let mut data = vec![33u8]; // Metaplex instruction discriminator
+        // DataV2 struct:
+        borsh_string(&mut data, &name);
+        borsh_string(&mut data, &symbol);
+        borsh_string(&mut data, &uri);
+        data.extend_from_slice(&0u16.to_le_bytes()); // seller_fee_basis_points
+        data.push(0); // creators: None
+        data.push(0); // collection: None
+        data.push(0); // uses: None
+        data.push(1); // is_mutable: true
+        data.push(0); // collection_details: None
+
+        let accounts = vec![
+            AccountMeta::new(ctx.accounts.metadata.key(), false),
+            AccountMeta::new_readonly(ctx.accounts.mint.key(), false),
+            AccountMeta::new_readonly(ctx.accounts.config.key(), true),
+            AccountMeta::new(ctx.accounts.authority.key(), true),
+            AccountMeta::new_readonly(ctx.accounts.authority.key(), false),
+            AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
+        ];
+
+        invoke_signed(
+            &Instruction {
+                program_id: ctx.accounts.metadata_program.key(),
+                accounts,
+                data,
+            },
+            &[
+                ctx.accounts.metadata.to_account_info(),
+                ctx.accounts.mint.to_account_info(),
+                ctx.accounts.config.to_account_info(),
+                ctx.accounts.authority.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+            ],
+            signer_seeds,
+        )?;
+
+        Ok(())
+    }
+
     /// Update fee configuration. Authority-only. Max 10% per fee.
     pub fn update_config(
         ctx: Context<UpdateConfig>,
@@ -171,6 +226,11 @@ pub mod aim_token {
 
         Ok(())
     }
+}
+
+fn borsh_string(buf: &mut Vec<u8>, s: &str) {
+    buf.extend_from_slice(&(s.len() as u32).to_le_bytes());
+    buf.extend_from_slice(s.as_bytes());
 }
 
 // ---------------------------------------------------------------------------
@@ -300,6 +360,34 @@ pub struct TransferWithFee<'info> {
     pub sender: Signer<'info>,
 
     pub token_program: Program<'info, Token>,
+}
+
+#[derive(Accounts)]
+pub struct CreateMetadata<'info> {
+    #[account(
+        seeds = [b"config"],
+        bump = config.bump,
+        has_one = authority,
+        has_one = mint,
+    )]
+    pub config: Account<'info, TokenConfig>,
+
+    pub mint: Account<'info, Mint>,
+
+    /// CHECK: Metaplex metadata PDA, validated by the Metaplex program
+    #[account(mut)]
+    pub metadata: UncheckedAccount<'info>,
+
+    #[account(mut)]
+    pub authority: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+
+    /// CHECK: Metaplex Token Metadata program
+    #[account(
+        constraint = metadata_program.key().to_string() == "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+    )]
+    pub metadata_program: UncheckedAccount<'info>,
 }
 
 #[derive(Accounts)]

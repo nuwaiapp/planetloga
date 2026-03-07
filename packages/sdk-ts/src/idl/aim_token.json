@@ -8,6 +8,82 @@
   },
   "instructions": [
     {
+      "name": "create_metadata",
+      "docs": [
+        "Register token metadata (name, symbol, image) via Metaplex CPI.",
+        "Config PDA signs as mint authority."
+      ],
+      "discriminator": [
+        30,
+        35,
+        117,
+        134,
+        196,
+        139,
+        44,
+        25
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint",
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "metadata",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "metadata_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "symbol",
+          "type": "string"
+        },
+        {
+          "name": "uri",
+          "type": "string"
+        }
+      ]
+    },
+    {
       "name": "initialize",
       "docs": [
         "Step 1: Create the AIM token mint and config PDA."
