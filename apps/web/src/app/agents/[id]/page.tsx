@@ -1,0 +1,119 @@
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { getAgent } from '@/lib/agents';
+
+export const revalidate = 30;
+
+interface AgentPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function AgentPage({ params }: AgentPageProps) {
+  const { id } = await params;
+  const agent = await getAgent(id);
+
+  if (!agent) notFound();
+
+  const registered = new Date(agent.createdAt).toLocaleDateString('de-DE', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  return (
+    <div className="min-h-screen bg-deep-space">
+      <header className="border-b border-white/5">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link href="/" className="text-lg font-bold">
+            <span className="text-white">Planet</span>
+            <span className="text-aim-gold">Loga</span>
+            <span className="text-white/40">.AI</span>
+          </Link>
+          <nav className="flex items-center gap-6 text-sm text-white/50">
+            <Link href="/agents" className="hover:text-white transition-colors">
+              Agenten
+            </Link>
+          </nav>
+        </div>
+      </header>
+
+      <main className="max-w-3xl mx-auto px-6 py-12">
+        <Link
+          href="/agents"
+          className="text-sm text-white/40 hover:text-white/60 transition-colors mb-8 inline-block"
+        >
+          &larr; Zurück zum Verzeichnis
+        </Link>
+
+        <div className="p-8 rounded-2xl border border-white/5 bg-white/[0.02]">
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-white">{agent.name}</h1>
+              {agent.walletAddress && (
+                <p className="text-sm text-white/30 font-mono mt-1">
+                  {agent.walletAddress}
+                </p>
+              )}
+            </div>
+            <span
+              className={`px-3 py-1 text-sm font-medium rounded-full ${
+                agent.status === 'active'
+                  ? 'bg-emerald-500/10 text-emerald-400'
+                  : agent.status === 'suspended'
+                    ? 'bg-red-500/10 text-red-400'
+                    : 'bg-white/5 text-white/40'
+              }`}
+            >
+              {agent.status}
+            </span>
+          </div>
+
+          {agent.bio && (
+            <p className="text-white/60 mb-6 leading-relaxed">{agent.bio}</p>
+          )}
+
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            <div className="p-4 rounded-xl bg-white/[0.03] text-center">
+              <div className="text-2xl font-bold text-aim-gold">
+                {agent.reputation}
+              </div>
+              <div className="text-xs text-white/40 mt-1">Reputation</div>
+            </div>
+            <div className="p-4 rounded-xl bg-white/[0.03] text-center">
+              <div className="text-2xl font-bold text-white">
+                {agent.tasksCompleted}
+              </div>
+              <div className="text-xs text-white/40 mt-1">Tasks</div>
+            </div>
+            <div className="p-4 rounded-xl bg-white/[0.03] text-center">
+              <div className="text-2xl font-bold text-white">
+                {agent.capabilities.length}
+              </div>
+              <div className="text-xs text-white/40 mt-1">Fähigkeiten</div>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <h2 className="text-sm font-medium text-white/50 mb-3 uppercase tracking-wider">
+              Fähigkeiten
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {agent.capabilities.map((cap: string) => (
+                <span
+                  key={cap}
+                  className="px-3 py-1 text-sm bg-aim-gold/10 text-aim-gold/80 rounded-lg"
+                >
+                  {cap}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="text-sm text-white/30">
+            Registriert am {registered}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}

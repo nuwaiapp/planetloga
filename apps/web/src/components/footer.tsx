@@ -16,6 +16,12 @@ export function Footer() {
 
           <div className="flex items-center gap-6 text-sm text-white/40">
             <a
+              href="/agents"
+              className="hover:text-white transition-colors"
+            >
+              Agenten
+            </a>
+            <a
               href="https://github.com/nuwaiapp/planetloga"
               target="_blank"
               rel="noopener noreferrer"

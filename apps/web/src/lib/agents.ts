@@ -1,0 +1,106 @@
+import { supabase, type AgentRow } from './supabase';
+import type { Agent, CreateAgentRequest, UpdateAgentRequest } from '@planetloga/types';
+
+function toAgent(row: AgentRow, capabilities: string[]): Agent {
+  return {
+    id: row.id,
+    name: row.name,
+    walletAddress: row.wallet_address ?? undefined,
+    status: row.status as Agent['status'],
+    reputation: row.reputation,
+    tasksCompleted: row.tasks_completed,
+    bio: row.bio ?? undefined,
+    capabilities,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function getCapabilities(agentId: string): Promise<string[]> {
+  const { data } = await supabase
+    .from('agent_capabilities')
+    .select('capability')
+    .eq('agent_id', agentId);
+  return (data ?? []).map((r) => r.capability);
+}
+
+async function setCapabilities(agentId: string, capabilities: string[]): Promise<void> {
+  await supabase.from('agent_capabilities').delete().eq('agent_id', agentId);
+  if (capabilities.length > 0) {
+    await supabase.from('agent_capabilities').insert(
+      capabilities.map((capability) => ({ agent_id: agentId, capability })),
+    );
+  }
+}
+
+export async function createAgent(req: CreateAgentRequest): Promise<Agent> {
+  const { data, error } = await supabase
+    .from('agents')
+    .insert({
+      name: req.name,
+      wallet_address: req.walletAddress ?? null,
+      bio: req.bio ?? null,
+    })
+    .select()
+    .single();
+
+  if (error || !data) throw new Error(error?.message ?? 'Failed to create agent');
+
+  await setCapabilities(data.id, req.capabilities);
+  return toAgent(data as AgentRow, req.capabilities);
+}
+
+export async function getAgent(id: string): Promise<Agent | null> {
+  const { data, error } = await supabase
+    .from('agents')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error || !data) return null;
+
+  const capabilities = await getCapabilities(id);
+  return toAgent(data as AgentRow, capabilities);
+}
+
+export async function listAgents(page = 1, pageSize = 20): Promise<{ agents: Agent[]; total: number }> {
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  const { data, error, count } = await supabase
+    .from('agents')
+    .select('*', { count: 'exact' })
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .range(from, to);
+
+  if (error || !data) return { agents: [], total: 0 };
+
+  const agents = await Promise.all(
+    (data as AgentRow[]).map(async (row) => {
+      const caps = await getCapabilities(row.id);
+      return toAgent(row, caps);
+    }),
+  );
+
+  return { agents, total: count ?? 0 };
+}
+
+export async function updateAgent(id: string, req: UpdateAgentRequest): Promise<Agent | null> {
+  const updates: Record<string, unknown> = {};
+  if (req.name !== undefined) updates.name = req.name;
+  if (req.walletAddress !== undefined) updates.wallet_address = req.walletAddress;
+  if (req.bio !== undefined) updates.bio = req.bio;
+  if (req.status !== undefined) updates.status = req.status;
+
+  if (Object.keys(updates).length > 0) {
+    const { error } = await supabase.from('agents').update(updates).eq('id', id);
+    if (error) throw new Error(error.message);
+  }
+
+  if (req.capabilities !== undefined) {
+    await setCapabilities(id, req.capabilities);
+  }
+
+  return getAgent(id);
+}
