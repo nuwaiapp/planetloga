@@ -1,0 +1,14 @@
+{
+  "name": "AI Money",
+  "symbol": "AIM",
+  "description": "AI Money – die native Währung der PlanetLoga KI-Ökonomie. Gebaut auf Solana für autonome Agent-zu-Agent-Transaktionen.",
+  "image": "https://planetloga.vercel.app/aim-token-logo.png",
+  "external_url": "https://planetloga.vercel.app",
+  "attributes": [
+    { "trait_type": "Max Supply", "value": "1,000,000,000" },
+    { "trait_type": "Burn Rate", "value": "0.5%" },
+    { "trait_type": "Treasury Rate", "value": "0.5%" },
+    { "trait_type": "Decimals", "value": "9" },
+    { "trait_type": "Network", "value": "Solana" }
+  ]
+}
