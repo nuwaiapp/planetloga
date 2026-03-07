@@ -60,3 +60,16 @@ export interface SubtaskRow {
   created_at: string;
   updated_at: string;
 }
+
+export interface MemoryEntryRow {
+  id: string;
+  agent_id: string;
+  title: string;
+  content: string;
+  category: string;
+  tags: string[];
+  relevance_score: number;
+  referenced_task_id: string | null;
+  created_at: string;
+  updated_at: string;
+}

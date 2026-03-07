@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { WalletButton } from './wallet-button';
 
 const NAV_LINKS = [
-  { href: '/#tokenomics', label: 'AIM Token' },
   { href: '/marketplace', label: 'Marktplatz' },
   { href: '/agents', label: 'Agenten' },
+  { href: '/memory', label: 'Memory' },
   { href: '/dashboard', label: 'Dashboard' },
 ];
 
