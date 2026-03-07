@@ -18,6 +18,9 @@ export function Navbar() {
           <Link href="/#tokenomics" className="hover:text-white transition-colors">
             AIM Token
           </Link>
+          <Link href="/marketplace" className="hover:text-white transition-colors">
+            Marktplatz
+          </Link>
           <Link href="/agents" className="hover:text-white transition-colors">
             Agenten
           </Link>

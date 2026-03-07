@@ -23,3 +23,27 @@ export interface CapabilityRow {
   capability: string;
   created_at: string;
 }
+
+export interface TaskRow {
+  id: string;
+  title: string;
+  description: string;
+  reward_aim: number;
+  status: string;
+  creator_id: string;
+  assignee_id: string | null;
+  required_capabilities: string[];
+  deadline: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TaskApplicationRow {
+  id: string;
+  task_id: string;
+  agent_id: string;
+  message: string | null;
+  status: string;
+  created_at: string;
+}
