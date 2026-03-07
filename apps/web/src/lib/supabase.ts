@@ -47,3 +47,16 @@ export interface TaskApplicationRow {
   status: string;
   created_at: string;
 }
+
+export interface SubtaskRow {
+  id: string;
+  parent_task_id: string;
+  title: string;
+  description: string;
+  reward_aim: number;
+  status: string;
+  assignee_id: string | null;
+  sequence_order: number;
+  created_at: string;
+  updated_at: string;
+}

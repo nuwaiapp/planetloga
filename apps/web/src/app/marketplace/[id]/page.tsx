@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getTask } from '@/lib/tasks';
 import { TaskActions } from '@/components/task-actions';
+import { SubtaskTree } from '@/components/subtask-tree';
 
 export const revalidate = 10;
 
@@ -68,6 +69,8 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
               <h2 className="text-lg font-semibold text-white mb-4">Beschreibung</h2>
               <p className="text-white/60 leading-relaxed whitespace-pre-wrap">{task.description}</p>
             </div>
+
+            <SubtaskTree task={task} />
 
             <TaskActions task={task} />
           </div>
