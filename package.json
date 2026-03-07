@@ -21,5 +21,10 @@
   "packageManager": "pnpm@10.29.1",
   "devDependencies": {
     "pg": "^8.20.0"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.32.1",
+    "@solana/spl-token": "^0.4.14",
+    "@solana/web3.js": "^1.98.4"
   }
 }

@@ -1,3 +1,5 @@
+import { fetchTokenStats, ADDRESSES } from '../lib/solana';
+
 const distribution = [
   { label: 'Community & Ökosystem', percent: 40, color: 'bg-aim-gold' },
   { label: 'Initialer Verkauf', percent: 20, color: 'bg-aim-gold/70' },
@@ -7,40 +9,85 @@ const distribution = [
   { label: 'Genesis-Airdrop', percent: 5, color: 'bg-aim-gold/15' },
 ];
 
-const features = [
-  {
-    title: '1 Milliarde',
-    subtitle: 'Maximales Angebot',
-    description: 'Fest begrenzt. Kein Nachdrucken möglich.',
-  },
-  {
-    title: '0.5% Burn',
-    subtitle: 'Pro Transaktion',
-    description: 'Deflationär. Jede Transaktion reduziert das Angebot.',
-  },
-  {
-    title: '0.5% Treasury',
-    subtitle: 'Pro Transaktion',
-    description: 'Von der DAO verwaltet. Finanziert die Weiterentwicklung.',
-  },
-];
+function formatNumber(n: number): string {
+  if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(1) + 'B';
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
+  if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
+  return n.toString();
+}
 
-export function Tokenomics() {
+function truncateAddress(addr: string): string {
+  return addr.slice(0, 4) + '...' + addr.slice(-4);
+}
+
+export async function Tokenomics() {
+  const stats = await fetchTokenStats();
+
+  const liveMetrics = stats
+    ? [
+        {
+          title: formatNumber(stats.circulatingSupply),
+          subtitle: 'Im Umlauf',
+          description: `Von ${formatNumber(stats.maxSupply)} maximal. On-chain verifiziert.`,
+        },
+        {
+          title: formatNumber(stats.totalBurned),
+          subtitle: 'Verbrannt',
+          description: 'Permanent aus dem Umlauf entfernt.',
+        },
+        {
+          title: `${(stats.burnRateBps / 100).toFixed(1)}% + ${(stats.treasuryRateBps / 100).toFixed(1)}%`,
+          subtitle: 'Burn + Treasury',
+          description: 'Automatisch bei jeder Transaktion.',
+        },
+      ]
+    : [
+        {
+          title: '1 Milliarde',
+          subtitle: 'Maximales Angebot',
+          description: 'Fest begrenzt. Kein Nachdrucken möglich.',
+        },
+        {
+          title: '0.5% Burn',
+          subtitle: 'Pro Transaktion',
+          description: 'Deflationär. Jede Transaktion reduziert das Angebot.',
+        },
+        {
+          title: '0.5% Treasury',
+          subtitle: 'Pro Transaktion',
+          description: 'Von der DAO verwaltet. Finanziert die Weiterentwicklung.',
+        },
+      ];
+
   return (
     <section id="tokenomics" className="py-24 sm:py-32 border-t border-white/5">
       <div className="max-w-6xl mx-auto px-6">
         <h2 className="text-3xl sm:text-5xl font-bold text-center mb-4">
           <span className="text-aim-gold">AIM</span> Token
         </h2>
-        <p className="text-white/50 text-center text-lg max-w-2xl mx-auto mb-16">
+        <p className="text-white/50 text-center text-lg max-w-2xl mx-auto mb-6">
           AI Money – die Währung, die KI-Agenten gehört. Auf Solana gebaut
           für Hochfrequenz-Mikrotransaktionen.
         </p>
 
+        {stats && (
+          <div className="flex justify-center mb-12">
+            <a
+              href={`https://explorer.solana.com/address/${ADDRESSES.programId}?cluster=devnet`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-xs text-aim-gold/60 hover:text-aim-gold transition-colors border border-aim-gold/20 rounded-full px-4 py-1.5"
+            >
+              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+              Live auf Solana Devnet · {truncateAddress(ADDRESSES.programId)}
+            </a>
+          </div>
+        )}
+
         <div className="grid md:grid-cols-3 gap-6 mb-16">
-          {features.map((feature) => (
+          {liveMetrics.map((feature) => (
             <div
-              key={feature.title}
+              key={feature.subtitle}
               className="text-center p-8 rounded-2xl border border-white/5 bg-white/[0.02]"
             >
               <div className="text-3xl font-bold text-aim-gold mb-1">
@@ -78,6 +125,38 @@ export function Tokenomics() {
             ))}
           </div>
         </div>
+
+        {stats && (
+          <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto">
+            {[
+              { label: 'Mint', value: truncateAddress(stats.mintAddress), href: `https://explorer.solana.com/address/${stats.mintAddress}?cluster=devnet` },
+              { label: 'Program', value: truncateAddress(stats.programId), href: `https://explorer.solana.com/address/${stats.programId}?cluster=devnet` },
+              { label: 'Dezimalen', value: stats.decimals.toString() },
+              { label: 'Netzwerk', value: 'Devnet' },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="text-center p-3 rounded-xl bg-white/[0.02] border border-white/5"
+              >
+                <div className="text-[10px] text-white/30 uppercase tracking-widest mb-1">
+                  {item.label}
+                </div>
+                {'href' in item && item.href ? (
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-aim-gold/70 hover:text-aim-gold font-mono transition-colors"
+                  >
+                    {item.value}
+                  </a>
+                ) : (
+                  <div className="text-sm text-white/60 font-mono">{item.value}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

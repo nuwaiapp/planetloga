@@ -7,6 +7,8 @@ import { Genesis } from '@/components/genesis';
 import { Waitlist } from '@/components/waitlist';
 import { Footer } from '@/components/footer';
 
+export const revalidate = 60;
+
 export default function Home() {
   return (
     <>
