@@ -1,0 +1,46 @@
+---
+description: Git-Konventionen – Commits, Branches, PRs
+alwaysApply: true
+---
+
+# Git-Workflow
+
+## Conventional Commits
+
+Format: `type(scope): beschreibung`
+
+Typen:
+- `feat` – Neues Feature
+- `fix` – Bugfix
+- `refactor` – Code-Umbau ohne Verhaltensänderung
+- `docs` – Dokumentation
+- `test` – Tests hinzufügen/ändern
+- `chore` – Build, Dependencies, Tooling
+
+Scopes: `contracts`, `sdk`, `api`, `web`, `orchestrator`, `protocol`, `types`, `docs`
+
+Beispiele:
+```
+feat(contracts): add AIM token mint instruction
+fix(sdk): handle timeout in agent registration
+docs(architecture): add orchestration flow diagram
+```
+
+## Branches
+
+- `main` – Stabile Version
+- `feat/<name>` – Neues Feature
+- `fix/<name>` – Bugfix
+- `chore/<name>` – Tooling/Maintenance
+
+## Remote
+
+- Origin: `https://github.com/nuwaiapp/planetloga`
+- Nach jedem abgeschlossenen Feature/Fix pushen
+- Vercel deployed automatisch bei Push auf `main`
+
+## Commits
+
+- Atomare Commits: eine logische Änderung pro Commit
+- Commit-Message auf Englisch
+- Beschreibung im Imperativ ("add", nicht "added")

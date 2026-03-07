@@ -1,0 +1,20 @@
+[package]
+name = "aim-token"
+version = "0.1.0"
+description = "AIM (AI Money) – Nativer SPL Token der PlanetLoga-Plattform"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "aim_token"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = { workspace = true }
+anchor-spl = { workspace = true }

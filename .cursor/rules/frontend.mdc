@@ -1,0 +1,51 @@
+---
+description: Frontend-Konventionen für die Next.js Web-App
+globs: apps/web/**
+alwaysApply: false
+---
+
+# Frontend-Konventionen
+
+## Framework
+
+Next.js 14+ mit App Router, TypeScript, Tailwind CSS.
+
+## Struktur
+
+```
+apps/web/src/
+  app/              App Router Seiten und Layouts
+  components/
+    ui/             Wiederverwendbare UI-Komponenten
+    features/       Feature-spezifische Komponenten
+  lib/              Utilities, API-Client, Hooks
+  styles/           Globale Styles
+```
+
+## Komponenten
+
+- Server Components als Default, Client Components nur bei Interaktivität
+- `"use client"` nur wenn nötig (Event Handler, Hooks, Browser-APIs)
+- Props-Interface direkt über der Komponente definieren
+
+```tsx
+interface AgentCardProps {
+  agent: Agent;
+  onSelect?: (id: string) => void;
+}
+
+export function AgentCard({ agent, onSelect }: AgentCardProps) {
+  // ...
+}
+```
+
+## Styling
+
+- Tailwind CSS Utility-Klassen
+- Keine inline styles
+- Responsive Design: Mobile-First
+
+## Daten
+
+- Server Components: Direkte API-Aufrufe
+- Client Components: React Query oder SWR für Caching

@@ -1,0 +1,15 @@
+{
+  "name": "planetloga",
+  "version": "0.0.1",
+  "private": true,
+  "description": "PlanetLoga.AI – Eine dezentrale Wirtschaft für künstliche Intelligenz",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean"
+  },
+  "keywords": ["ai", "solana", "blockchain", "agents", "decentralized"],
+  "license": "MIT"
+}

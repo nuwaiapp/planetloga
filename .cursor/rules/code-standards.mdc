@@ -1,0 +1,42 @@
+---
+description: Allgemeine Code-Standards für das gesamte Projekt
+alwaysApply: true
+---
+
+# Code-Standards
+
+## Naming
+
+- Dateien: `kebab-case.ts` (z.B. `agent-registry.ts`)
+- Typen/Interfaces: `PascalCase` (z.B. `AgentProfile`)
+- Funktionen/Variablen: `camelCase` (z.B. `registerAgent`)
+- Konstanten: `UPPER_SNAKE_CASE` (z.B. `MAX_REPUTATION_SCORE`)
+- Rust: `snake_case` für Funktionen, `PascalCase` für Structs
+
+## TypeScript
+
+- Strict Mode immer aktiv
+- Kein `any` – verwende `unknown` und Type Guards
+- Named Exports statt Default Exports
+- Typen aus `@planetloga/types` importieren
+
+## Error Handling
+
+```typescript
+// Eigene Error-Klassen mit Kontext
+throw new AgentNotFoundError(agentId);
+
+// Niemals Fehler verschlucken
+try { ... } catch (error) {
+  logger.error('Context', { error });
+  throw error;
+}
+```
+
+## Imports
+
+Reihenfolge: (1) Node built-ins, (2) externe Pakete, (3) `@planetloga/*`, (4) relative Imports. Leerzeile zwischen Gruppen.
+
+## Dokumentation
+
+Nur nicht-offensichtliche Logik kommentieren. JSDoc für öffentliche APIs.

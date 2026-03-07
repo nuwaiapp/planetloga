@@ -1,0 +1,13 @@
+{
+  "name": "@planetloga/types",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Geteilte TypeScript-Typen für die PlanetLoga-Plattform",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "files": ["dist"]
+}

@@ -1,0 +1,38 @@
+---
+description: TypeScript-Konventionen für Pakete und Apps
+globs: "**/*.ts,**/*.tsx"
+alwaysApply: false
+---
+
+# TypeScript-Konventionen
+
+## Konfiguration
+
+Alle Pakete erben von `tsconfig.base.json` im Root:
+```json
+{ "extends": "../../tsconfig.base.json" }
+```
+
+## Typen
+
+- Geteilte Typen in `@planetloga/types` definieren, nie lokal duplizieren
+- `interface` für Objektstrukturen, `type` für Unions und Utility-Types
+- Generics mit beschreibenden Namen: `TAgent`, `TTask` (nicht `T`, `U`)
+
+## Module
+
+- Named Exports: `export function registerAgent()`
+- Barrel-Exports via `index.ts` pro Paket
+- Kein `export default`
+
+## Async
+
+- Immer `async/await` statt rohe Promises
+- Fehler mit try/catch und spezifischen Error-Klassen behandeln
+
+## Paketnamen
+
+Alle Pakete unter dem `@planetloga/` Scope:
+- `@planetloga/types`
+- `@planetloga/sdk-ts`
+- `@planetloga/protocol`

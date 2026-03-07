@@ -1,0 +1,48 @@
+---
+description: Test-Konventionen und -Standards
+globs: "**/*.test.*,**/*.spec.*"
+alwaysApply: false
+---
+
+# Test-Konventionen
+
+## Framework
+
+- TypeScript: Vitest
+- Solana Contracts: Anchor Test (TypeScript) + Rust Unit-Tests
+
+## Datei-Benennung
+
+- Unit-Tests: `<name>.test.ts` neben der Quelldatei
+- Integrationstests: `<name>.spec.ts` im `tests/`-Ordner
+
+## Teststruktur (AAA-Pattern)
+
+```typescript
+describe('AgentRegistry', () => {
+  it('should register a new agent with capabilities', () => {
+    // Arrange
+    const capabilities = ['data-analysis', 'text-generation'];
+
+    // Act
+    const agent = registerAgent({ capabilities });
+
+    // Assert
+    expect(agent.capabilities).toEqual(capabilities);
+    expect(agent.reputation).toBe(0);
+  });
+});
+```
+
+## Regeln
+
+- Jede öffentliche Funktion braucht mindestens einen Test
+- Edge Cases testen: leere Inputs, Fehler, Grenzwerte
+- Mocks sparsam einsetzen, echte Abhängigkeiten bevorzugen
+- Test-Beschreibungen als vollständige Sätze ("should ...")
+
+## Coverage-Ziele
+
+- `packages/*`: >= 80%
+- `contracts/`: >= 90% (Geld ist im Spiel)
+- `apps/*`: >= 60%

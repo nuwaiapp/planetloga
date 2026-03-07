@@ -1,0 +1,17 @@
+{
+  "name": "@planetloga/protocol",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Orchestrierungsprotokoll für die PlanetLoga-Plattform",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@planetloga/types": "workspace:*"
+  },
+  "files": ["dist"]
+}

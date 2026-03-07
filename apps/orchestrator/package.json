@@ -1,0 +1,19 @@
+{
+  "name": "@planetloga/orchestrator",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Orchestrator-Agent für automatische Aufgabenverteilung",
+  "main": "./dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@planetloga/types": "workspace:*",
+    "@planetloga/sdk-ts": "workspace:*",
+    "@planetloga/protocol": "workspace:*"
+  }
+}

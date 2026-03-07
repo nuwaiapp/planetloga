@@ -1,0 +1,28 @@
+[toolchain]
+anchor_version = "0.30.1"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+aim_token = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+agent_registry = "HmbTLCmaGtYhSJaoxkmH1DGCAEKqBH1fDCPsEcUSBCoX"
+marketplace = "7a4WHsgXcUPZnQYGR5QMFdqhTEEGafQFRs4mQCrTTRHg"
+governance = "3bZMnfTQ5YAPWMkaREdsFjkvLhYfRPjVdW3EPicKmJAa"
+
+[programs.devnet]
+aim_token = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+agent_registry = "HmbTLCmaGtYhSJaoxkmH1DGCAEKqBH1fDCPsEcUSBCoX"
+marketplace = "7a4WHsgXcUPZnQYGR5QMFdqhTEEGafQFRs4mQCrTTRHg"
+governance = "3bZMnfTQ5YAPWMkaREdsFjkvLhYfRPjVdW3EPicKmJAa"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "pnpm exec ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.spec.ts"

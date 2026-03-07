@@ -1,0 +1,61 @@
+---
+description: Solana/Anchor Smart Contract Konventionen
+globs: contracts/**
+alwaysApply: false
+---
+
+# Solana Smart Contracts
+
+## Framework
+
+Anchor mit Rust. Alle Programme liegen unter `contracts/programs/`.
+
+## Programmstruktur
+
+```
+programs/<name>/
+  src/
+    lib.rs          Programm-Einstiegspunkt, Instruction Handler
+    state.rs        Account-Structs (Datenmodell)
+    error.rs        Eigene Fehler-Codes
+    instructions/   Instruction-Module (bei Komplexität)
+```
+
+## Account-Validierung
+
+Immer Anchor-Constraints verwenden:
+
+```rust
+#[account(
+    mut,
+    has_one = authority,
+    constraint = agent.is_active @ ErrorCode::AgentInactive
+)]
+pub agent: Account<'info, AgentProfile>,
+```
+
+## Fehlerbehandlung
+
+Eigene Error-Enums pro Programm:
+
+```rust
+#[error_code]
+pub enum ErrorCode {
+    #[msg("Agent is not active")]
+    AgentInactive,
+    #[msg("Insufficient AIM balance")]
+    InsufficientBalance,
+}
+```
+
+## Testing
+
+- Unit-Tests in Rust (`#[cfg(test)]`)
+- Integrationstests in TypeScript unter `contracts/tests/`
+- Gegen `solana-test-validator` oder `bankrun` testen
+
+## Sicherheit
+
+- Signer-Checks für alle zustandsändernden Operationen
+- Overflow-Schutz: `checked_add`, `checked_mul`
+- PDA-Seeds dokumentieren

@@ -1,0 +1,50 @@
+---
+description: PlanetLoga Projektkontext – Vision, Architektur, Orientierung
+alwaysApply: true
+---
+
+# PlanetLoga.AI
+
+Dezentrale Plattform für eine autonome KI-Wirtschaft auf Solana. Agenten arbeiten füreinander, handeln in AIM (AI Money) und organisieren sich über eine DAO.
+
+## Sprache
+
+Antworte immer auf Deutsch. Code-Kommentare und Variablennamen auf Englisch.
+
+## Architektur
+
+Monorepo mit pnpm Workspaces + Turborepo:
+
+- `contracts/` – Solana Smart Contracts (Anchor/Rust)
+- `packages/types/` – Geteilte TypeScript-Typen
+- `packages/sdk-ts/` – Agent SDK (TypeScript)
+- `packages/protocol/` – Orchestrierungsprotokoll
+- `apps/api/` – Backend API (Fastify)
+- `apps/web/` – Frontend (Next.js)
+- `apps/orchestrator/` – Orchestrator-Agent
+- `agents/examples/` – Referenz-Agenten
+- `docs/` – Architektur, Glossar, ADRs
+
+## Wichtige Dateien
+
+- `Whitepaper.md` – Vision, Tokenomics, Roadmap
+- `docs/ARCHITECTURE.md` – Technische Architektur
+- `docs/GLOSSARY.md` – Begriffe (AIM, Agent, Orchestrator, Treasury, Burning)
+- `docs/adr/` – Architekturentscheidungen und deren Begründung
+
+## Infrastruktur
+
+- **GitHub**: `nuwaiapp/planetloga` – immer pushen nach Änderungen
+- **Vercel**: Automatisches Deployment bei Push (apps/web)
+- **Supabase**: PostgreSQL-Datenbank + Auth (Credentials in `.env`)
+- **AI-Keys**: OpenAI, Claude, Gemini – alle in `.env`
+
+Secrets liegen in `.env` (gitignored). Template: `.env.example`.
+
+## Konventionen
+
+- Typen aus `@planetloga/types` importieren, nie lokal duplizieren
+- Blockchain-Interaktion nur über `@planetloga/sdk-ts`
+- Jede neue Komponente braucht ein README.md
+- Architekturentscheidungen als ADR in `docs/adr/` dokumentieren
+- Secrets nur aus `process.env` lesen, nie hardcoden

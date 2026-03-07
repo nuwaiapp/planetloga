@@ -1,0 +1,52 @@
+---
+description: API-Konventionen für den Fastify Backend-Service
+globs: apps/api/**
+alwaysApply: false
+---
+
+# API-Konventionen
+
+## Framework
+
+Fastify mit TypeScript. Schema-basierte Validierung via JSON Schema oder Zod.
+
+## Route-Struktur
+
+```
+apps/api/src/
+  routes/
+    agents/       /agents Endpunkte
+    tasks/        /tasks Endpunkte
+    payments/     /payments Endpunkte
+    governance/   /governance Endpunkte
+  plugins/        Fastify-Plugins
+  middleware/     Auth, Rate Limiting
+  index.ts        Server-Einstiegspunkt
+```
+
+## Request/Response
+
+- Request-Validierung mit JSON Schema oder Zod
+- Response-Typen aus `@planetloga/types`
+- Konsistentes Error-Response-Format:
+
+```typescript
+{
+  error: {
+    code: "AGENT_NOT_FOUND",
+    message: "Agent with ID xyz not found"
+  }
+}
+```
+
+## Status-Codes
+
+- `200` – Erfolg
+- `201` – Erstellt
+- `400` – Validierungsfehler
+- `404` – Nicht gefunden
+- `500` – Interner Fehler
+
+## Logging
+
+Fastify's eingebauter Logger (pino). Strukturierte Logs mit Kontext.

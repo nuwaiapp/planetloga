@@ -1,0 +1,16 @@
+{
+  "name": "@planetloga/web",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Frontend für die PlanetLoga-Plattform",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "vitest run",
+    "clean": "rm -rf .next"
+  },
+  "dependencies": {
+    "@planetloga/types": "workspace:*"
+  }
+}
