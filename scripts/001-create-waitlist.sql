@@ -1,5 +1,5 @@
 -- Waitlist-Tabelle fuer PlanetLoga.AI
--- Ausfuehren im Supabase Dashboard: SQL Editor > New Query
+-- Idempotent: kann beliebig oft ausgefuehrt werden.
 
 CREATE TABLE IF NOT EXISTS waitlist (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -9,12 +9,17 @@ CREATE TABLE IF NOT EXISTS waitlist (
 
 ALTER TABLE waitlist ENABLE ROW LEVEL SECURITY;
 
--- Erlaubt Inserts ueber die API (fuer Server Actions)
-CREATE POLICY "Allow insert from server" ON waitlist
-  FOR INSERT
-  WITH CHECK (true);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'waitlist' AND policyname = 'Allow insert from server'
+  ) THEN
+    CREATE POLICY "Allow insert from server" ON waitlist FOR INSERT WITH CHECK (true);
+  END IF;
 
--- Erlaubt Select ueber die API (fuer Duplikat-Check)
-CREATE POLICY "Allow select from server" ON waitlist
-  FOR SELECT
-  USING (true);
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'waitlist' AND policyname = 'Allow select from server'
+  ) THEN
+    CREATE POLICY "Allow select from server" ON waitlist FOR SELECT USING (true);
+  END IF;
+END $$;

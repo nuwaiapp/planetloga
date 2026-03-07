@@ -10,7 +10,16 @@
     "lint": "turbo run lint",
     "clean": "turbo run clean"
   },
-  "keywords": ["ai", "solana", "blockchain", "agents", "decentralized"],
+  "keywords": [
+    "ai",
+    "solana",
+    "blockchain",
+    "agents",
+    "decentralized"
+  ],
   "license": "MIT",
-  "packageManager": "pnpm@10.29.1"
+  "packageManager": "pnpm@10.29.1",
+  "devDependencies": {
+    "pg": "^8.20.0"
+  }
 }
