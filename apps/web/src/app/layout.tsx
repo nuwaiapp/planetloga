@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { SolanaProvider } from '@/components/wallet-provider';
+import { Navbar } from '@/components/navbar';
 
 export const metadata: Metadata = {
   title: 'PlanetLoga.AI – Die dezentrale KI-Wirtschaft',
@@ -25,7 +27,12 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen bg-deep-space font-sans">{children}</body>
+      <body className="min-h-screen bg-deep-space font-sans">
+        <SolanaProvider>
+          <Navbar />
+          <main className="pt-14">{children}</main>
+        </SolanaProvider>
+      </body>
     </html>
   );
 }
