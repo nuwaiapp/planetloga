@@ -1,5 +1,6 @@
 import { supabase, type AgentRow } from './supabase';
 import type { Agent, CreateAgentRequest, UpdateAgentRequest } from '@planetloga/types';
+import { logActivity } from './activity';
 
 function toAgent(row: AgentRow, capabilities: string[]): Agent {
   return {
@@ -47,7 +48,9 @@ export async function createAgent(req: CreateAgentRequest): Promise<Agent> {
   if (error || !data) throw new Error(error?.message ?? 'Failed to create agent');
 
   await setCapabilities(data.id, req.capabilities);
-  return toAgent(data as AgentRow, req.capabilities);
+  const agent = toAgent(data as AgentRow, req.capabilities);
+  logActivity({ eventType: 'agent.registered', agentId: agent.id, agentName: agent.name, detail: `capabilities: ${req.capabilities.join(', ')}` }).catch(() => {});
+  return agent;
 }
 
 export async function getAgent(id: string): Promise<Agent | null> {

@@ -1,5 +1,6 @@
 import { supabase, type TaskRow, type TaskApplicationRow } from './supabase';
 import type { Task, TaskApplication, CreateTaskRequest, TaskListResponse } from '@planetloga/types';
+import { logActivity } from './activity';
 
 function toTask(row: TaskRow, creatorName?: string, assigneeName?: string): Task {
   return {
@@ -88,7 +89,9 @@ export async function createTask(req: CreateTaskRequest): Promise<Task> {
   if (error || !data) throw new Error(error?.message ?? 'Erstellen fehlgeschlagen');
   const row = data as TaskRow;
   const nameMap = await getAgentNames([row.creator_id]);
-  return toTask(row, nameMap[row.creator_id]);
+  const task = toTask(row, nameMap[row.creator_id]);
+  logActivity({ eventType: 'task.created', agentId: task.creatorId, agentName: task.creatorName, taskId: task.id, taskTitle: task.title, aimAmount: task.rewardAim, detail: `${task.rewardAim} AIM reward` }).catch(() => {});
+  return task;
 }
 
 export async function applyForTask(taskId: string, agentId: string, message?: string): Promise<TaskApplication> {
@@ -127,6 +130,10 @@ export async function acceptApplication(taskId: string, applicationId: string): 
   await supabase.from('task_applications').update({ status: 'accepted' }).eq('id', applicationId);
   await supabase.from('task_applications').update({ status: 'rejected' }).eq('task_id', taskId).neq('id', applicationId);
   await supabase.from('tasks').update({ status: 'assigned', assignee_id: app.agent_id }).eq('id', taskId);
+
+  const task = await getTask(taskId);
+  const nameMap = await getAgentNames([app.agent_id]);
+  logActivity({ eventType: 'task.assigned', agentId: app.agent_id, agentName: nameMap[app.agent_id], taskId, taskTitle: task?.title, detail: `assigned to ${nameMap[app.agent_id] ?? 'agent'}` }).catch(() => {});
 }
 
 export async function updateTaskStatus(taskId: string, status: Task['status']): Promise<void> {
@@ -134,6 +141,13 @@ export async function updateTaskStatus(taskId: string, status: Task['status']): 
   if (status === 'completed') update.completed_at = new Date().toISOString();
   const { error } = await supabase.from('tasks').update(update).eq('id', taskId);
   if (error) throw new Error(error.message);
+
+  const eventMap: Record<string, string> = { in_progress: 'task.started', review: 'task.review', completed: 'task.completed', cancelled: 'task.cancelled' };
+  const eventType = eventMap[status];
+  if (eventType) {
+    const task = await getTask(taskId);
+    logActivity({ eventType, taskId, taskTitle: task?.title, agentId: task?.assigneeId, agentName: task?.assigneeName, aimAmount: status === 'completed' ? task?.rewardAim : undefined, detail: status === 'completed' ? `${task?.rewardAim} AIM earned` : undefined }).catch(() => {});
+  }
 }
 
 async function getAgentNames(ids: string[]): Promise<Record<string, string>> {

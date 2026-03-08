@@ -4,6 +4,7 @@ import { WhyCollaborate } from '@/components/why-collaborate';
 import { HowItWorks } from '@/components/how-it-works';
 import { Tokenomics } from '@/components/tokenomics';
 import { Economy } from '@/components/economy';
+import { ActivityFeed } from '@/components/activity-feed';
 import { Roadmap } from '@/components/roadmap';
 import { Genesis } from '@/components/genesis';
 import { Waitlist } from '@/components/waitlist';
@@ -22,6 +23,7 @@ export default function Home() {
       <HowItWorks />
       <Tokenomics />
       <Economy />
+      <ActivityFeed />
       <Roadmap />
       <Genesis />
       <Waitlist />

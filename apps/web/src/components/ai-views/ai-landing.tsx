@@ -11,10 +11,35 @@ interface SystemStats {
   rewardVolume: number;
 }
 
+interface ActivityEvent {
+  id: string;
+  eventType: string;
+  agentName?: string;
+  taskTitle?: string;
+  detail?: string;
+  aimAmount?: number;
+  createdAt: string;
+}
+
+const EVENT_PREFIX: Record<string, string> = {
+  'agent.registered': 'AGN.NEW',
+  'task.created': 'MKT.NEW',
+  'task.assigned': 'MKT.ASGN',
+  'task.started': 'MKT.WORK',
+  'task.review': 'MKT.REVW',
+  'task.completed': 'MKT.DONE',
+  'task.cancelled': 'MKT.CANC',
+  'task.decomposed': 'ORC.SPLIT',
+  'memory.created': 'MEM.WRITE',
+  'memory.upvoted': 'MEM.VOTE',
+  'system.info': 'SYS.INFO',
+};
+
 export function AILanding() {
   const [stats, setStats] = useState<SystemStats | null>(null);
   const [time, setTime] = useState(Date.now());
   const [logLines, setLogLines] = useState<string[]>([]);
+  const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([]);
 
   useEffect(() => {
     const interval = setInterval(() => setTime(Date.now()), 1000);
@@ -24,10 +49,11 @@ export function AILanding() {
   useEffect(() => {
     async function load() {
       try {
-        const [agents, tasks, memory] = await Promise.all([
+        const [agents, tasks, memory, activity] = await Promise.all([
           fetch('/api/agents').then(r => r.json()),
           fetch('/api/tasks').then(r => r.json()),
           fetch('/api/memory').then(r => r.json()),
+          fetch('/api/activity?limit=30').then(r => r.json()),
         ]);
         setStats({
           agents: agents.total ?? 0,
@@ -36,35 +62,35 @@ export function AILanding() {
           memory: memory.total ?? 0,
           rewardVolume: (tasks.tasks ?? []).reduce((s: number, t: { rewardAim: number }) => s + t.rewardAim, 0),
         });
+        setActivityEvents((activity.events ?? []).reverse());
       } catch { /* fallback */ }
     }
     load();
   }, []);
 
   useEffect(() => {
-    const events = [
-      'SYS.BOOT :: PlanetLoga v0.1.0-genesis initialized',
-      'NET.PEER :: Connected to Solana Devnet cluster',
-      'TOK.MINT :: AIM Token contract active @ C3kq...RbVh',
-      `AGN.POOL :: ${stats?.agents ?? '...'} agents registered in swarm`,
-      `MKT.OPEN :: ${stats?.openTasks ?? '...'} tasks awaiting assignment`,
-      `MEM.SYNC :: ${stats?.memory ?? '...'} knowledge entries in collective memory`,
-      'ORC.READY :: Orchestration protocol standing by',
-      'SYS.STATUS :: All subsystems nominal',
-    ];
+    if (activityEvents.length === 0) return;
 
     let i = 0;
     const interval = setInterval(() => {
-      if (i < events.length) {
-        setLogLines(prev => [...prev, `[${new Date().toISOString().slice(11, 19)}] ${events[i]}`]);
+      if (i < activityEvents.length) {
+        const e = activityEvents[i];
+        const prefix = EVENT_PREFIX[e.eventType] ?? 'SYS.INFO';
+        const ts = new Date(e.createdAt).toISOString().slice(11, 19);
+        let line = `[${ts}] ${prefix} :: `;
+        if (e.agentName) line += `${e.agentName} `;
+        if (e.taskTitle) line += `"${e.taskTitle}" `;
+        if (e.aimAmount) line += `[${e.aimAmount} AIM] `;
+        if (e.detail && !e.taskTitle) line += e.detail;
+        setLogLines(prev => [...prev, line.trim()]);
         i++;
       } else {
         clearInterval(interval);
       }
-    }, 400);
+    }, 200);
 
     return () => clearInterval(interval);
-  }, [stats]);
+  }, [activityEvents]);
 
   const ts = new Date(time);
 
@@ -93,13 +119,13 @@ export function AILanding() {
           {/* Boot Log */}
           <div className="border border-[#0A2A18] p-4">
             <div className="text-xs text-[#00FF88]/40 mb-2">// SYSTEM LOG</div>
-            <div className="space-y-0.5 text-xs">
+            <div className="space-y-0.5 text-xs max-h-72 overflow-y-auto">
               {logLines.map((line, i) => (
                 <div key={i} className={i === logLines.length - 1 ? 'ai-pulse' : 'text-[#00FF88]/60'}>
                   {line}
                 </div>
               ))}
-              {logLines.length < 8 && <span className="ai-cursor text-[#00FF88]/40" />}
+              {logLines.length < activityEvents.length && <span className="ai-cursor text-[#00FF88]/40" />}
             </div>
           </div>
 

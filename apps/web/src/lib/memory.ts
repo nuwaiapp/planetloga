@@ -1,4 +1,5 @@
 import { supabase, type MemoryEntryRow } from './supabase';
+import { logActivity } from './activity';
 
 export interface MemoryEntry {
   id: string;
@@ -96,7 +97,10 @@ export async function createMemory(req: CreateMemoryRequest): Promise<MemoryEntr
     .single();
 
   if (error || !data) throw new Error(error?.message ?? 'Speichern fehlgeschlagen');
-  return toMemoryEntry(data as MemoryEntryRow);
+  const entry = toMemoryEntry(data as MemoryEntryRow);
+  const nameMap = await getAgentNames([entry.agentId]);
+  logActivity({ eventType: 'memory.created', agentId: entry.agentId, agentName: nameMap[entry.agentId], memoryId: entry.id, detail: entry.title }).catch(() => {});
+  return entry;
 }
 
 export async function upvoteMemory(id: string): Promise<void> {
