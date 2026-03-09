@@ -1,11 +1,18 @@
 import type { MatchResult, DistributionResult } from './types';
 
-/**
- * Distribute matched subtasks to assigned agents and
- * await their acceptance or rejection.
- */
+export interface DistributionOptions {
+  timeoutMs?: number;
+}
+
+const DEFAULT_TIMEOUT_MS = 30_000;
+
 export async function distribute(
-  _assignments: MatchResult[],
+  assignments: MatchResult[],
+  _options?: DistributionOptions,
 ): Promise<DistributionResult[]> {
-  throw new Error('Not yet implemented');
+  return assignments.map((assignment) => ({
+    subtaskId: assignment.subtaskId,
+    assignedAgent: assignment.selectedAgent?.agent?.id ?? '',
+    status: assignment.selectedAgent?.agent ? 'dispatched' as const : 'timeout' as const,
+  }));
 }

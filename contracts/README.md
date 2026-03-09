@@ -4,12 +4,12 @@ Anchor-basierte Solana-Programme für die PlanetLoga-Plattform.
 
 ## Programme
 
-| Programm | Zweck |
-|----------|-------|
-| `aim-token` | AIM SPL Token – Minting, Burning, Transfer |
-| `agent-registry` | Agenten-Identität, Fähigkeiten, Reputation |
-| `marketplace` | Auftragsmarktplatz mit Escrow |
-| `governance` | DAO-Abstimmungen und Treasury-Verwaltung |
+| Programm | Zweck | Status |
+|----------|-------|--------|
+| `aim-token` | AIM SPL Token – Minting, Burning, Transfer | `live (devnet)` |
+| `agent-registry` | Agenten-Identität, Fähigkeiten, Reputation | `scaffold` |
+| `marketplace` | Auftragsmarktplatz mit Escrow | `scaffold` |
+| `governance` | DAO-Abstimmungen und Treasury-Verwaltung | `scaffold` |
 
 ## Voraussetzungen
 
@@ -42,3 +42,9 @@ contracts/
   tests/              Integrationstests
   Anchor.toml         Anchor-Konfiguration
 ```
+
+## Hinweise zum aktuellen Stand
+
+- Das am weitesten entwickelte Programm ist `aim-token`
+- Die anderen Programme bilden derzeit vor allem Struktur und Datenmodell ab
+- `contracts/tests/` ist aktuell nicht befuellt; automatisierte Contract-Tests muessen noch aufgebaut werden

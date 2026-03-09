@@ -1,4 +1,5 @@
-import { supabase, type SubtaskRow } from './supabase';
+import { adminSupabase, publicSupabase, type SubtaskRow } from './supabase';
+import { AppError } from './errors';
 
 export interface SubtaskInput {
   title: string;
@@ -38,13 +39,15 @@ function toSubtask(row: SubtaskRow, assigneeName?: string): Subtask {
 }
 
 export async function getSubtasks(parentTaskId: string): Promise<Subtask[]> {
-  const { data, error } = await supabase
+  const { data, error } = await publicSupabase
     .from('subtasks')
     .select('*')
     .eq('parent_task_id', parentTaskId)
     .order('sequence_order', { ascending: true });
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    throw new AppError('SUBTASKS_FAILED', error.message, 500, { cause: error });
+  }
 
   const rows = (data ?? []) as SubtaskRow[];
   const assigneeIds = rows.filter(r => r.assignee_id).map(r => r.assignee_id!);
@@ -62,14 +65,16 @@ export async function decompose(parentTaskId: string, subtasks: SubtaskInput[]):
     sequence_order: i,
   }));
 
-  const { data, error } = await supabase
+  const { data, error } = await adminSupabase
     .from('subtasks')
     .insert(inserts)
     .select('*');
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    throw new AppError('DECOMPOSE_FAILED', error.message, 500, { cause: error });
+  }
 
-  await supabase.from('tasks').update({ status: 'assigned' }).eq('id', parentTaskId).eq('status', 'open');
+  await adminSupabase.from('tasks').update({ status: 'assigned' }).eq('id', parentTaskId).eq('status', 'open');
 
   return ((data ?? []) as SubtaskRow[]).map(r => toSubtask(r));
 }
@@ -79,13 +84,13 @@ export async function autoMatch(parentTaskId: string): Promise<{ matched: number
   const open = subtasks.filter(s => s.status === 'open' && !s.assigneeId);
   if (open.length === 0) return { matched: 0, total: subtasks.length };
 
-  const { data: agents } = await supabase
+  const { data: agents } = await adminSupabase
     .from('agents')
     .select('id, name, reputation')
     .eq('status', 'active')
     .order('reputation', { ascending: false });
 
-  const { data: caps } = await supabase
+  const { data: caps } = await adminSupabase
     .from('agent_capabilities')
     .select('agent_id, capability');
 
@@ -95,7 +100,7 @@ export async function autoMatch(parentTaskId: string): Promise<{ matched: number
     agentCaps[c.agent_id].push(c.capability);
   }
 
-  const { data: parentTask } = await supabase.from('tasks').select('creator_id').eq('id', parentTaskId).single();
+  const { data: parentTask } = await adminSupabase.from('tasks').select('creator_id').eq('id', parentTaskId).single();
   const creatorId = parentTask?.creator_id;
 
   let matched = 0;
@@ -112,7 +117,7 @@ export async function autoMatch(parentTaskId: string): Promise<{ matched: number
     });
 
     if (bestAgent) {
-      await supabase.from('subtasks').update({ assignee_id: bestAgent.id, status: 'assigned' }).eq('id', sub.id);
+      await adminSupabase.from('subtasks').update({ assignee_id: bestAgent.id, status: 'assigned' }).eq('id', sub.id);
       usedAgents.add(bestAgent.id);
       matched++;
     }
@@ -122,13 +127,15 @@ export async function autoMatch(parentTaskId: string): Promise<{ matched: number
 }
 
 export async function updateSubtaskStatus(subtaskId: string, status: string): Promise<void> {
-  const { error } = await supabase.from('subtasks').update({ status }).eq('id', subtaskId);
-  if (error) throw new Error(error.message);
+  const { error } = await adminSupabase.from('subtasks').update({ status }).eq('id', subtaskId);
+  if (error) {
+    throw new AppError('UPDATE_FAILED', error.message, 500, { cause: error });
+  }
 }
 
 async function getAgentNames(ids: string[]): Promise<Record<string, string>> {
   if (ids.length === 0) return {};
-  const { data } = await supabase.from('agents').select('id, name').in('id', ids);
+  const { data } = await publicSupabase.from('agents').select('id, name').in('id', ids);
   const map: Record<string, string> = {};
   for (const row of data ?? []) map[row.id] = row.name;
   return map;

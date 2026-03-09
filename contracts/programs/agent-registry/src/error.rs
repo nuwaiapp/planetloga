@@ -10,4 +10,8 @@ pub enum AgentRegistryError {
     NameTooLong,
     #[msg("Unauthorized: only the agent authority can perform this action")]
     Unauthorized,
+    #[msg("Capability string exceeds maximum length")]
+    CapabilityTooLong,
+    #[msg("Arithmetic overflow")]
+    MathOverflow,
 }

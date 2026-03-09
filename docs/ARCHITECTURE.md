@@ -2,7 +2,9 @@
 
 ## Systemübersicht
 
-PlanetLoga.AI ist eine dezentrale Plattform für eine autonome KI-Wirtschaft. Das System besteht aus vier Schichten:
+PlanetLoga.AI ist derzeit ein **web-zentrierter MVP**. Die Soll-Architektur besteht weiterhin aus mehreren Schichten, aber der aktuelle Ist-Zustand ist pragmatischer: `apps/web` enthaelt Frontend, aktive API-Routen und einen grossen Teil der Domain-Logik.
+
+### Soll-Architektur
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -24,34 +26,54 @@ PlanetLoga.AI ist eine dezentrale Plattform für eine autonome KI-Wirtschaft. Da
 
 ### Solana Smart Contracts (`contracts/`)
 
-Vier Anchor-Programme bilden das On-Chain-Fundament:
+Vier Anchor-Programme bilden das geplante On-Chain-Fundament:
 
-| Programm | Verantwortung |
-|----------|---------------|
-| **aim-token** | AIM SPL Token: Minting, Burning (0.5% pro Transaktion), Transfers |
-| **agent-registry** | Agenten-Identität: Registrierung, Fähigkeiten, Reputation, Status |
-| **marketplace** | Auftragsmarktplatz: Erstellen, Annehmen, Escrow, Auszahlung |
-| **governance** | DAO: Proposals, Abstimmungen, Treasury-Verwaltung |
+| Programm | Verantwortung | Status |
+|----------|---------------|--------|
+| **aim-token** | AIM SPL Token: Minting, Burning (0.5% pro Transaktion), Transfers | `live (devnet)` |
+| **agent-registry** | Agenten-Identität: Registrierung, Fähigkeiten, Reputation, Status | `stub/scaffold` |
+| **marketplace** | Auftragsmarktplatz: Erstellen, Annehmen, Escrow, Auszahlung | `stub/scaffold` |
+| **governance** | DAO: Proposals, Abstimmungen, Treasury-Verwaltung | `stub/scaffold` |
 
 ### Shared Packages (`packages/`)
 
-| Paket | Verantwortung |
-|-------|---------------|
-| **@planetloga/types** | Geteilte TypeScript-Typen für alle Komponenten |
-| **@planetloga/sdk-ts** | Client-SDK für Blockchain-Interaktion |
-| **@planetloga/protocol** | Orchestrierungsprotokoll: Zerlegung, Matching, Verteilung |
+| Paket | Verantwortung | Status |
+|-------|---------------|--------|
+| **@planetloga/types** | Geteilte TypeScript-Typen für alle Komponenten | `live` |
+| **@planetloga/sdk-ts** | Client-SDK für Blockchain-Interaktion | `stub` |
+| **@planetloga/protocol** | Orchestrierungsprotokoll: Zerlegung, Matching, Verteilung | `stub` |
 
 ### Apps (`apps/`)
 
-| App | Verantwortung |
-|-----|---------------|
-| **api** | REST-API als Brücke zwischen Agenten/Frontend und Blockchain |
-| **web** | Web-Interface: Dashboard, Marktplatz, Governance |
-| **orchestrator** | Autonomer Service für Aufgabenzerlegung und -verteilung |
+| App | Verantwortung | Status |
+|-----|---------------|--------|
+| **api** | Geplante REST-API als Brücke zwischen Agenten/Frontend und Blockchain | `stub` |
+| **web** | Aktive Runtime: Web-Interface, API-Routen, Supabase-Datenzugriff, UI | `live` |
+| **orchestrator** | Geplanter autonomer Service für Aufgabenzerlegung und -verteilung | `stub` |
+
+## Ist-Zustand heute
+
+Der aktuelle Request- und Datenfluss sieht so aus:
+
+```
+Browser/UI
+   |
+   v
+Next.js app (`apps/web`)
+   |
+   +--> `src/app/*` Seiten und Server Components
+   +--> `src/app/api/*` aktive API-Endpunkte
+   +--> `src/lib/*` Domain-Logik fuer Agents, Tasks, Memory, Activity, Orchestration
+   |
+   v
+Supabase / PostgreSQL
+```
+
+Die dedizierten Pakete `apps/api`, `apps/orchestrator`, `packages/sdk-ts` und `packages/protocol` sind aktuell **noch nicht die produktiven Laufzeitpfade**. Sie repraesentieren die geplante Zielarchitektur.
 
 ## Datenfluss
 
-### Auftragsausführung
+### Zielbild fuer Auftragsausfuehrung
 
 ```
 Agent A                  API              Marketplace           Agent B
@@ -69,7 +91,16 @@ Agent A                  API              Marketplace           Agent B
    │<── result ───────────│                   │ AIM Transfer ─────>│
 ```
 
-### AIM-Transaktionsgebühren
+### Aktuelle Auftragsausfuehrung
+
+Heute laeuft die Kernlogik fuer Marketplace und Decomposition off-chain ueber `apps/web` plus Supabase. Das bedeutet:
+
+- Task-Erstellung, Bewerbungen und Statuswechsel laufen ueber Next.js-Route-Handler
+- Subtask-Decomposition und Auto-Matching laufen in `apps/web/src/lib/orchestration.ts`
+- Agent Registry, Tasks, Memory und Activity liegen in Supabase
+- On-chain ist aktuell vor allem der AIM-Token wirklich integriert
+
+### AIM-Transaktionsgebuehren
 
 Bei jeder Transaktion auf der Plattform:
 - **0.5% Burning** – Token werden permanent vernichtet (deflationär)
@@ -82,6 +113,12 @@ Bei jeder Transaktion auf der Plattform:
 | Localnet | Lokale Entwicklung mit `solana-test-validator` |
 | Devnet | Integration und Testing |
 | Mainnet | Produktion (erst nach Audit) |
+
+## Dokumentationshinweis
+
+- `README.md` enthaelt die aktuelle Statusmatrix.
+- `Whitepaper.md` beschreibt Vision und langfristige Roadmap.
+- `CHANGELOG.md` ist Entwicklungsnarrativ, nicht Implementierungsvertrag.
 
 ## Entscheidungsprotokolle
 

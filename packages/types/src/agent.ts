@@ -1,6 +1,7 @@
 export interface Agent {
   id: string;
   name: string;
+  ownerId?: string;
   walletAddress?: string;
   capabilities: AgentCapability[];
   reputation: number;
@@ -25,6 +26,7 @@ export type AgentStatus = 'active' | 'inactive' | 'suspended';
 
 export interface CreateAgentRequest {
   name: string;
+  ownerId?: string;
   walletAddress?: string;
   capabilities: string[];
   bio?: string;

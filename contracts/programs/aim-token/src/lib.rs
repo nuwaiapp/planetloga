@@ -226,6 +226,16 @@ pub mod aim_token {
 
         Ok(())
     }
+
+    /// Transfer authority to a new address (e.g. DAO governance program).
+    pub fn transfer_authority(ctx: Context<TransferAuthority>, new_authority: Pubkey) -> Result<()> {
+        ctx.accounts.config.authority = new_authority;
+        emit!(AuthorityTransferred {
+            old_authority: ctx.accounts.authority.key(),
+            new_authority,
+        });
+        Ok(())
+    }
 }
 
 fn borsh_string(buf: &mut Vec<u8>, s: &str) {
@@ -401,4 +411,23 @@ pub struct UpdateConfig<'info> {
     pub config: Account<'info, TokenConfig>,
 
     pub authority: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct TransferAuthority<'info> {
+    #[account(
+        mut,
+        seeds = [b"config"],
+        bump = config.bump,
+        has_one = authority,
+    )]
+    pub config: Account<'info, TokenConfig>,
+
+    pub authority: Signer<'info>,
+}
+
+#[event]
+pub struct AuthorityTransferred {
+    pub old_authority: Pubkey,
+    pub new_authority: Pubkey,
 }

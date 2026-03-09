@@ -1,6 +1,6 @@
 ---
-description: API-Konventionen für den Fastify Backend-Service
-globs: apps/api/**
+description: API-Konventionen für aktive und geplante HTTP-Schichten
+globs: apps/api/**,apps/web/src/app/api/**,apps/web/src/lib/**
 alwaysApply: false
 ---
 
@@ -8,26 +8,32 @@ alwaysApply: false
 
 ## Framework
 
-Fastify mit TypeScript. Schema-basierte Validierung via JSON Schema oder Zod.
+Aktuell liegen die aktiven HTTP-Endpunkte in `apps/web/src/app/api/**`.
+`apps/api/**` ist die geplante spätere Extraktion.
+
+Schema-basierte Validierung ist Pflicht, bevorzugt via Zod.
 
 ## Route-Struktur
 
 ```
+apps/web/src/app/api/
+  agents/
+  tasks/
+  memory/
+  activity/
+
 apps/api/src/
   routes/
-    agents/       /agents Endpunkte
-    tasks/        /tasks Endpunkte
-    payments/     /payments Endpunkte
-    governance/   /governance Endpunkte
-  plugins/        Fastify-Plugins
-  middleware/     Auth, Rate Limiting
-  index.ts        Server-Einstiegspunkt
+  plugins/
+  middleware/
+  index.ts
 ```
 
 ## Request/Response
 
 - Request-Validierung mit JSON Schema oder Zod
 - Response-Typen aus `@planetloga/types`
+- Param-, Query- und Body-Validierung konsistent behandeln, nicht ad hoc pro Route
 - Konsistentes Error-Response-Format:
 
 ```typescript
@@ -44,9 +50,24 @@ apps/api/src/
 - `200` – Erfolg
 - `201` – Erstellt
 - `400` – Validierungsfehler
+- `409` – Konflikt / doppelter Zustand
 - `404` – Nicht gefunden
 - `500` – Interner Fehler
 
 ## Logging
 
-Fastify's eingebauter Logger (pino). Strukturierte Logs mit Kontext.
+- Unerwartete Serverfehler strukturiert loggen
+- Keine stillen Fehler in Server-Logik (`catch {}` oder `.catch(() => {})` sind nicht erlaubt)
+- Erwartete Fachfehler dürfen als kontrollierte Error-Responses zurückgegeben werden
+
+## Sicherheitsregeln
+
+- Schreiboperationen für Kernobjekte dürfen nicht über öffentliche Clients laufen
+- Öffentliche Lesezugriffe und privilegierte Server-Zugriffe klar trennen
+- Keine Route darf Service-Role-Zugriff in Browser-Code leaken
+- Änderungen an Schreibpfaden müssen die dokumentierten Trust Boundaries in `docs/SECURITY.md` respektieren
+
+## Architekturdisziplin
+
+- Solange `apps/web` der Runtime-Kern ist, dort sauber härten statt neue parallele API-Schichten halb anzufangen
+- Keine Route als "live" dokumentieren, wenn sie nur Stub oder Zielarchitektur ist

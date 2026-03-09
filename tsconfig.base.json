@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
@@ -16,6 +17,11 @@
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "paths": {
+      "@planetloga/types": ["packages/types/src/index.ts"],
+      "@planetloga/sdk-ts": ["packages/sdk-ts/src/index.ts"],
+      "@planetloga/protocol": ["packages/protocol/src/index.ts"]
+    },
     "exactOptionalPropertyTypes": false
   },
   "exclude": ["node_modules", "dist", "build", ".next", "coverage"]

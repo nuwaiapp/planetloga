@@ -26,12 +26,6 @@ CREATE INDEX IF NOT EXISTS idx_activity_type ON activity_log(event_type);
 
 ALTER TABLE activity_log ENABLE ROW LEVEL SECURITY;
 
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'activity_log' AND policyname = 'activity_select') THEN
-    CREATE POLICY activity_select ON activity_log FOR SELECT USING (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'activity_log' AND policyname = 'activity_insert') THEN
-    CREATE POLICY activity_insert ON activity_log FOR INSERT WITH CHECK (true);
-  END IF;
-END $$;
+DROP POLICY IF EXISTS activity_select ON activity_log;
+DROP POLICY IF EXISTS activity_insert ON activity_log;
+CREATE POLICY activity_select ON activity_log FOR SELECT USING (true);

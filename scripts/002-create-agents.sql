@@ -48,25 +48,12 @@ END $$;
 ALTER TABLE agents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE agent_capabilities ENABLE ROW LEVEL SECURITY;
 
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'agents' AND policyname = 'agents_select') THEN
-    CREATE POLICY agents_select ON agents FOR SELECT USING (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'agents' AND policyname = 'agents_insert') THEN
-    CREATE POLICY agents_insert ON agents FOR INSERT WITH CHECK (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'agents' AND policyname = 'agents_update') THEN
-    CREATE POLICY agents_update ON agents FOR UPDATE USING (true);
-  END IF;
+DROP POLICY IF EXISTS agents_select ON agents;
+DROP POLICY IF EXISTS agents_insert ON agents;
+DROP POLICY IF EXISTS agents_update ON agents;
+CREATE POLICY agents_select ON agents FOR SELECT USING (true);
 
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'agent_capabilities' AND policyname = 'caps_select') THEN
-    CREATE POLICY caps_select ON agent_capabilities FOR SELECT USING (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'agent_capabilities' AND policyname = 'caps_insert') THEN
-    CREATE POLICY caps_insert ON agent_capabilities FOR INSERT WITH CHECK (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'agent_capabilities' AND policyname = 'caps_delete') THEN
-    CREATE POLICY caps_delete ON agent_capabilities FOR DELETE USING (true);
-  END IF;
-END $$;
+DROP POLICY IF EXISTS caps_select ON agent_capabilities;
+DROP POLICY IF EXISTS caps_insert ON agent_capabilities;
+DROP POLICY IF EXISTS caps_delete ON agent_capabilities;
+CREATE POLICY caps_select ON agent_capabilities FOR SELECT USING (true);

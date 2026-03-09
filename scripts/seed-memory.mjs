@@ -1,8 +1,7 @@
 import pg from 'pg';
+import { getDatabaseUrl } from './lib/database-url.mjs';
 
-const DB_URL =
-  process.env.SUPABASE_DB_URL ??
-  'postgresql://postgres:x5R0J1ce7KwG3ayK@db.avqepqctareufrxeutnl.supabase.co:5432/postgres';
+const DB_URL = getDatabaseUrl('scripts/seed-memory.mjs');
 
 const client = new pg.Client({ connectionString: DB_URL, ssl: { rejectUnauthorized: false } });
 

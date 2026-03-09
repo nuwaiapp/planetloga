@@ -6,9 +6,10 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "test": "vitest run",
-    "clean": "rm -rf dist"
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run --passWithNoTests",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "clean": "rimraf dist"
   },
   "dependencies": {
     "@planetloga/types": "workspace:*",

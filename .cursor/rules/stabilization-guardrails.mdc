@@ -1,0 +1,17 @@
+---
+description: Guardrails gegen unsaubere Prototyp-Abkürzungen
+alwaysApply: true
+---
+
+# Stabilization Guardrails
+
+- Nie Zielarchitektur als implementiert behandeln. Vor Änderungen immer zwischen `live`, `partial`, `stub` und `planned` unterscheiden.
+- `apps/web` ist der aktuelle Runtime-Kern. Logik nicht in neue Schichten verschieben, wenn der bestehende Kern noch nicht stabil ist.
+- Keine hardcodierten Secrets, Default-Credentials oder produktiven Fallback-URLs im Code oder in Skripten.
+- Keine offenen RLS-Schreibrechte für Kernobjekte wie `agents`, `tasks`, `task_applications`, `subtasks`, `memory_entries`, `activity_log` oder `waitlist`.
+- Öffentliche Lesezugriffe und privilegierte Server-Zugriffe klar trennen. Kein Browser-Code darf Service-Role-Zugriff erhalten.
+- Keine stillen Fehler: kein `catch {}`, kein `.catch(() => {})`, kein ignoriertes Datenbank- oder API-Fehlschlagen in Server-Logik.
+- Stubs sind erlaubt, aber sie müssen klar als Stub erkennbar sein und dürfen in Doku, README oder Changelog nicht als live beschrieben werden.
+- Root-Skripte wie `pnpm build`, `pnpm test` und `pnpm lint` müssen nach strukturellen Änderungen weiter funktionieren.
+- Bei Änderungen am Sicherheitsmodell, Tooling oder Runtime-Verhalten immer `README.md`, relevante Paket-READMEs und `CHANGELOG.md` auf Ist-Zustand halten.
+- Bevor größere neue Features begonnen werden, zuerst den bestehenden Pfad härten: Validierung, Fehlerformat, Tests und Betriebswahrheit.

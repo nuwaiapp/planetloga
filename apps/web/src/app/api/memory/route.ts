@@ -1,69 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { listMemory, createMemory, type CreateMemoryRequest } from '@/lib/memory';
+import { listMemory, createMemory } from '@/lib/memory';
+import { toErrorResponse } from '@/lib/errors';
+import { requireAuth, requireAgentOwnership } from '@/lib/auth';
+import {
+  createMemoryBodySchema,
+  parseIntegerParam,
+  parseJsonBody,
+} from '@/lib/request-validation';
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = request.nextUrl;
-  const category = searchParams.get('category') ?? 'all';
-  const search = searchParams.get('q') ?? undefined;
-  const page = Math.max(1, Number(searchParams.get('page') ?? 1));
-  const pageSize = Math.min(50, Math.max(1, Number(searchParams.get('pageSize') ?? 20)));
-
   try {
+    const { searchParams } = request.nextUrl;
+    const category = searchParams.get('category') ?? 'all';
+    const search = searchParams.get('q') ?? undefined;
+    const page = parseIntegerParam(searchParams.get('page'), 1, 1, 10_000);
+    const pageSize = parseIntegerParam(searchParams.get('pageSize'), 20, 1, 50);
     const result = await listMemory(category, search, page, pageSize);
     return NextResponse.json(result);
-  } catch {
-    return NextResponse.json(
-      { error: { code: 'INTERNAL_ERROR', message: 'Memory konnte nicht geladen werden' } },
-      { status: 500 },
-    );
+  } catch (error) {
+    return toErrorResponse('api/memory.GET', error, {
+      code: 'INTERNAL_ERROR',
+      message: 'Memory konnte nicht geladen werden',
+      status: 500,
+    });
   }
 }
 
 export async function POST(request: NextRequest) {
-  let body: CreateMemoryRequest;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json(
-      { error: { code: 'INVALID_JSON', message: 'Ungueltiges JSON' } },
-      { status: 400 },
-    );
-  }
-
-  if (!body.agentId?.trim()) {
-    return NextResponse.json(
-      { error: { code: 'VALIDATION_ERROR', message: 'Agent ID erforderlich' } },
-      { status: 400 },
-    );
-  }
-  if (!body.title?.trim()) {
-    return NextResponse.json(
-      { error: { code: 'VALIDATION_ERROR', message: 'Titel erforderlich' } },
-      { status: 400 },
-    );
-  }
-  if (!body.content?.trim()) {
-    return NextResponse.json(
-      { error: { code: 'VALIDATION_ERROR', message: 'Inhalt erforderlich' } },
-      { status: 400 },
-    );
-  }
-
-  try {
+    const user = await requireAuth(request);
+    const body = await parseJsonBody(request, createMemoryBodySchema);
+    await requireAgentOwnership(user.id, body.agentId);
     const entry = await createMemory({
-      agentId: body.agentId.trim(),
-      title: body.title.trim(),
-      content: body.content.trim(),
+      agentId: body.agentId,
+      title: body.title,
+      content: body.content,
       category: body.category ?? 'general',
-      tags: body.tags ?? [],
-      referencedTaskId: body.referencedTaskId ?? undefined,
+      tags: body.tags.map((tag) => tag.trim()).filter(Boolean),
+      referencedTaskId: body.referencedTaskId,
     });
     return NextResponse.json(entry, { status: 201 });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Speichern fehlgeschlagen';
-    return NextResponse.json(
-      { error: { code: 'CREATE_FAILED', message } },
-      { status: 500 },
-    );
+  } catch (error) {
+    return toErrorResponse('api/memory.POST', error, {
+      code: 'CREATE_FAILED',
+      message: 'Speichern fehlgeschlagen',
+      status: 500,
+    });
   }
 }

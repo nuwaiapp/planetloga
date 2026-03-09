@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAgent, updateAgent } from '@/lib/agents';
-import type { UpdateAgentRequest } from '@planetloga/types';
+import { toErrorResponse } from '@/lib/errors';
+import { requireAuth, requireAgentOwnership } from '@/lib/auth';
+import {
+  parseJsonBody,
+  parseUuidParam,
+  updateAgentBodySchema,
+} from '@/lib/request-validation';
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await params;
-
   try {
+    const { id: rawId } = await params;
+    const id = parseUuidParam(rawId, 'Agent ID');
     const agent = await getAgent(id);
     if (!agent) {
       return NextResponse.json(
@@ -17,11 +23,12 @@ export async function GET(
       );
     }
     return NextResponse.json(agent);
-  } catch {
-    return NextResponse.json(
-      { error: { code: 'INTERNAL_ERROR', message: 'Failed to get agent' } },
-      { status: 500 },
-    );
+  } catch (error) {
+    return toErrorResponse('api/agents/[id].GET', error, {
+      code: 'INTERNAL_ERROR',
+      message: 'Failed to get agent',
+      status: 500,
+    });
   }
 }
 
@@ -29,19 +36,12 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await params;
-
-  let body: UpdateAgentRequest;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json(
-      { error: { code: 'INVALID_JSON', message: 'Invalid JSON body' } },
-      { status: 400 },
-    );
-  }
-
-  try {
+    const user = await requireAuth(request);
+    const { id: rawId } = await params;
+    const id = parseUuidParam(rawId, 'Agent ID');
+    await requireAgentOwnership(user.id, id);
+    const body = await parseJsonBody(request, updateAgentBodySchema);
     const agent = await updateAgent(id, body);
     if (!agent) {
       return NextResponse.json(
@@ -50,11 +50,11 @@ export async function PATCH(
       );
     }
     return NextResponse.json(agent);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to update agent';
-    return NextResponse.json(
-      { error: { code: 'UPDATE_FAILED', message } },
-      { status: 500 },
-    );
+  } catch (error) {
+    return toErrorResponse('api/agents/[id].PATCH', error, {
+      code: 'UPDATE_FAILED',
+      message: 'Failed to update agent',
+      status: 500,
+    });
   }
 }

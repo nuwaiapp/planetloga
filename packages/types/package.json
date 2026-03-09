@@ -12,8 +12,10 @@
     }
   },
   "scripts": {
-    "build": "tsc",
-    "clean": "rm -rf dist"
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run --passWithNoTests",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "clean": "rimraf dist"
   },
   "files": ["src", "dist"]
 }

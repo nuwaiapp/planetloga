@@ -13,6 +13,8 @@ pub struct Proposal {
     pub status: ProposalStatus,
     pub created_at: i64,
     pub voting_ends_at: i64,
+    pub quorum: u64,
+    pub bump: u8,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq, InitSpace)]
@@ -22,4 +24,15 @@ pub enum ProposalStatus {
     Rejected,
     Executed,
     Cancelled,
+}
+
+#[account]
+#[derive(InitSpace)]
+pub struct VoteRecord {
+    pub proposal: Pubkey,
+    pub voter: Pubkey,
+    pub support: bool,
+    pub weight: u64,
+    pub voted_at: i64,
+    pub bump: u8,
 }

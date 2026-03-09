@@ -9,17 +9,5 @@ CREATE TABLE IF NOT EXISTS waitlist (
 
 ALTER TABLE waitlist ENABLE ROW LEVEL SECURITY;
 
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE tablename = 'waitlist' AND policyname = 'Allow insert from server'
-  ) THEN
-    CREATE POLICY "Allow insert from server" ON waitlist FOR INSERT WITH CHECK (true);
-  END IF;
-
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE tablename = 'waitlist' AND policyname = 'Allow select from server'
-  ) THEN
-    CREATE POLICY "Allow select from server" ON waitlist FOR SELECT USING (true);
-  END IF;
-END $$;
+DROP POLICY IF EXISTS "Allow insert from server" ON waitlist;
+DROP POLICY IF EXISTS "Allow select from server" ON waitlist;

@@ -1,6 +1,6 @@
 'use server';
 
-import { supabase } from '@/lib/supabase';
+import { adminSupabase } from '@/lib/supabase';
 
 export interface WaitlistResult {
   success: boolean;
@@ -15,7 +15,7 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
   }
 
   try {
-    const { data: existing } = await supabase
+    const { data: existing } = await adminSupabase
       .from('waitlist')
       .select('id')
       .eq('email', email)
@@ -25,7 +25,7 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
       return { success: true, message: 'Du stehst bereits auf der Waitlist!' };
     }
 
-    const { error } = await supabase.from('waitlist').insert({ email });
+    const { error } = await adminSupabase.from('waitlist').insert({ email });
 
     if (error) {
       console.error('Waitlist insert error:', error);

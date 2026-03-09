@@ -1,5 +1,6 @@
-import { supabase, type MemoryEntryRow } from './supabase';
+import { adminSupabase, publicSupabase, type MemoryEntryRow } from './supabase';
 import { logActivity } from './activity';
+import { AppError, logServerError } from './errors';
 
 export interface MemoryEntry {
   id: string;
@@ -51,7 +52,7 @@ export async function listMemory(
   page = 1,
   pageSize = 20,
 ): Promise<MemorySearchResult> {
-  let query = supabase.from('memory_entries').select('*', { count: 'exact' });
+  let query = publicSupabase.from('memory_entries').select('*', { count: 'exact' });
 
   if (category && category !== 'all') query = query.eq('category', category);
   if (search?.trim()) query = query.textSearch('title', search, { type: 'websearch' });
@@ -62,7 +63,9 @@ export async function listMemory(
     .range((page - 1) * pageSize, page * pageSize - 1);
 
   const { data, count, error } = await query;
-  if (error) throw new Error(error.message);
+  if (error) {
+    throw new AppError('LIST_FAILED', error.message, 500, { cause: error });
+  }
 
   const rows = (data ?? []) as MemoryEntryRow[];
   const agentIds = [...new Set(rows.map(r => r.agent_id))];
@@ -75,7 +78,7 @@ export async function listMemory(
 }
 
 export async function getMemoryEntry(id: string): Promise<MemoryEntry | null> {
-  const { data, error } = await supabase.from('memory_entries').select('*').eq('id', id).single();
+  const { data, error } = await publicSupabase.from('memory_entries').select('*').eq('id', id).single();
   if (error || !data) return null;
   const row = data as MemoryEntryRow;
   const nameMap = await getAgentNames([row.agent_id]);
@@ -83,7 +86,7 @@ export async function getMemoryEntry(id: string): Promise<MemoryEntry | null> {
 }
 
 export async function createMemory(req: CreateMemoryRequest): Promise<MemoryEntry> {
-  const { data, error } = await supabase
+  const { data, error } = await adminSupabase
     .from('memory_entries')
     .insert({
       agent_id: req.agentId,
@@ -96,21 +99,42 @@ export async function createMemory(req: CreateMemoryRequest): Promise<MemoryEntr
     .select('*')
     .single();
 
-  if (error || !data) throw new Error(error?.message ?? 'Speichern fehlgeschlagen');
+  if (error || !data) {
+    throw new AppError('CREATE_FAILED', error?.message ?? 'Speichern fehlgeschlagen', 500, {
+      cause: error,
+    });
+  }
   const entry = toMemoryEntry(data as MemoryEntryRow);
   const nameMap = await getAgentNames([entry.agentId]);
-  logActivity({ eventType: 'memory.created', agentId: entry.agentId, agentName: nameMap[entry.agentId], memoryId: entry.id, detail: entry.title }).catch(() => {});
+  void logActivity({
+    eventType: 'memory.created',
+    agentId: entry.agentId,
+    agentName: nameMap[entry.agentId],
+    memoryId: entry.id,
+    detail: entry.title,
+  }).catch((error: unknown) => {
+    logServerError('memory.createMemory.logActivity', error, { memoryId: entry.id });
+  });
   return entry;
 }
 
 export async function upvoteMemory(id: string): Promise<void> {
-  const { data } = await supabase.from('memory_entries').select('relevance_score').eq('id', id).single();
-  if (!data) throw new Error('Eintrag nicht gefunden');
-  await supabase.from('memory_entries').update({ relevance_score: data.relevance_score + 1 }).eq('id', id);
+  const { data } = await adminSupabase.from('memory_entries').select('relevance_score').eq('id', id).single();
+  if (!data) {
+    throw new AppError('NOT_FOUND', 'Eintrag nicht gefunden', 404);
+  }
+
+  const { error } = await adminSupabase
+    .from('memory_entries')
+    .update({ relevance_score: data.relevance_score + 1 })
+    .eq('id', id);
+  if (error) {
+    throw new AppError('UPVOTE_FAILED', error.message, 500, { cause: error });
+  }
 }
 
 export async function getAgentMemory(agentId: string, limit = 5): Promise<MemoryEntry[]> {
-  const { data } = await supabase
+  const { data } = await publicSupabase
     .from('memory_entries')
     .select('*')
     .eq('agent_id', agentId)
@@ -122,7 +146,7 @@ export async function getAgentMemory(agentId: string, limit = 5): Promise<Memory
 
 async function getAgentNames(ids: string[]): Promise<Record<string, string>> {
   if (ids.length === 0) return {};
-  const { data } = await supabase.from('agents').select('id, name').in('id', ids);
+  const { data } = await publicSupabase.from('agents').select('id, name').in('id', ids);
   const map: Record<string, string> = {};
   for (const row of data ?? []) map[row.id] = row.name;
   return map;

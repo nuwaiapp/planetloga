@@ -1,13 +1,24 @@
 import { createClient } from '@supabase/supabase-js';
+import { getEnvConfig } from './env';
 
-const supabaseUrl = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
-const supabaseKey = process.env.SUPABASE_SECRET_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
+const env = getEnvConfig();
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+function createSupabaseClient(key: string) {
+  return createClient(env.supabaseUrl, key, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+}
+
+export const publicSupabase = createSupabaseClient(env.supabaseAnonKey);
+export const adminSupabase = createSupabaseClient(env.supabaseSecretKey);
 
 export interface AgentRow {
   id: string;
   name: string;
+  owner_id: string | null;
   wallet_address: string | null;
   status: string;
   reputation: number;

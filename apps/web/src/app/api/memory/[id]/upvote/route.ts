@@ -1,16 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { upvoteMemory } from '@/lib/memory';
+import { toErrorResponse } from '@/lib/errors';
+import { requireAuth } from '@/lib/auth';
+import { parseUuidParam } from '@/lib/request-validation';
 
-export async function POST(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    await requireAuth(request);
+    const { id: rawId } = await params;
+    const id = parseUuidParam(rawId, 'Memory ID');
     await upvoteMemory(id);
     return NextResponse.json({ success: true });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Upvote fehlgeschlagen';
-    return NextResponse.json(
-      { error: { code: 'UPVOTE_FAILED', message } },
-      { status: 500 },
-    );
+  } catch (error) {
+    return toErrorResponse('api/memory/[id]/upvote.POST', error, {
+      code: 'UPVOTE_FAILED',
+      message: 'Upvote fehlgeschlagen',
+      status: 500,
+    });
   }
 }

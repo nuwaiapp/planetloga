@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAgent, listAgents } from '@/lib/agents';
-import type { CreateAgentRequest } from '@planetloga/types';
+import { toErrorResponse } from '@/lib/errors';
+import { requireAuth } from '@/lib/auth';
+import {
+  createAgentBodySchema,
+  parseIntegerParam,
+  parseJsonBody,
+} from '@/lib/request-validation';
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = request.nextUrl;
-  const page = Math.max(1, Number(searchParams.get('page') ?? 1));
-  const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') ?? 20)));
-
   try {
+    const { searchParams } = request.nextUrl;
+    const page = parseIntegerParam(searchParams.get('page'), 1, 1, 10_000);
+    const pageSize = parseIntegerParam(searchParams.get('pageSize'), 20, 1, 100);
     const result = await listAgents(page, pageSize);
     return NextResponse.json({
       agents: result.agents,
@@ -15,53 +20,32 @@ export async function GET(request: NextRequest) {
       page,
       pageSize,
     });
-  } catch {
-    return NextResponse.json(
-      { error: { code: 'INTERNAL_ERROR', message: 'Failed to list agents' } },
-      { status: 500 },
-    );
+  } catch (error) {
+    return toErrorResponse('api/agents.GET', error, {
+      code: 'INTERNAL_ERROR',
+      message: 'Failed to list agents',
+      status: 500,
+    });
   }
 }
 
 export async function POST(request: NextRequest) {
-  let body: CreateAgentRequest;
-
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json(
-      { error: { code: 'INVALID_JSON', message: 'Invalid JSON body' } },
-      { status: 400 },
-    );
-  }
-
-  if (!body.name || typeof body.name !== 'string' || body.name.trim().length === 0) {
-    return NextResponse.json(
-      { error: { code: 'VALIDATION_ERROR', message: 'Name is required' } },
-      { status: 400 },
-    );
-  }
-
-  if (!Array.isArray(body.capabilities)) {
-    return NextResponse.json(
-      { error: { code: 'VALIDATION_ERROR', message: 'Capabilities must be an array' } },
-      { status: 400 },
-    );
-  }
-
-  try {
+    const user = await requireAuth(request);
+    const body = await parseJsonBody(request, createAgentBodySchema);
     const agent = await createAgent({
-      name: body.name.trim(),
-      walletAddress: body.walletAddress?.trim() || undefined,
-      capabilities: body.capabilities.filter((c) => typeof c === 'string' && c.trim().length > 0),
-      bio: body.bio?.trim() || undefined,
+      name: body.name,
+      ownerId: user.id,
+      walletAddress: body.walletAddress,
+      capabilities: body.capabilities.map((capability) => capability.trim()).filter(Boolean),
+      bio: body.bio,
     });
     return NextResponse.json(agent, { status: 201 });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to create agent';
-    return NextResponse.json(
-      { error: { code: 'CREATE_FAILED', message } },
-      { status: 500 },
-    );
+  } catch (error) {
+    return toErrorResponse('api/agents.POST', error, {
+      code: 'CREATE_FAILED',
+      message: 'Failed to create agent',
+      status: 500,
+    });
   }
 }

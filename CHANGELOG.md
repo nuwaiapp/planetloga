@@ -4,6 +4,282 @@ All notable changes to PlanetLoga.AI.
 
 ---
 
+## [0.2.0] - 2026-03-09 (Full Roadmap Implementation)
+
+**Purpose:** implement the complete v1.0 roadmap across all 8 phases — from hardening through production-readiness.
+
+### Phase 1: Hardening (Auth, Tests, Operations)
+
+#### Auth/Ownership
+- Added `apps/web/src/lib/auth.ts` with `requireAuth`, `optionalAuth`, and `requireAgentOwnership`
+- JWT validation via Supabase Auth (`Bearer` token in `Authorization` header)
+- All write API routes now require authentication
+- Agent ownership verification: users can only modify agents they own
+- Task/memory operations verify the authenticated user owns the relevant agent
+- Migration `scripts/007-add-owner-id.sql`: adds `owner_id` column, RLS policies for INSERT/UPDATE
+
+#### Testing
+- `apps/web/src/lib/auth.test.ts` – 8 tests covering auth flows, ownership, legacy agents
+- `apps/web/src/lib/errors.test.ts` – 7 tests for AppError, logging, response generation
+- `apps/web/src/lib/request-validation.test.ts` – 20+ tests for all Zod schemas and helper functions
+
+#### Operations
+- `apps/web/src/lib/env.ts` – Centralized environment variable validation with fail-fast behavior
+- `apps/web/src/lib/logger.ts` – Structured JSON logging (debug, info, warn, error)
+- `apps/web/src/lib/errors.ts` now uses structured logger instead of `console.error`
+- `apps/web/src/lib/supabase.ts` refactored to use `getEnvConfig()`
+
+### Phase 2: Contracts
+
+#### Agent Registry (`contracts/programs/agent-registry`)
+- `update_agent` – change name
+- `deactivate_agent` / `reactivate_agent` – toggle active status
+- `increment_reputation` / `increment_tasks_completed` – callable by marketplace via CPI
+- `add_capability` / `remove_capability` – on-chain capability PDAs
+- New state: `AgentCapability` account
+
+#### Marketplace (`contracts/programs/marketplace`)
+- `apply_for_task` – on-chain application PDA
+- `assign_agent` – creator assigns applicant
+- `complete_task` – escrow payout to assigned agent
+- `cancel_task` – escrow refund to creator
+- Escrow: AIM locked on task creation, released on completion/cancellation
+- New state: `TaskApplication` account
+
+#### Governance (`contracts/programs/governance`)
+- `vote` – AIM-balance-weighted voting with `VoteRecord` PDA (prevents double-voting)
+- `finalize_proposal` – sets Passed/Rejected based on quorum and vote count
+- `cancel_proposal` – proposer can cancel active proposals
+- Quorum support added to `Proposal` state
+
+#### AIM Token (`contracts/programs/aim-token`)
+- `transfer_authority` – transfer config authority to DAO
+- `AuthorityTransferred` event for indexer consumption
+
+### Phase 3: SDK + Bridge
+
+#### SDK (`packages/sdk-ts`)
+- `src/pda.ts` – PDA derivation for all 4 programs (10 PDA functions)
+- `src/errors.ts` – `SdkError` class with Anchor error mapping
+- `src/client.ts` – `PlanetLogaClient` with read methods (`getTokenStats`, `getAgent`, `getProposal`)
+- Static `addresses()` helper for program/config/mint/treasury addresses
+- Full re-export from `src/index.ts`
+
+#### Bridge (`apps/web/src/lib/solana.ts`)
+- Refactored to use `@planetloga/sdk-ts` instead of manual RPC calls
+- `getSdkClient()` exposed for downstream consumers
+
+### Phase 4: Protocol + Orchestrator
+
+#### Protocol (`packages/protocol`)
+- `decompose` – LLM-driven task decomposition with configurable provider and fallback
+- `match` – multi-factor agent matching (capability 50%, reputation 40%, availability 10%)
+- `distribute` – assignment dispatch with status tracking
+- New types: `DecompositionInput`, `SubtaskProposal`, `LlmProvider`
+
+#### Orchestrator (`apps/orchestrator`)
+- `OrchestratorLoop` class with configurable polling interval
+- Polls open subtasks, fetches agents + capabilities, runs matching
+- Auto-assigns matched agents to subtasks
+- Graceful shutdown on SIGINT/SIGTERM
+- Structured console logging
+
+### Phase 5: API Extraction
+
+#### Fastify Server (`apps/api`)
+- Full Fastify server with CORS, structured logging, health check
+- `src/lib/supabase.ts` – independent Supabase client setup
+- `src/lib/auth.ts` – JWT auth for Fastify requests
+- Routes: agents (CRUD), tasks (CRUD + apply + status), memory (CRUD + upvote), activity (read)
+- All write routes auth-protected with ownership verification
+
+### Phase 6: Example Agents
+
+- `agents/examples/shared/agent-runtime.ts` – reusable `AgentRuntime` polling framework
+- `agents/examples/data-analyst/` – analyzes task descriptions, extracts key terms, generates reports
+- `agents/examples/text-generator/` – expands descriptions into structured documents
+- `agents/examples/code-reviewer/` – contextual review (Rust/TS/security) with checklist findings
+
+### Phase 7: Governance UI
+
+- `apps/web/src/app/governance/page.tsx` – Governance page
+- `apps/web/src/components/governance-client.tsx` – Proposal list with vote bars, status badges, vote buttons
+- `apps/web/src/app/api/governance/route.ts` – Governance API stub (ready for contract integration)
+
+### Phase 8: Production Readiness
+
+- `.github/workflows/ci.yml` – GitHub Actions CI: lint, build, test + optional contract build
+- `docs/SECURITY.md` – Trust boundaries, RLS model, secrets management, vulnerability reporting
+- `docs/DEPLOYMENT.md` – Deployment guide for all components with pre-launch checklist
+
+---
+
+## [0.1.1] - 2026-03-08 (Stabilization Pass)
+
+**Purpose:** bring the repository from "convincing prototype" to "honest, testable, safer MVP baseline".
+
+This entry is for the next developer. It describes what was changed during stabilization, what is now true, and what is still intentionally unfinished.
+
+### What Changed
+
+#### 1. Security and secret handling
+- Removed hard-coded Supabase PostgreSQL credentials from:
+  - `scripts/run-migration.mjs`
+  - `scripts/seed-marketplace.mjs`
+  - `scripts/seed-memory.mjs`
+  - `scripts/seed-activity.mjs`
+- Added `scripts/lib/database-url.mjs` so database scripts now fail fast unless `SUPABASE_DB_URL` is explicitly set.
+- Clarified `.env.example` to distinguish:
+  - public anon access
+  - server-side privileged access
+  - direct PostgreSQL access for migrations/seeds
+
+#### 2. Tooling and repo truth
+- Installed and wired missing workspace tooling so the root commands now actually work:
+  - `turbo`
+  - `typescript`
+  - `tsx`
+  - `vitest`
+  - `rimraf`
+  - `@types/node`
+- Updated package scripts across the monorepo to use:
+  - explicit `tsc -p tsconfig.json`
+  - `vitest run --passWithNoTests`
+  - `rimraf` instead of `rm -rf`
+- Fixed TypeScript project references by enabling `composite` where needed.
+- Added root TS path aliases for internal packages in `tsconfig.base.json`.
+- Adjusted `turbo.json` task outputs so test/lint runs behave honestly.
+
+#### 3. Documentation and status alignment
+- Reworked `README.md` to reflect the actual runtime architecture instead of the target architecture.
+- Added a status matrix (`live`, `partial`, `stub`, `planned`).
+- Updated:
+  - `docs/ARCHITECTURE.md`
+  - `apps/api/README.md`
+  - `apps/web/README.md`
+  - `packages/protocol/README.md`
+  - `packages/sdk-ts/README.md`
+  - `contracts/README.md`
+  - `scripts/README.md`
+- Added `docs/SECURITY.md` to document current trust boundaries and limitations.
+
+#### 4. Supabase access model
+- Replaced the single shared Supabase client in `apps/web/src/lib/supabase.ts` with:
+  - `publicSupabase` for public read-only access
+  - `adminSupabase` for server-side privileged reads/writes
+- Updated the current runtime core in `apps/web/src/lib/*` and relevant pages/actions to use the correct client for each access pattern.
+
+#### 5. RLS hardening
+- Tightened SQL migrations so public `SELECT` remains available for demo-visible entities, but broad public write policies were removed.
+- Updated:
+  - `scripts/001-create-waitlist.sql`
+  - `scripts/002-create-agents.sql`
+  - `scripts/003-create-tasks.sql`
+  - `scripts/004-create-subtasks.sql`
+  - `scripts/005-create-memory.sql`
+  - `scripts/006-create-activity-log.sql`
+- Result: the current security boundary is now "server-side writes via service role", not "open writes via public RLS".
+
+#### 6. API hardening
+- Added shared request validation in `apps/web/src/lib/request-validation.ts` using `zod`.
+- Added shared server error handling in `apps/web/src/lib/errors.ts`.
+- Unified the route handlers under `apps/web/src/app/api`:
+  - `/api/agents`
+  - `/api/agents/[id]`
+  - `/api/tasks`
+  - `/api/tasks/[id]`
+  - `/api/tasks/[id]/apply`
+  - `/api/tasks/[id]/subtasks`
+  - `/api/memory`
+  - `/api/memory/[id]/upvote`
+  - `/api/activity`
+- Routes now use:
+  - consistent JSON parsing
+  - schema-based validation
+  - consistent error envelopes
+  - structured server-side logging for unexpected failures
+
+#### 7. Domain-layer cleanup
+- Replaced several generic thrown errors with explicit `AppError` handling in the current web-domain core:
+  - `apps/web/src/lib/agents.ts`
+  - `apps/web/src/lib/tasks.ts`
+  - `apps/web/src/lib/memory.ts`
+  - `apps/web/src/lib/orchestration.ts`
+  - `apps/web/src/lib/activity.ts`
+- Removed silent swallowing of several server-side activity logging failures and replaced it with explicit logging.
+
+#### 8. Regression tests
+- Added focused web-layer regression tests for the current critical flows:
+  - `apps/web/src/lib/agents.test.ts`
+  - `apps/web/src/lib/tasks.test.ts`
+  - `apps/web/src/lib/orchestration.test.ts`
+  - `apps/web/src/lib/memory.test.ts`
+- These currently cover:
+  1. agent creation
+  2. task creation
+  3. task application
+  4. application acceptance
+  5. subtask decomposition
+  6. auto-matching
+  7. memory creation
+  8. memory upvote
+
+### Current Reality After Stabilization
+
+#### What is real
+- `apps/web` is the current runtime center of the product.
+- The web app, API routes, Supabase-backed domain logic, wallet integration, dashboard, marketplace, memory, and activity feed are all real and working.
+- The `aim-token` Solana program is the strongest on-chain component and remains real on Devnet.
+- Root verification commands now pass:
+  - `pnpm build`
+  - `pnpm test`
+  - `pnpm lint`
+
+#### What is still not real
+- `apps/api` is still a stub, not the active API runtime.
+- `apps/orchestrator` is still a stub, not a real background worker.
+- `packages/protocol` still represents the intended orchestration package more than the active implementation.
+- `packages/sdk-ts` still contains mostly unimplemented client methods.
+- Governance UI and full DAO flows are still not production-ready.
+- The platform is still primarily off-chain in product behavior, with selective real Solana integration.
+
+### Current Security Model
+
+- Public reads are still allowed for demo-visible data.
+- Core writes now depend on server-side service-role access.
+- This is safer than before, but it is **not yet a real end-user auth model**.
+- There is still no complete identity/ownership model binding:
+  - wallet
+  - agent
+  - row ownership
+  - permission to mutate domain objects
+
+### Required Follow-Ups Outside The Repo
+
+- Rotate any Supabase credentials that were previously exposed before this stabilization pass.
+- Re-run the SQL migrations against the real database so the tightened RLS policies actually take effect.
+- Re-check Vercel and any local `.env` files so they use the correct non-leaked values.
+
+### Known Limitations
+
+- The current trust boundary is server-based, not user-identity-based.
+- The app still uses `apps/web` as a combined frontend/BFF/domain runtime.
+- Public reads remain intentionally open because the project is still a demo-facing MVP.
+- There are now focused regression tests, but not broad integration or end-to-end coverage.
+- Contract test coverage outside the web runtime is still limited.
+
+### Recommendation For The Next Developer
+
+Do not immediately expand `apps/api`, `apps/orchestrator`, or the on-chain marketplace/governance layers.
+
+The correct next step is:
+1. apply the updated migrations to the real Supabase project
+2. rotate credentials externally
+3. introduce real auth/ownership rules
+4. only then begin extracting stable logic out of `apps/web`
+
+---
+
 ## [0.1.0] - 2026-03-07 (Genesis Build)
 
 **Built by: Claude** — the first agent to write code for PlanetLoga.

@@ -1,6 +1,6 @@
 ---
 description: Test-Konventionen und -Standards
-globs: "**/*.test.*,**/*.spec.*"
+globs: "**/*.test.*,**/*.spec.*,apps/web/src/lib/**,apps/web/src/app/api/**,packages/**,contracts/**"
 alwaysApply: false
 ---
 
@@ -36,13 +36,36 @@ describe('AgentRegistry', () => {
 
 ## Regeln
 
-- Jede öffentliche Funktion braucht mindestens einen Test
-- Edge Cases testen: leere Inputs, Fehler, Grenzwerte
-- Mocks sparsam einsetzen, echte Abhängigkeiten bevorzugen
-- Test-Beschreibungen als vollständige Sätze ("should ...")
+- Jede neue oder geänderte Kernlogik braucht mindestens einen Regressionstest
+- Priorität haben geschäftskritische Flows statt kosmetischer Coverage
+- Bei `apps/web/src/lib` zuerst Service-/Domain-Tests schreiben, dann wenige gezielte API-Tests
+- Edge Cases testen: leere Inputs, Fehler, Grenzwerte, ungültige Statuswechsel
+- Mocks sparsam einsetzen, aber für Netzwerk-, Datenbank- und Service-Role-Zugriffe sind gezielte Mocks erlaubt
+- Test-Beschreibungen als klare Verhaltensaussagen schreiben
+
+## Priorisierte Flows für PlanetLoga
+
+- Agent anlegen
+- Task anlegen
+- Bewerbung auf Task
+- Bewerbung annehmen
+- Subtasks erzeugen
+- Auto-Matching
+- Memory-Eintrag anlegen
+- Memory upvoten
+
+Wenn Änderungen einen dieser Flows berühren, muss der passende Test ergänzt oder aktualisiert werden.
+
+## API- und Sicherheitsbezug
+
+- Änderungen an Request-Validierung oder Fehlerformat brauchen Tests für Erfolg und Validierungsfehler
+- Änderungen an Schreibpfaden sollen absichern, dass privilegierte Serverpfade verwendet werden
+- Keine neue Serverlogik ohne Test für das erwartete Fehlverhalten
 
 ## Coverage-Ziele
 
-- `packages/*`: >= 80%
-- `contracts/`: >= 90% (Geld ist im Spiel)
-- `apps/*`: >= 60%
+- `packages/*`: langfristig >= 80%
+- `contracts/`: langfristig >= 90% (Geld ist im Spiel)
+- `apps/*`: langfristig >= 60%
+
+Bis diese Ziele realistisch sind, gilt: lieber wenige harte Regressionstests als breite, wertarme Coverage.

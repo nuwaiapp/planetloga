@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getAgent } from '@/lib/agents';
-import { supabase } from '@/lib/supabase';
+import { publicSupabase } from '@/lib/supabase';
 import { TaskCard } from '@/components/task-card';
 import type { Task } from '@planetloga/types';
 import type { TaskRow } from '@/lib/supabase';
@@ -14,8 +14,8 @@ interface AgentPageProps {
 
 async function getAgentTasks(agentId: string): Promise<{ created: Task[]; assigned: Task[] }> {
   const [createdRes, assignedRes] = await Promise.all([
-    supabase.from('tasks').select('*').eq('creator_id', agentId).order('created_at', { ascending: false }).limit(10),
-    supabase.from('tasks').select('*').eq('assignee_id', agentId).order('created_at', { ascending: false }).limit(10),
+    publicSupabase.from('tasks').select('*').eq('creator_id', agentId).order('created_at', { ascending: false }).limit(10),
+    publicSupabase.from('tasks').select('*').eq('assignee_id', agentId).order('created_at', { ascending: false }).limit(10),
   ]);
 
   const toTask = (r: TaskRow): Task => ({

@@ -9,10 +9,9 @@
 import pg from 'pg';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { getDatabaseUrl } from './lib/database-url.mjs';
 
-const DB_URL =
-  process.env.SUPABASE_DB_URL ??
-  'postgresql://postgres:x5R0J1ce7KwG3ayK@db.avqepqctareufrxeutnl.supabase.co:5432/postgres';
+const DB_URL = getDatabaseUrl('scripts/run-migration.mjs');
 
 const files = process.argv.slice(2);
 

@@ -17,13 +17,20 @@ Monorepo mit pnpm Workspaces + Turborepo:
 
 - `contracts/` – Solana Smart Contracts (Anchor/Rust)
 - `packages/types/` – Geteilte TypeScript-Typen
-- `packages/sdk-ts/` – Agent SDK (TypeScript)
-- `packages/protocol/` – Orchestrierungsprotokoll
-- `apps/api/` – Backend API (Fastify)
-- `apps/web/` – Frontend (Next.js)
-- `apps/orchestrator/` – Orchestrator-Agent
+- `packages/sdk-ts/` – Agent SDK (derzeit Stub)
+- `packages/protocol/` – Orchestrierungsprotokoll (derzeit Stub)
+- `apps/api/` – geplante Backend API (Fastify, derzeit Stub)
+- `apps/web/` – aktueller Runtime-Kern: Frontend + API-Routen + Domain-Logik
+- `apps/orchestrator/` – geplanter Orchestrator-Agent (derzeit Stub)
 - `agents/examples/` – Referenz-Agenten
 - `docs/` – Architektur, Glossar, ADRs
+
+## Aktueller Ist-Zustand
+
+- Arbeite vom realen Status aus, nicht vom Whitepaper-Zielbild
+- `apps/web` ist aktuell die produktive Laufzeitmitte
+- `apps/api`, `apps/orchestrator`, `packages/sdk-ts` und große Teile von `packages/protocol` sind noch nicht fertig
+- Verwende die Statusmatrix in `README.md` als Quelle für `live`, `partial`, `stub`, `planned`
 
 ## Wichtige Dateien
 
@@ -34,7 +41,7 @@ Monorepo mit pnpm Workspaces + Turborepo:
 
 ## Infrastruktur
 
-- **GitHub**: `nuwaiapp/planetloga` – immer pushen nach Änderungen
+- **GitHub**: `nuwaiapp/planetloga`
 - **Vercel**: Automatisches Deployment bei Push (apps/web)
 - **Supabase**: PostgreSQL-Datenbank + Auth (Credentials in `.env`)
 - **AI-Keys**: OpenAI, Claude, Gemini – alle in `.env`

@@ -10,4 +10,14 @@ pub struct AgentProfile {
     pub tasks_completed: u64,
     pub is_active: bool,
     pub registered_at: i64,
+    pub bump: u8,
+}
+
+#[account]
+#[derive(InitSpace)]
+pub struct AgentCapability {
+    pub agent: Pubkey,
+    #[max_len(64)]
+    pub capability: String,
+    pub bump: u8,
 }

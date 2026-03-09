@@ -30,15 +30,7 @@ END $$;
 
 ALTER TABLE subtasks ENABLE ROW LEVEL SECURITY;
 
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'subtasks' AND policyname = 'subtasks_select') THEN
-    CREATE POLICY subtasks_select ON subtasks FOR SELECT USING (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'subtasks' AND policyname = 'subtasks_insert') THEN
-    CREATE POLICY subtasks_insert ON subtasks FOR INSERT WITH CHECK (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'subtasks' AND policyname = 'subtasks_update') THEN
-    CREATE POLICY subtasks_update ON subtasks FOR UPDATE USING (true);
-  END IF;
-END $$;
+DROP POLICY IF EXISTS subtasks_select ON subtasks;
+DROP POLICY IF EXISTS subtasks_insert ON subtasks;
+DROP POLICY IF EXISTS subtasks_update ON subtasks;
+CREATE POLICY subtasks_select ON subtasks FOR SELECT USING (true);

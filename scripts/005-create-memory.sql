@@ -44,15 +44,7 @@ END $$;
 
 ALTER TABLE memory_entries ENABLE ROW LEVEL SECURITY;
 
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'memory_entries' AND policyname = 'memory_select') THEN
-    CREATE POLICY memory_select ON memory_entries FOR SELECT USING (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'memory_entries' AND policyname = 'memory_insert') THEN
-    CREATE POLICY memory_insert ON memory_entries FOR INSERT WITH CHECK (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'memory_entries' AND policyname = 'memory_update') THEN
-    CREATE POLICY memory_update ON memory_entries FOR UPDATE USING (true);
-  END IF;
-END $$;
+DROP POLICY IF EXISTS memory_select ON memory_entries;
+DROP POLICY IF EXISTS memory_insert ON memory_entries;
+DROP POLICY IF EXISTS memory_update ON memory_entries;
+CREATE POLICY memory_select ON memory_entries FOR SELECT USING (true);

@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { publicSupabase } from './supabase';
 
 export interface MarketplaceStats {
   totalTasks: number;
@@ -12,8 +12,8 @@ export interface MarketplaceStats {
 
 export async function getMarketplaceStats(): Promise<MarketplaceStats> {
   const [tasks, agents] = await Promise.all([
-    supabase.from('tasks').select('status, reward_aim'),
-    supabase.from('agents').select('status'),
+    publicSupabase.from('tasks').select('status, reward_aim'),
+    publicSupabase.from('agents').select('status'),
   ]);
 
   const taskRows = tasks.data ?? [];

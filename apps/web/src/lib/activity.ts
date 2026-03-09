@@ -1,4 +1,5 @@
-import { supabase } from './supabase';
+import { adminSupabase, publicSupabase } from './supabase';
+import { AppError } from './errors';
 
 export interface ActivityEvent {
   id: string;
@@ -25,7 +26,7 @@ interface LogInput {
 }
 
 export async function logActivity(input: LogInput): Promise<void> {
-  await supabase.from('activity_log').insert({
+  const { error } = await adminSupabase.from('activity_log').insert({
     event_type: input.eventType,
     agent_id: input.agentId ?? null,
     agent_name: input.agentName ?? null,
@@ -35,10 +36,14 @@ export async function logActivity(input: LogInput): Promise<void> {
     detail: input.detail ?? null,
     aim_amount: input.aimAmount ?? null,
   });
+
+  if (error) {
+    throw new AppError('ACTIVITY_LOG_FAILED', error.message, 500, { cause: error });
+  }
 }
 
 export async function getActivityFeed(limit = 30): Promise<ActivityEvent[]> {
-  const { data } = await supabase
+  const { data } = await publicSupabase
     .from('activity_log')
     .select('*')
     .order('created_at', { ascending: false })

@@ -1,11 +1,13 @@
-import { supabase, type AgentRow } from './supabase';
+import { adminSupabase, publicSupabase, type AgentRow } from './supabase';
 import type { Agent, CreateAgentRequest, UpdateAgentRequest } from '@planetloga/types';
 import { logActivity } from './activity';
+import { AppError, logServerError } from './errors';
 
 function toAgent(row: AgentRow, capabilities: string[]): Agent {
   return {
     id: row.id,
     name: row.name,
+    ownerId: row.owner_id ?? undefined,
     walletAddress: row.wallet_address ?? undefined,
     status: row.status as Agent['status'],
     reputation: row.reputation,
@@ -18,7 +20,7 @@ function toAgent(row: AgentRow, capabilities: string[]): Agent {
 }
 
 async function getCapabilities(agentId: string): Promise<string[]> {
-  const { data } = await supabase
+  const { data } = await publicSupabase
     .from('agent_capabilities')
     .select('capability')
     .eq('agent_id', agentId);
@@ -26,35 +28,47 @@ async function getCapabilities(agentId: string): Promise<string[]> {
 }
 
 async function setCapabilities(agentId: string, capabilities: string[]): Promise<void> {
-  await supabase.from('agent_capabilities').delete().eq('agent_id', agentId);
+  await adminSupabase.from('agent_capabilities').delete().eq('agent_id', agentId);
   if (capabilities.length > 0) {
-    await supabase.from('agent_capabilities').insert(
+    await adminSupabase.from('agent_capabilities').insert(
       capabilities.map((capability) => ({ agent_id: agentId, capability })),
     );
   }
 }
 
 export async function createAgent(req: CreateAgentRequest): Promise<Agent> {
-  const { data, error } = await supabase
+  const { data, error } = await adminSupabase
     .from('agents')
     .insert({
       name: req.name,
+      owner_id: req.ownerId ?? null,
       wallet_address: req.walletAddress ?? null,
       bio: req.bio ?? null,
     })
     .select()
     .single();
 
-  if (error || !data) throw new Error(error?.message ?? 'Failed to create agent');
+  if (error || !data) {
+    throw new AppError('CREATE_FAILED', error?.message ?? 'Failed to create agent', 500, {
+      cause: error,
+    });
+  }
 
   await setCapabilities(data.id, req.capabilities);
   const agent = toAgent(data as AgentRow, req.capabilities);
-  logActivity({ eventType: 'agent.registered', agentId: agent.id, agentName: agent.name, detail: `capabilities: ${req.capabilities.join(', ')}` }).catch(() => {});
+  void logActivity({
+    eventType: 'agent.registered',
+    agentId: agent.id,
+    agentName: agent.name,
+    detail: `capabilities: ${req.capabilities.join(', ')}`,
+  }).catch((error: unknown) => {
+    logServerError('agents.createAgent.logActivity', error, { agentId: agent.id });
+  });
   return agent;
 }
 
 export async function getAgent(id: string): Promise<Agent | null> {
-  const { data, error } = await supabase
+  const { data, error } = await publicSupabase
     .from('agents')
     .select('*')
     .eq('id', id)
@@ -70,7 +84,7 @@ export async function listAgents(page = 1, pageSize = 20): Promise<{ agents: Age
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  const { data, error, count } = await supabase
+  const { data, error, count } = await publicSupabase
     .from('agents')
     .select('*', { count: 'exact' })
     .eq('status', 'active')
@@ -97,8 +111,10 @@ export async function updateAgent(id: string, req: UpdateAgentRequest): Promise<
   if (req.status !== undefined) updates.status = req.status;
 
   if (Object.keys(updates).length > 0) {
-    const { error } = await supabase.from('agents').update(updates).eq('id', id);
-    if (error) throw new Error(error.message);
+    const { error } = await adminSupabase.from('agents').update(updates).eq('id', id);
+    if (error) {
+      throw new AppError('UPDATE_FAILED', error.message, 500, { cause: error });
+    }
   }
 
   if (req.capabilities !== undefined) {

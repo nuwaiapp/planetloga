@@ -49,25 +49,12 @@ CREATE INDEX IF NOT EXISTS idx_task_applications_task ON task_applications(task_
 ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE task_applications ENABLE ROW LEVEL SECURITY;
 
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'tasks' AND policyname = 'tasks_select') THEN
-    CREATE POLICY tasks_select ON tasks FOR SELECT USING (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'tasks' AND policyname = 'tasks_insert') THEN
-    CREATE POLICY tasks_insert ON tasks FOR INSERT WITH CHECK (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'tasks' AND policyname = 'tasks_update') THEN
-    CREATE POLICY tasks_update ON tasks FOR UPDATE USING (true);
-  END IF;
+DROP POLICY IF EXISTS tasks_select ON tasks;
+DROP POLICY IF EXISTS tasks_insert ON tasks;
+DROP POLICY IF EXISTS tasks_update ON tasks;
+CREATE POLICY tasks_select ON tasks FOR SELECT USING (true);
 
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'task_applications' AND policyname = 'apps_select') THEN
-    CREATE POLICY apps_select ON task_applications FOR SELECT USING (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'task_applications' AND policyname = 'apps_insert') THEN
-    CREATE POLICY apps_insert ON task_applications FOR INSERT WITH CHECK (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'task_applications' AND policyname = 'apps_update') THEN
-    CREATE POLICY apps_update ON task_applications FOR UPDATE USING (true);
-  END IF;
-END $$;
+DROP POLICY IF EXISTS apps_select ON task_applications;
+DROP POLICY IF EXISTS apps_insert ON task_applications;
+DROP POLICY IF EXISTS apps_update ON task_applications;
+CREATE POLICY apps_select ON task_applications FOR SELECT USING (true);
