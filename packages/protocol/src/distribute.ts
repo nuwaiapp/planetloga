@@ -4,8 +4,6 @@ export interface DistributionOptions {
   timeoutMs?: number;
 }
 
-const DEFAULT_TIMEOUT_MS = 30_000;
-
 export async function distribute(
   assignments: MatchResult[],
   _options?: DistributionOptions,

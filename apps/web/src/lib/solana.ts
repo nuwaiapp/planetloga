@@ -12,10 +12,12 @@ export const ADDRESSES = {
   programs: addresses.programs,
 } as const;
 
-export type { TokenStats as OnChainTokenStats };
+export type OnChainTokenStats = TokenStats & { programId: string };
 
-export async function fetchTokenStats(): Promise<TokenStats | null> {
-  return client.getTokenStats();
+export async function fetchTokenStats(): Promise<OnChainTokenStats | null> {
+  const stats = await client.getTokenStats();
+  if (!stats) return null;
+  return { ...stats, programId: ADDRESSES.programId };
 }
 
 export function getSdkClient(): PlanetLogaClient {

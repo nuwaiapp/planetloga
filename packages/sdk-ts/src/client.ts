@@ -1,4 +1,4 @@
-import { Connection, PublicKey, type Keypair, type TransactionSignature } from '@solana/web3.js';
+import { Connection, PublicKey, type Keypair } from '@solana/web3.js';
 import { CLUSTER_URLS, PROGRAM_IDS, type Cluster } from './constants';
 import {
   findConfigPda,
@@ -6,10 +6,7 @@ import {
   findTreasuryPda,
   findAgentPda,
   findTaskPda,
-  findEscrowPda,
-  findApplicationPda,
   findProposalPda,
-  findVoteRecordPda,
 } from './pda';
 import { mapAnchorError } from './errors';
 

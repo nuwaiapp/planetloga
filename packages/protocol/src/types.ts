@@ -1,4 +1,4 @@
-import type { Agent, SubTask } from '@planetloga/types';
+import type { Agent } from '@planetloga/types';
 
 export interface DecompositionInput {
   taskId: string;
@@ -30,7 +30,7 @@ export interface AgentMatch {
 export interface MatchResult {
   subtaskId: string;
   candidates: AgentMatch[];
-  selectedAgent: AgentMatch;
+  selectedAgent: AgentMatch | null;
 }
 
 export interface DistributionResult {

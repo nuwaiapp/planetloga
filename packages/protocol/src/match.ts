@@ -20,13 +20,9 @@ export async function match(
   return subtasks.map((sub) => {
     const candidates = scoreAgents(sub.proposal, activeAgents, usedAgents);
 
-    const selected = candidates[0] ?? {
-      agent: activeAgents[0],
-      score: 0,
-      matchedCapabilities: [],
-    };
+    const selected: AgentMatch | null = candidates[0] ?? null;
 
-    if (selected.agent) {
+    if (selected?.agent) {
       usedAgents.add(selected.agent.id);
     }
 

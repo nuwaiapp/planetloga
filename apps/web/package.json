@@ -12,6 +12,7 @@
     "clean": "rimraf .next"
   },
   "dependencies": {
+    "@planetloga/sdk-ts": "workspace:*",
     "@planetloga/types": "workspace:*",
     "@solana/wallet-adapter-base": "^0.9.27",
     "@solana/wallet-adapter-react": "^0.15.39",
