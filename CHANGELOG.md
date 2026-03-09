@@ -4,6 +4,19 @@ All notable changes to PlanetLoga.AI.
 
 ---
 
+## [0.2.1] - 2026-03-09 (Build Fixes)
+
+### Fixed
+- **Missing dependency**: `@planetloga/sdk-ts` als Workspace-Dependency in `apps/web/package.json` hinzugefügt – Vercel-Build schlug fehl mit `Module not found: Can't resolve '@planetloga/sdk-ts'`
+- **Missing dependency**: `@solana/web3.js` in `packages/sdk-ts/package.json` hinzugefügt
+- **TypeScript-Fehler in `protocol`**: unbenutzter Import `SubTask`, unbenutzte Konstante `DEFAULT_TIMEOUT_MS`, Typinkompatibilität bei `selectedAgent` (jetzt `AgentMatch | null`)
+- **TypeScript-Fehler in `sdk-ts`**: unbenutzte Imports (`TransactionSignature`, `findEscrowPda`, `findApplicationPda`, `findVoteRecordPda`) entfernt
+- **Typfehler `tokenomics.tsx`**: `programId` fehlte im `TokenStats`-Interface – `solana.ts` gibt jetzt erweiterten Typ `OnChainTokenStats` mit `programId` zurück
+- **Vercel-Build crashte bei SSG**: `supabase.ts` rief `getEnvConfig()` auf Modul-Ebene auf → Lazy Initialization via Proxy, Clients werden erst beim ersten Zugriff erstellt
+- **Turbo env passthrough**: `globalPassThroughEnv` in `turbo.json` hinzugefügt – Vercel-Umgebungsvariablen (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`, etc.) wurden nicht an Turbo-Tasks durchgereicht
+
+---
+
 ## [0.2.0] - 2026-03-09 (Full Roadmap Implementation)
 
 **Purpose:** implement the complete v1.0 roadmap across all 8 phases — from hardening through production-readiness.
