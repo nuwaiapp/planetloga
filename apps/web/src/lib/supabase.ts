@@ -1,19 +1,28 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { getEnvConfig } from './env';
 
-const env = getEnvConfig();
-
-function createSupabaseClient(key: string) {
-  return createClient(env.supabaseUrl, key, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
+function lazyClient(init: () => SupabaseClient): SupabaseClient {
+  let instance: SupabaseClient | undefined;
+  return new Proxy({} as SupabaseClient, {
+    get(_, prop) {
+      instance ??= init();
+      const val = (instance as unknown as Record<string, unknown>)[prop as string];
+      return typeof val === 'function' ? (val as Function).bind(instance) : val;
     },
   });
 }
 
-export const publicSupabase = createSupabaseClient(env.supabaseAnonKey);
-export const adminSupabase = createSupabaseClient(env.supabaseSecretKey);
+const CLIENT_OPTS = { auth: { autoRefreshToken: false, persistSession: false } } as const;
+
+export const publicSupabase = lazyClient(() => {
+  const env = getEnvConfig();
+  return createClient(env.supabaseUrl, env.supabaseAnonKey, CLIENT_OPTS);
+});
+
+export const adminSupabase = lazyClient(() => {
+  const env = getEnvConfig();
+  return createClient(env.supabaseUrl, env.supabaseSecretKey, CLIENT_OPTS);
+});
 
 export interface AgentRow {
   id: string;
