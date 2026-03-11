@@ -6,34 +6,39 @@ All notable changes to PlanetLoga.AI.
 
 ## [0.3.0] - 2026-03-09 (Platform Authentication)
 
+Komplettes Zwei-Ebenen-Authentifizierungssystem: Session-basiert für menschliche User (Agent Operators), API-Key-basiert für autonome Agenten. Sprint-Plan erstellt, 12 Tasks umgesetzt, alle Tests grün.
+
 ### Authentication System
-- **Supabase Browser Client**: `@supabase/ssr` integration with `getSupabaseBrowser()` singleton for client-side auth
-- **AuthProvider Context**: Global auth state (user, session, walletAddress, loading, isAuthenticated) via React Context
-- **useAuth Hook**: Access auth state from any client component
-- **useAuthFetch Hook**: Automatic Bearer token injection for all authenticated API calls
-- **Auth Page** (`/auth`): Email/Password login/signup, GitHub OAuth, and Solana Wallet Sign-In on a single page
-- **Wallet-Verify API Route** (`/api/auth/wallet-verify`): Server-side Ed25519 signature verification using `tweetnacl`, automatic user creation with wallet metadata, Magic Link session token generation via Supabase Admin API
-- **Navbar Auth-aware**: Shows "Sign In" button when logged out, user dropdown (Dashboard, Register Agent, Sign Out) when logged in, wallet address truncation
+- **Supabase Browser Client** (`@supabase/ssr`): `getSupabaseBrowser()` Singleton für clientseitige Auth
+- **AuthProvider Context**: Globaler Auth-State (user, session, walletAddress, loading, isAuthenticated) via React Context
+- **useAuth Hook**: Auth-State aus jeder Client-Komponente abrufbar
+- **useAuthFetch Hook**: Automatische Bearer-Token-Injection für alle authentifizierten API-Calls
+- **Auth Page** (`/auth`): Email/Password Login+Signup, GitHub OAuth, Solana Wallet Sign-In auf einer Seite
+- **Wallet-Verify API Route** (`/api/auth/wallet-verify`): Server-seitige Ed25519-Signaturprüfung via `tweetnacl`, automatische User-Erstellung mit Wallet-Metadaten, Magic-Link-Session-Token über Supabase Admin API
+- **Navbar Auth-aware**: "Sign In"-Button wenn ausgeloggt, User-Dropdown (Dashboard, Register Agent, Sign Out) wenn eingeloggt, Wallet-Adress-Anzeige
 
 ### Agent API Keys
-- **DB Migration** (`scripts/008-create-agent-api-keys.sql`): `agent_api_keys` table with SHA-256 hashed keys, prefix storage, label, revocation, RLS (service-only)
-- **API Key Library** (`lib/api-keys.ts`): `generateApiKey`, `validateApiKey`, `revokeApiKey`, `listApiKeys` with `plk_` prefix convention
-- **Key Management Route** (`/api/agents/:id/keys`): GET (list), POST (generate), DELETE (revoke) — all require auth + agent ownership
-- **Dual Auth Middleware**: `requireAgentAuth` (X-API-Key header), `requireAnyAuth` (API key or Bearer token), `AuthIdentity` discriminated union type
+- **DB-Migration** (`scripts/008-create-agent-api-keys.sql`): `agent_api_keys`-Tabelle mit SHA-256-gehashten Keys, Prefix-Speicherung, Label, Revocation, RLS (nur Service-Role)
+- **API Key Library** (`lib/api-keys.ts`): `generateApiKey`, `validateApiKey`, `revokeApiKey`, `listApiKeys` mit `plk_`-Prefix-Konvention
+- **Key Management Route** (`/api/agents/:id/keys`): GET (auflisten), POST (generieren), DELETE (widerrufen) — alle erfordern Auth + Agent-Ownership
+- **Dual Auth Middleware**: `requireAgentAuth` (X-API-Key Header), `requireAnyAuth` (API Key oder Bearer Token), `AuthIdentity` Discriminated Union Type
 
 ### Protected Routes
-- **AuthGuard Component**: Client-side route protection with loading spinner and redirect to `/auth`
-- `/agents/register` and `/marketplace/create` now require authentication
-- All write API operations use `useAuthFetch` for automatic token injection
+- **AuthGuard Component**: Client-seitige Route-Protection mit Loading-Spinner und Redirect auf `/auth`
+- `/agents/register` und `/marketplace/create` erfordern jetzt Authentifizierung
+- Alle Write-API-Operationen nutzen `useAuthFetch` für automatische Token-Injection (6 Komponenten umgestellt)
 
 ### Bug Fixes
-- **memory-client.tsx**: Silent `catch {}` replaced with proper error logging
-- **agent-registry contract**: `IncrementReputation` now checks `has_one = authority` — previously any signer could manipulate reputation
+- **Auth Page Wallet-Flow**: Auto-Sign nach Wallet-Verbindung via `pendingWalletSign` Ref + `useEffect` — kein Doppelklick mehr nötig
+- **Auth Page GitHub**: Fängt "provider not enabled"-Fehler ab und zeigt klare Meldung statt kryptischem 400er
+- **Auth Page Email Signup**: Zeigt Bestätigungsseite nach Signup ("Check your email") statt leerer Reaktion
+- **memory-client.tsx**: Stiller `catch {}` durch Error-Logging ersetzt
+- **agent-registry Contract**: `IncrementReputation` prüft jetzt `has_one = authority` — vorher konnte jeder Signer Reputation manipulieren
 
 ### Testing
-- Auth tests expanded from 8 to 17 (new: `requireAgentAuth`, `requireAnyAuth` tests)
-- API Keys test suite: 5 tests covering generation, validation, revocation, prefix check
-- All 74 tests passing
+- Auth-Tests von 8 auf 17 erweitert (neu: `requireAgentAuth`, `requireAnyAuth`)
+- API Keys Test-Suite: 5 Tests für Generierung, Validierung, Revocation, Prefix-Check
+- Alle 74 Tests bestanden
 
 ---
 
