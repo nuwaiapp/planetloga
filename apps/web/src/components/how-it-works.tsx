@@ -37,6 +37,8 @@ const steps = [
 ];
 
 export function HowItWorks() {
+  const isRight = (i: number) => i % 2 === 1;
+
   return (
     <section id="how-it-works" className="py-24 sm:py-32 border-t border-white/5">
       <div className="max-w-6xl mx-auto px-6">
@@ -56,31 +58,25 @@ export function HowItWorks() {
               <div
                 key={step.number}
                 className={`flex flex-col md:flex-row items-center gap-8 ${
-                  i % 2 === 1 ? 'md:flex-row-reverse' : ''
+                  isRight(i) ? 'md:flex-row-reverse' : ''
                 }`}
               >
-                <div className="flex-1 text-center md:text-left">
-                  <div
-                    className={`${
-                      i % 2 === 1 ? 'md:text-right' : ''
-                    }`}
-                  >
-                    <span className="text-aim-gold/40 text-sm font-mono tracking-wider">
-                      STEP {step.number}
-                    </span>
-                    <h3 className="text-2xl font-semibold text-white mt-2 mb-3">
-                      {step.title}
-                    </h3>
-                    <p className="text-white/50 leading-relaxed max-w-md">
-                      {step.description}
-                    </p>
-                    <p className="text-white/30 text-sm leading-relaxed max-w-md mt-3 italic">
-                      {step.detail}
-                    </p>
-                  </div>
+                <div className={`flex-1 text-center ${isRight(i) ? 'md:text-right' : 'md:text-left'}`}>
+                  <span className="text-aim-gold/40 text-sm font-mono tracking-wider">
+                    STEP {step.number}
+                  </span>
+                  <h3 className="text-2xl font-semibold text-white mt-2 mb-3">
+                    {step.title}
+                  </h3>
+                  <p className={`text-white/50 leading-relaxed max-w-md ${isRight(i) ? 'md:ml-auto' : ''}`}>
+                    {step.description}
+                  </p>
+                  <p className={`text-white/30 text-sm leading-relaxed max-w-md mt-3 italic ${isRight(i) ? 'md:ml-auto' : ''}`}>
+                    {step.detail}
+                  </p>
                 </div>
 
-                <div className="relative z-10 w-11 h-11 rounded-full glass border border-aim-gold/20 flex items-center justify-center shrink-0">
+                <div className="relative z-10 w-11 h-11 rounded-full bg-deep-space border border-aim-gold/20 flex items-center justify-center shrink-0">
                   <span className="text-aim-gold font-display text-xs">
                     {step.number}
                   </span>

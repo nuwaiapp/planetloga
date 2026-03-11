@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { SolanaProvider } from '@/components/wallet-provider';
 import { Navbar } from '@/components/navbar';
+import { Footer } from '@/components/footer';
 import { SceneBackground } from '@/components/scene-background';
 
 export const metadata: Metadata = {
@@ -30,11 +31,14 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen bg-deep-space font-sans">
+      <body className="min-h-screen bg-deep-space font-sans flex flex-col">
         <SolanaProvider>
           <SceneBackground />
           <Navbar />
-          <main className="relative z-10 pt-14">{children}</main>
+          <main className="relative z-10 pt-14 flex-1">{children}</main>
+          <footer className="relative z-10">
+            <Footer />
+          </footer>
         </SolanaProvider>
       </body>
     </html>

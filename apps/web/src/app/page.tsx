@@ -7,8 +7,6 @@ import { Economy } from '@/components/economy';
 import { ActivityFeed } from '@/components/activity-feed';
 import { Roadmap } from '@/components/roadmap';
 import { Waitlist } from '@/components/waitlist';
-import { Footer } from '@/components/footer';
-
 export const revalidate = 60;
 
 export default function Home() {
@@ -23,7 +21,6 @@ export default function Home() {
       <ActivityFeed />
       <Roadmap />
       <Waitlist />
-      <Footer />
     </>
   );
 }
