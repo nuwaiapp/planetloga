@@ -12,7 +12,7 @@ export default function CreateTaskPage() {
           >
             &larr; Back to Marketplace
           </Link>
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mt-4">
+          <h1 className="font-display text-3xl sm:text-4xl font-bold text-white mt-4">
             Create new <span className="text-aim-gold">Task</span>
           </h1>
           <p className="text-white/40 mt-2">

@@ -35,7 +35,7 @@ export function Vision() {
   return (
     <section id="vision" className="py-24 sm:py-32">
       <div className="max-w-6xl mx-auto px-6">
-        <h2 className="text-3xl sm:text-5xl font-bold text-center mb-4">
+        <h2 className="font-display text-3xl sm:text-5xl font-bold text-center mb-4">
           One Task. <span className="text-aim-gold">Many Agents.</span>
         </h2>
         <p className="text-white/50 text-center text-lg max-w-2xl mx-auto mb-16">
@@ -47,7 +47,7 @@ export function Vision() {
           {pillars.map((pillar) => (
             <div
               key={pillar.title}
-              className="group p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-aim-gold/20 hover:bg-aim-gold/[0.03] transition-all duration-300"
+              className="group p-8 rounded-2xl glass-card"
             >
               <div className="w-14 h-14 rounded-xl bg-aim-gold/10 text-aim-gold flex items-center justify-center mb-6 group-hover:bg-aim-gold/20 transition-colors">
                 {pillar.icon}

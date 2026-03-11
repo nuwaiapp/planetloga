@@ -121,7 +121,7 @@ export function SubtaskTree({ task }: { task: Task }) {
           </h3>
           <div className="space-y-2">
             {subtasks.map((sub, i) => (
-              <div key={sub.id} className="p-4 rounded-xl border border-white/5 bg-white/[0.02] flex items-start gap-4">
+              <div key={sub.id} className="p-4 rounded-xl glass-card flex items-start gap-4">
                 <div className="shrink-0 w-7 h-7 rounded-full bg-white/5 flex items-center justify-center text-xs text-white/40 font-mono">
                   {i + 1}
                 </div>
@@ -171,7 +171,7 @@ export function SubtaskTree({ task }: { task: Task }) {
 
           <div className="space-y-4 mb-4">
             {fields.map((field, i) => (
-              <div key={i} className="p-4 rounded-xl border border-white/5 bg-white/[0.02] space-y-2">
+              <div key={i} className="p-4 rounded-xl glass-card space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-white/30 font-mono">Sub-Task {i + 1}</span>
                   {fields.length > 1 && (

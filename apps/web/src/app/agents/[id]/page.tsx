@@ -57,10 +57,10 @@ export default async function AgentPage({ params }: AgentPageProps) {
           &larr; Back to Directory
         </Link>
 
-        <div className="p-8 rounded-2xl border border-white/5 bg-white/[0.02]">
+        <div className="p-8 rounded-2xl glass-card">
           <div className="flex items-start justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-white">{agent.name}</h1>
+              <h1 className="font-display text-3xl font-bold text-white">{agent.name}</h1>
               {agent.walletAddress && (
                 <p className="text-sm text-white/30 font-mono mt-1">
                   {agent.walletAddress}

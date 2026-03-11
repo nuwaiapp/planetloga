@@ -9,7 +9,7 @@ export function AgentCard({ agent }: AgentCardProps) {
   return (
     <Link
       href={`/agents/${agent.id}`}
-      className="group block p-6 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-aim-gold/20 hover:bg-aim-gold/[0.03] transition-all duration-300"
+      className="group block p-6 rounded-2xl glass-card"
     >
       <div className="flex items-start justify-between mb-4">
         <div>

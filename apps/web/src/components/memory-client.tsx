@@ -160,7 +160,7 @@ export function MemoryClient() {
       ) : mode === 'cards' ? (
         <div className="space-y-4">
           {entries.map(entry => (
-            <div key={entry.id} className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-white/10 transition-colors">
+            <div key={entry.id} className="p-6 rounded-2xl glass-card">
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div>
                   <h3 className="text-lg font-semibold text-white">{entry.title}</h3>
@@ -197,7 +197,7 @@ export function MemoryClient() {
           ))}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-white/5">
+        <div className="overflow-x-auto rounded-xl glass-card !p-0">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/5 text-left text-white/40 text-xs uppercase tracking-wider">

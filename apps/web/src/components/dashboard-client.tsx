@@ -47,7 +47,7 @@ export function DashboardClient() {
   }, [fetchBalance]);
 
   return (
-    <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-8">
+    <div className="rounded-2xl glass-card p-8">
       <h2 className="text-xl font-semibold text-white mb-6">Your Wallet</h2>
 
       {!connected ? (

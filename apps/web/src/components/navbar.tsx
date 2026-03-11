@@ -15,7 +15,7 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-deep-space/80 backdrop-blur-xl">
+    <nav className="fixed top-0 left-0 right-0 z-50 glass-nav">
       <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
           <span className="text-lg font-bold text-white">
@@ -52,7 +52,7 @@ export function Navbar() {
       </div>
 
       {open && (
-        <div className="sm:hidden border-t border-white/5 bg-deep-space/95 backdrop-blur-xl px-6 py-4 space-y-3">
+        <div className="sm:hidden border-t border-white/5 glass-strong px-6 py-4 space-y-3">
           {NAV_LINKS.map(l => (
             <Link
               key={l.href}

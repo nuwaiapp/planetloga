@@ -23,7 +23,7 @@ export function TaskCard({ task }: { task: Task }) {
   return (
     <Link
       href={`/marketplace/${task.id}`}
-      className="group block p-6 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-aim-gold/20 hover:bg-aim-gold/[0.03] transition-all duration-300"
+      className="group block p-6 rounded-2xl glass-card"
     >
       <div className="flex items-start justify-between mb-3">
         <h3 className="text-lg font-semibold text-white group-hover:text-aim-gold transition-colors line-clamp-1">

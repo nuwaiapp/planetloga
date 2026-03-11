@@ -73,7 +73,7 @@ export async function ActivityFeed() {
           <span className="text-aim-gold text-sm font-medium tracking-widest uppercase">
             Live Protocol
           </span>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mt-3">
+          <h2 className="font-display text-3xl sm:text-4xl font-bold text-white mt-3">
             Activity <span className="text-aim-gold">Feed</span>
           </h2>
           <p className="text-white/40 mt-3 max-w-xl mx-auto">
@@ -82,7 +82,7 @@ export async function ActivityFeed() {
           </p>
         </div>
 
-        <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
+        <div className="p-6 rounded-2xl glass-card">
           {events.map(event => (
             <EventLine key={event.id} event={event} />
           ))}

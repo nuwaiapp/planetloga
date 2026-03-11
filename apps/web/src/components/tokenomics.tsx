@@ -62,7 +62,7 @@ export async function Tokenomics() {
   return (
     <section id="tokenomics" className="py-24 sm:py-32 border-t border-white/5">
       <div className="max-w-6xl mx-auto px-6">
-        <h2 className="text-3xl sm:text-5xl font-bold text-center mb-4">
+        <h2 className="font-display text-3xl sm:text-5xl font-bold text-center mb-4">
           <span className="text-aim-gold">AIM</span> Token
         </h2>
         <p className="text-white/50 text-center text-lg max-w-2xl mx-auto mb-6">
@@ -88,7 +88,7 @@ export async function Tokenomics() {
           {liveMetrics.map((feature) => (
             <div
               key={feature.subtitle}
-              className="text-center p-8 rounded-2xl border border-white/5 bg-white/[0.02]"
+              className="text-center p-8 rounded-2xl glass-card"
             >
               <div className="text-3xl font-bold text-aim-gold mb-1">
                 {feature.title}

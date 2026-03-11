@@ -154,7 +154,7 @@ export function MarketplaceClient({ initialTasks }: MarketplaceClientProps) {
           ))}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-white/5">
+        <div className="overflow-x-auto rounded-xl glass-card !p-0">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/5 text-left text-white/40 text-xs uppercase tracking-wider">

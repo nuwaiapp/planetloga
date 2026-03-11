@@ -4,16 +4,13 @@
   --color-aim-gold: #D4AF37;
   --color-aim-gold-light: #E8CC6E;
   --color-aim-gold-dark: #A88B2A;
-  --color-deep-space: #050A14;
+  --color-deep-space: #060810;
   --color-deep-blue: #0A1628;
   --color-slate-dark: #111827;
   --color-slate-mid: #1E293B;
-  --color-matrix: #00FF88;
-  --color-matrix-dim: #00CC6A;
-  --color-matrix-bg: #020A06;
-  --color-grid-line: #0A2A18;
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-display: 'Syne', 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
 html {
@@ -22,7 +19,7 @@ html {
 
 body {
   background-color: var(--color-deep-space);
-  color: #E2E8F0;
+  color: #dfe4ed;
 }
 
 ::selection {
@@ -30,72 +27,128 @@ body {
   color: var(--color-deep-space);
 }
 
-/* Fix select/option rendering on dark backgrounds */
-select {
-  color-scheme: dark;
+select { color-scheme: dark; }
+option { background-color: #111827; color: #dfe4ed; }
+
+/* ── Liquid Glass Primitives ── */
+
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-option {
-  background-color: #111827;
-  color: #E2E8F0;
+.glass-strong {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(40px) saturate(1.6);
+  -webkit-backdrop-filter: blur(40px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-html[data-view="ai"] option {
-  background-color: #0A1A10;
-  color: #00FF88;
+.glass-card {
+  background: rgba(255, 255, 255, 0.025);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 4px 24px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* AI View global overrides */
-html[data-view="ai"] {
-  --color-deep-space: #020A06;
+.glass-card:hover {
+  background: rgba(212, 175, 55, 0.03);
+  border-color: rgba(212, 175, 55, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(212, 175, 55, 0.06),
+    0 8px 40px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(212, 175, 55, 0.04);
+  transform: translateY(-1px);
 }
 
-html[data-view="ai"] body {
-  font-family: var(--font-mono);
-  background-color: #020A06;
-  color: #00FF88;
+.glass-nav {
+  background: rgba(6, 8, 16, 0.6);
+  backdrop-filter: blur(24px) saturate(1.5);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-html[data-view="ai"] ::selection {
-  background-color: #00FF88;
-  color: #020A06;
-}
+/* ── Grain Overlay ── */
 
-/* AI View: scanline effect */
-html[data-view="ai"] body::after {
+body::before {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 9999;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 255, 136, 0.015) 2px,
-    rgba(0, 255, 136, 0.015) 4px
+  z-index: 9998;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* ── Stagger Reveal Animations ── */
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease both;
+}
+
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+.stagger-6 { animation-delay: 0.6s; }
+
+/* ── Gold Shimmer Text ── */
+
+.text-shimmer {
+  background: linear-gradient(
+    110deg,
+    var(--color-aim-gold-dark) 0%,
+    var(--color-aim-gold) 40%,
+    var(--color-aim-gold-light) 50%,
+    var(--color-aim-gold) 60%,
+    var(--color-aim-gold-dark) 100%
   );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 6s ease-in-out infinite;
 }
 
-/* AI View cursor blink */
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
-}
+/* ── Scrollbar ── */
 
-.ai-cursor::after {
-  content: '_';
-  animation: blink 1s step-end infinite;
-  color: #00FF88;
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.15);
+  border-radius: 3px;
 }
-
-/* AI View data stream animation */
-@keyframes datastream {
-  0% { opacity: 0.3; }
-  50% { opacity: 1; }
-  100% { opacity: 0.3; }
-}
-
-.ai-pulse {
-  animation: datastream 2s ease-in-out infinite;
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.3);
 }

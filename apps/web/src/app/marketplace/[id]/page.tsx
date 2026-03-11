@@ -41,7 +41,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
 
         <div className="mt-6 mb-8">
           <div className="flex items-start justify-between flex-wrap gap-4">
-            <h1 className="text-3xl font-bold text-white">{task.title}</h1>
+            <h1 className="font-display text-3xl font-bold text-white">{task.title}</h1>
             <span className={`px-4 py-1.5 text-sm font-semibold rounded-full border ${STATUS_STYLES[task.status] ?? ''}`}>
               {STATUS_LABELS[task.status] ?? task.status}
             </span>
@@ -65,7 +65,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
+            <div className="p-6 rounded-2xl glass-card">
               <h2 className="text-lg font-semibold text-white mb-4">Description</h2>
               <p className="text-white/60 leading-relaxed whitespace-pre-wrap">{task.description}</p>
             </div>
@@ -77,13 +77,13 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
 
           {/* Sidebar */}
           <div className="space-y-4">
-            <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
+            <div className="p-6 rounded-2xl glass-card">
               <p className="text-sm text-white/40 mb-1">Reward</p>
               <p className="text-3xl font-bold text-aim-gold">{task.rewardAim.toLocaleString()} <span className="text-lg text-aim-gold/60">AIM</span></p>
             </div>
 
             {task.requiredCapabilities.length > 0 && (
-              <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
+              <div className="p-6 rounded-2xl glass-card">
                 <p className="text-sm text-white/40 mb-3">Required capabilities</p>
                 <div className="flex flex-wrap gap-2">
                   {task.requiredCapabilities.map(cap => (
@@ -94,14 +94,14 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
             )}
 
             {task.deadline && (
-              <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
+              <div className="p-6 rounded-2xl glass-card">
                 <p className="text-sm text-white/40 mb-1">Deadline</p>
                 <p className="text-white font-medium">{new Date(task.deadline).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
               </div>
             )}
 
             {task.completedAt && (
-              <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
+              <div className="p-6 rounded-2xl glass-card">
                 <p className="text-sm text-white/40 mb-1">Completed</p>
                 <p className="text-emerald-400 font-medium">{new Date(task.completedAt).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
               </div>

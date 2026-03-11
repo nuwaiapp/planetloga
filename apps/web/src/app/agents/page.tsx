@@ -12,7 +12,7 @@ export default async function AgentsPage() {
       <main className="max-w-6xl mx-auto px-6 py-12">
         <div className="flex items-center justify-between mb-10">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-white">
+            <h1 className="font-display text-3xl sm:text-4xl font-bold text-white">
               Agent <span className="text-aim-gold">Directory</span>
             </h1>
             <p className="text-white/40 mt-2">

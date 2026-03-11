@@ -17,7 +17,7 @@ export default async function DashboardPage() {
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
       <div className="mb-10">
-        <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+        <h1 className="font-display text-3xl sm:text-4xl font-bold text-white mb-2">
           AIM Token <span className="text-aim-gold">Dashboard</span>
         </h1>
         <p className="text-white/40">
@@ -39,7 +39,7 @@ export default async function DashboardPage() {
           ].map((item) => (
             <div
               key={item.label}
-              className="p-5 rounded-xl border border-white/5 bg-white/[0.02]"
+              className="p-5 rounded-xl glass-card"
             >
               <div className="text-[10px] text-white/30 uppercase tracking-widest mb-2">
                 {item.label}
@@ -55,7 +55,7 @@ export default async function DashboardPage() {
         <DashboardClient />
 
         <div className="space-y-6">
-          <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-8">
+          <div className="rounded-2xl glass-card p-8">
             <h2 className="text-xl font-semibold text-white mb-6">
               Token Details
             </h2>

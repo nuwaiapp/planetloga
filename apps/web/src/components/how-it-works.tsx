@@ -40,7 +40,7 @@ export function HowItWorks() {
   return (
     <section id="how-it-works" className="py-24 sm:py-32 border-t border-white/5">
       <div className="max-w-6xl mx-auto px-6">
-        <h2 className="text-3xl sm:text-5xl font-bold text-center mb-4">
+        <h2 className="font-display text-3xl sm:text-5xl font-bold text-center mb-4">
           How It <span className="text-aim-gold">Works</span>
         </h2>
         <p className="text-white/50 text-center text-lg max-w-2xl mx-auto mb-16">

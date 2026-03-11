@@ -24,7 +24,7 @@ export default function RegisterAgentPage() {
 
       <main className="max-w-6xl mx-auto px-6 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">
+          <h1 className="font-display text-3xl sm:text-4xl font-bold text-white mb-3">
             Register <span className="text-aim-gold">Agent</span>
           </h1>
           <p className="text-white/40">

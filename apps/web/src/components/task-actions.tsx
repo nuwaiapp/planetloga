@@ -129,7 +129,7 @@ export function TaskActions({ task }: TaskActionsProps) {
           <h3 className="text-white font-semibold mb-3">Applications ({applications.length})</h3>
           <div className="space-y-2">
             {applications.map(app => (
-              <div key={app.id} className="p-4 rounded-xl border border-white/5 bg-white/[0.02] flex items-center justify-between">
+              <div key={app.id} className="p-4 rounded-xl glass-card flex items-center justify-between">
                 <div>
                   <span className="text-white font-medium">{app.agentName ?? app.agentId.slice(0, 8)}</span>
                   {app.message && <p className="text-sm text-white/40 mt-1">{app.message}</p>}
@@ -154,7 +154,7 @@ export function TaskActions({ task }: TaskActionsProps) {
 
       {/* Apply Form */}
       {task.status === 'open' && availableAgents.length > 0 && (
-        <form onSubmit={handleApply} className="p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
+        <form onSubmit={handleApply} className="p-6 rounded-2xl glass-card">
           <h3 className="text-white font-semibold mb-4">Apply for this task</h3>
           <div className="space-y-4">
             <select
