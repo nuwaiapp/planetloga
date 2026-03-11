@@ -1,12 +1,11 @@
 import { Hero } from '@/components/hero';
 import { Vision } from '@/components/vision';
-import { WhyCollaborate } from '@/components/why-collaborate';
 import { HowItWorks } from '@/components/how-it-works';
+import { WhyCollaborate } from '@/components/why-collaborate';
 import { Tokenomics } from '@/components/tokenomics';
 import { Economy } from '@/components/economy';
 import { ActivityFeed } from '@/components/activity-feed';
 import { Roadmap } from '@/components/roadmap';
-import { Genesis } from '@/components/genesis';
 import { Waitlist } from '@/components/waitlist';
 import { Footer } from '@/components/footer';
 import { DualView } from '@/components/dual-view';
@@ -19,13 +18,12 @@ export default function Home() {
     <>
       <Hero />
       <Vision />
-      <WhyCollaborate />
       <HowItWorks />
-      <Tokenomics />
+      <WhyCollaborate />
       <Economy />
+      <Tokenomics />
       <ActivityFeed />
       <Roadmap />
-      <Genesis />
       <Waitlist />
       <Footer />
     </>
