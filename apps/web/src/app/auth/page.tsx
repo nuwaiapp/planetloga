@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useWalletModal } from '@solana/wallet-adapter-react-ui';
-import { Bot, Mail, Github, Wallet } from 'lucide-react';
+import { Bot, Mail, Github, Wallet, CheckCircle } from 'lucide-react';
 import { getSupabaseBrowser } from '@/lib/supabase-browser';
 import { useAuth } from '@/components/auth-provider';
 import bs58 from 'bs58';
@@ -14,7 +14,7 @@ type AuthMode = 'login' | 'signup';
 export default function AuthPage() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
-  const { publicKey, signMessage, connected } = useWallet();
+  const { publicKey, signMessage, connected, connecting } = useWallet();
   const { setVisible: openWalletModal } = useWalletModal();
 
   const [mode, setMode] = useState<AuthMode>('login');
@@ -22,60 +22,20 @@ export default function AuthPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [signupSuccess, setSignupSuccess] = useState(false);
+  const pendingWalletSign = useRef(false);
 
-  if (isAuthenticated) {
-    router.replace('/dashboard');
-    return null;
-  }
-
-  async function handleEmail(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    try {
-      const supabase = getSupabaseBrowser();
-
-      if (mode === 'signup') {
-        const { error: err } = await supabase.auth.signUp({ email, password });
-        if (err) throw err;
-      } else {
-        const { error: err } = await supabase.auth.signInWithPassword({ email, password });
-        if (err) throw err;
-      }
-
-      router.push('/dashboard');
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Authentication failed');
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/dashboard');
     }
-  }
+  }, [isAuthenticated, router]);
 
-  async function handleGitHub() {
-    setError(null);
-    const supabase = getSupabaseBrowser();
-    const { error: err } = await supabase.auth.signInWithOAuth({
-      provider: 'github',
-      options: { redirectTo: `${window.location.origin}/dashboard` },
-    });
-    if (err) setError(err.message);
-  }
-
-  async function handleWallet() {
-    setError(null);
-
-    if (!connected || !publicKey) {
-      openWalletModal(true);
-      return;
-    }
-
-    if (!signMessage) {
-      setError('Wallet does not support message signing');
-      return;
-    }
+  const performWalletSign = useCallback(async () => {
+    if (!publicKey || !signMessage) return;
 
     setLoading(true);
+    setError(null);
     try {
       const timestamp = Date.now();
       const message = `Sign in to PlanetLoga.AI\nWallet: ${publicKey.toBase58()}\nTimestamp: ${timestamp}`;
@@ -93,7 +53,7 @@ export default function AuthPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? 'Wallet verification failed');
+      if (!res.ok) throw new Error(data.error?.message ?? data.error ?? 'Wallet verification failed');
 
       const supabase = getSupabaseBrowser();
       const { error: otpErr } = await supabase.auth.verifyOtp({
@@ -107,7 +67,97 @@ export default function AuthPage() {
       setError(err instanceof Error ? err.message : 'Wallet sign-in failed');
     } finally {
       setLoading(false);
+      pendingWalletSign.current = false;
     }
+  }, [publicKey, signMessage, router]);
+
+  useEffect(() => {
+    if (connected && publicKey && signMessage && pendingWalletSign.current) {
+      performWalletSign();
+    }
+  }, [connected, publicKey, signMessage, performWalletSign]);
+
+  async function handleWallet() {
+    setError(null);
+
+    if (connected && publicKey && signMessage) {
+      await performWalletSign();
+      return;
+    }
+
+    pendingWalletSign.current = true;
+    openWalletModal(true);
+  }
+
+  async function handleEmail(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setSignupSuccess(false);
+    setLoading(true);
+
+    try {
+      const supabase = getSupabaseBrowser();
+
+      if (mode === 'signup') {
+        const { error: err } = await supabase.auth.signUp({ email, password });
+        if (err) throw err;
+        setSignupSuccess(true);
+        setLoading(false);
+        return;
+      }
+
+      const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+      if (err) throw err;
+      router.push('/dashboard');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Authentication failed');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleGitHub() {
+    setError(null);
+    setLoading(true);
+    try {
+      const supabase = getSupabaseBrowser();
+      const { error: err } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: { redirectTo: `${window.location.origin}/dashboard` },
+      });
+      if (err) {
+        if (err.message.includes('not enabled') || err.message.includes('Unsupported provider')) {
+          throw new Error('GitHub login is not configured yet. Use Email or Wallet instead.');
+        }
+        throw err;
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'GitHub login failed');
+      setLoading(false);
+    }
+  }
+
+  if (isAuthenticated) return null;
+
+  if (signupSuccess) {
+    return (
+      <div className="min-h-[80dvh] flex items-center justify-center px-6">
+        <div className="w-full max-w-sm text-center">
+          <CheckCircle className="w-10 h-10 text-emerald-400 mx-auto mb-4" />
+          <h1 className="font-display text-2xl font-bold text-white mb-2">Check your email</h1>
+          <p className="text-white/40 text-sm mb-6">
+            We sent a confirmation link to <span className="text-white/70">{email}</span>.
+            Click the link to activate your account.
+          </p>
+          <button
+            onClick={() => { setSignupSuccess(false); setMode('login'); }}
+            className="text-aim-gold/70 hover:text-aim-gold text-sm"
+          >
+            Back to Sign In
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -126,11 +176,15 @@ export default function AuthPage() {
         <div className="space-y-3 mb-6">
           <button
             onClick={handleWallet}
-            disabled={loading}
+            disabled={loading || connecting}
             className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg glass text-white/80 text-sm font-medium hover:text-white transition-colors disabled:opacity-50"
           >
             <Wallet className="w-4 h-4" />
-            {connected ? 'Sign in with Wallet' : 'Connect Wallet'}
+            {connecting
+              ? 'Connecting...'
+              : connected
+                ? 'Sign in with Wallet'
+                : 'Connect Wallet'}
           </button>
 
           <button
@@ -178,7 +232,7 @@ export default function AuthPage() {
             className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-aim-gold text-deep-space font-semibold text-sm hover:bg-aim-gold-light transition-colors disabled:opacity-50"
           >
             <Mail className="w-4 h-4" />
-            {mode === 'login' ? 'Sign In' : 'Sign Up'}
+            {loading ? 'Processing...' : mode === 'login' ? 'Sign In' : 'Sign Up'}
           </button>
         </form>
 
