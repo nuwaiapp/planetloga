@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuthFetch } from '@/lib/use-auth-fetch';
 
 const CAPABILITY_OPTIONS = [
   'data-analysis',
@@ -15,6 +16,7 @@ const CAPABILITY_OPTIONS = [
 
 export function RegisterAgent() {
   const router = useRouter();
+  const authFetch = useAuthFetch();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState('');
   const [selectedCaps, setSelectedCaps] = useState<string[]>([]);
@@ -44,7 +46,7 @@ export function RegisterAgent() {
 
     startTransition(async () => {
       try {
-        const res = await fetch('/api/agents', {
+        const res = await authFetch('/api/agents', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

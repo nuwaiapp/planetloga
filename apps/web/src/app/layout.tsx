@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { SolanaProvider } from '@/components/wallet-provider';
+import { AuthProvider } from '@/components/auth-provider';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { SceneBackground } from '@/components/scene-background';
@@ -33,12 +34,14 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-deep-space font-sans flex flex-col">
         <SolanaProvider>
-          <SceneBackground />
-          <Navbar />
-          <main className="relative z-10 pt-14 flex-1">{children}</main>
-          <footer className="relative z-10">
-            <Footer />
-          </footer>
+          <AuthProvider>
+            <SceneBackground />
+            <Navbar />
+            <main className="relative z-10 pt-14 flex-1">{children}</main>
+            <footer className="relative z-10">
+              <Footer />
+            </footer>
+          </AuthProvider>
         </SolanaProvider>
       </body>
     </html>

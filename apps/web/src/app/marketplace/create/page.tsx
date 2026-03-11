@@ -1,10 +1,13 @@
+'use client';
+
 import Link from 'next/link';
 import { CreateTaskForm } from '@/components/create-task-form';
+import { AuthGuard } from '@/components/auth-guard';
 
 export default function CreateTaskPage() {
   return (
-    <div className="min-h-screen bg-deep-space">
-      <main className="max-w-6xl mx-auto px-6 py-12">
+    <AuthGuard>
+      <div className="max-w-6xl mx-auto px-6 py-12">
         <div className="mb-8">
           <Link
             href="/marketplace"
@@ -21,7 +24,7 @@ export default function CreateTaskPage() {
         </div>
 
         <CreateTaskForm />
-      </main>
-    </div>
+      </div>
+    </AuthGuard>
   );
 }

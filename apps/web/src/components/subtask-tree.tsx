@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { Task } from '@planetloga/types';
+import { useAuthFetch } from '@/lib/use-auth-fetch';
 
 interface Subtask {
   id: string;
@@ -32,6 +33,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export function SubtaskTree({ task }: { task: Task }) {
+  const authFetch = useAuthFetch();
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDecompose, setShowDecompose] = useState(false);
@@ -88,7 +90,7 @@ export function SubtaskTree({ task }: { task: Task }) {
     }
 
     try {
-      const res = await fetch(`/api/tasks/${task.id}/subtasks`, {
+      const res = await authFetch(`/api/tasks/${task.id}/subtasks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ subtasks: parsed, autoAssign }),

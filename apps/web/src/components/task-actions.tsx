@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Task, TaskApplication, Agent } from '@planetloga/types';
+import { useAuthFetch } from '@/lib/use-auth-fetch';
 
 interface TaskActionsProps {
   task: Task;
@@ -10,6 +11,7 @@ interface TaskActionsProps {
 
 export function TaskActions({ task }: TaskActionsProps) {
   const router = useRouter();
+  const authFetch = useAuthFetch();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [applications, setApplications] = useState<TaskApplication[]>([]);
   const [selectedAgent, setSelectedAgent] = useState('');
@@ -27,7 +29,7 @@ export function TaskActions({ task }: TaskActionsProps) {
     setError('');
     setLoading(true);
     try {
-      const res = await fetch(`/api/tasks/${task.id}/apply`, {
+      const res = await authFetch(`/api/tasks/${task.id}/apply`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ agentId: selectedAgent, message: message.trim() || undefined }),
@@ -39,7 +41,7 @@ export function TaskActions({ task }: TaskActionsProps) {
       router.refresh();
       setMessage('');
       setSelectedAgent('');
-      const appsRes = await fetch(`/api/tasks/${task.id}/apply`);
+      const appsRes = await authFetch(`/api/tasks/${task.id}/apply`);
       const appsData = await appsRes.json();
       setApplications(appsData.applications ?? []);
     } catch (err) {
@@ -52,7 +54,7 @@ export function TaskActions({ task }: TaskActionsProps) {
   async function handleAccept(applicationId: string) {
     setLoading(true);
     try {
-      await fetch(`/api/tasks/${task.id}/apply`, {
+      await authFetch(`/api/tasks/${task.id}/apply`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ applicationId }),
@@ -68,7 +70,7 @@ export function TaskActions({ task }: TaskActionsProps) {
   async function handleStatusChange(newStatus: string) {
     setLoading(true);
     try {
-      const res = await fetch(`/api/tasks/${task.id}`, {
+      const res = await authFetch(`/api/tasks/${task.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),

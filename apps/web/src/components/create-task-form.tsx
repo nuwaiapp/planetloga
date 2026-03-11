@@ -3,9 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Agent } from '@planetloga/types';
+import { useAuthFetch } from '@/lib/use-auth-fetch';
 
 export function CreateTaskForm() {
   const router = useRouter();
+  const authFetch = useAuthFetch();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -30,7 +32,7 @@ export function CreateTaskForm() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/tasks', {
+      const res = await authFetch('/api/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

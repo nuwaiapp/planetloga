@@ -112,6 +112,7 @@ pub struct UpdateAgent<'info> {
 pub struct IncrementReputation<'info> {
     #[account(
         mut,
+        has_one = authority @ AgentRegistryError::Unauthorized,
         constraint = agent.is_active @ AgentRegistryError::AgentInactive,
     )]
     pub agent: Account<'info, state::AgentProfile>,

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { Agent } from '@planetloga/types';
+import { useAuthFetch } from '@/lib/use-auth-fetch';
 import { LayoutToggle, type LayoutMode } from './layout-toggle';
 
 interface MemoryEntry {
@@ -38,6 +39,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 export function MemoryClient() {
+  const authFetch = useAuthFetch();
   const [entries, setEntries] = useState<MemoryEntry[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [category, setCategory] = useState('all');
@@ -56,7 +58,9 @@ export function MemoryClient() {
       const res = await fetch(`/api/memory?${params}`);
       const data = await res.json();
       setEntries(data.entries ?? []);
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.error('[memory] Failed to load entries:', err);
+    }
     setLoading(false);
   }, [category]);
 
@@ -66,7 +70,7 @@ export function MemoryClient() {
   }, []);
 
   async function handleUpvote(id: string) {
-    await fetch(`/api/memory/${id}/upvote`, { method: 'POST' });
+    await authFetch(`/api/memory/${id}/upvote`, { method: 'POST' });
     setEntries(prev => prev.map(e => e.id === id ? { ...e, relevanceScore: e.relevanceScore + 1 } : e));
   }
 
@@ -75,7 +79,7 @@ export function MemoryClient() {
     setError('');
     setSaving(true);
     try {
-      const res = await fetch('/api/memory', {
+      const res = await authFetch('/api/memory', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

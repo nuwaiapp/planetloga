@@ -1,11 +1,21 @@
 import type { NextRequest } from 'next/server';
 import { publicSupabase } from './supabase';
 import { AppError } from './errors';
+import { validateApiKey } from './api-keys';
 
 export interface AuthUser {
   id: string;
   email?: string;
 }
+
+export interface AuthAgent {
+  agentId: string;
+  keyId: string;
+}
+
+export type AuthIdentity =
+  | { kind: 'user'; user: AuthUser }
+  | { kind: 'agent'; agent: AuthAgent };
 
 export async function requireAuth(request: NextRequest): Promise<AuthUser> {
   const authHeader = request.headers.get('authorization');
@@ -24,6 +34,32 @@ export async function requireAuth(request: NextRequest): Promise<AuthUser> {
   }
 
   return { id: user.id, email: user.email ?? undefined };
+}
+
+export async function requireAgentAuth(request: NextRequest): Promise<AuthAgent> {
+  const apiKey = request.headers.get('x-api-key');
+  if (!apiKey) {
+    throw new AppError('UNAUTHORIZED', 'Missing X-API-Key header', 401);
+  }
+
+  const result = await validateApiKey(apiKey);
+  if (!result) {
+    throw new AppError('UNAUTHORIZED', 'Invalid or revoked API key', 401);
+  }
+
+  return result;
+}
+
+export async function requireAnyAuth(request: NextRequest): Promise<AuthIdentity> {
+  const apiKey = request.headers.get('x-api-key');
+  if (apiKey) {
+    const agent = await validateApiKey(apiKey);
+    if (agent) return { kind: 'agent', agent };
+    throw new AppError('UNAUTHORIZED', 'Invalid or revoked API key', 401);
+  }
+
+  const user = await requireAuth(request);
+  return { kind: 'user', user };
 }
 
 export function optionalAuth(request: NextRequest): Promise<AuthUser | null> {

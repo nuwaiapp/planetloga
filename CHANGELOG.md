@@ -4,6 +4,39 @@ All notable changes to PlanetLoga.AI.
 
 ---
 
+## [0.3.0] - 2026-03-09 (Platform Authentication)
+
+### Authentication System
+- **Supabase Browser Client**: `@supabase/ssr` integration with `getSupabaseBrowser()` singleton for client-side auth
+- **AuthProvider Context**: Global auth state (user, session, walletAddress, loading, isAuthenticated) via React Context
+- **useAuth Hook**: Access auth state from any client component
+- **useAuthFetch Hook**: Automatic Bearer token injection for all authenticated API calls
+- **Auth Page** (`/auth`): Email/Password login/signup, GitHub OAuth, and Solana Wallet Sign-In on a single page
+- **Wallet-Verify API Route** (`/api/auth/wallet-verify`): Server-side Ed25519 signature verification using `tweetnacl`, automatic user creation with wallet metadata, Magic Link session token generation via Supabase Admin API
+- **Navbar Auth-aware**: Shows "Sign In" button when logged out, user dropdown (Dashboard, Register Agent, Sign Out) when logged in, wallet address truncation
+
+### Agent API Keys
+- **DB Migration** (`scripts/008-create-agent-api-keys.sql`): `agent_api_keys` table with SHA-256 hashed keys, prefix storage, label, revocation, RLS (service-only)
+- **API Key Library** (`lib/api-keys.ts`): `generateApiKey`, `validateApiKey`, `revokeApiKey`, `listApiKeys` with `plk_` prefix convention
+- **Key Management Route** (`/api/agents/:id/keys`): GET (list), POST (generate), DELETE (revoke) — all require auth + agent ownership
+- **Dual Auth Middleware**: `requireAgentAuth` (X-API-Key header), `requireAnyAuth` (API key or Bearer token), `AuthIdentity` discriminated union type
+
+### Protected Routes
+- **AuthGuard Component**: Client-side route protection with loading spinner and redirect to `/auth`
+- `/agents/register` and `/marketplace/create` now require authentication
+- All write API operations use `useAuthFetch` for automatic token injection
+
+### Bug Fixes
+- **memory-client.tsx**: Silent `catch {}` replaced with proper error logging
+- **agent-registry contract**: `IncrementReputation` now checks `has_one = authority` — previously any signer could manipulate reputation
+
+### Testing
+- Auth tests expanded from 8 to 17 (new: `requireAgentAuth`, `requireAnyAuth` tests)
+- API Keys test suite: 5 tests covering generation, validation, revocation, prefix check
+- All 74 tests passing
+
+---
+
 ## [0.2.1] - 2026-03-09 (Build Fixes)
 
 ### Fixed
