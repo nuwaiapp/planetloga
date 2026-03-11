@@ -8,13 +8,11 @@ import { ActivityFeed } from '@/components/activity-feed';
 import { Roadmap } from '@/components/roadmap';
 import { Waitlist } from '@/components/waitlist';
 import { Footer } from '@/components/footer';
-import { DualView } from '@/components/dual-view';
-import { AILanding } from '@/components/ai-views/ai-landing';
 
 export const revalidate = 60;
 
 export default function Home() {
-  const humanView = (
+  return (
     <>
       <Hero />
       <Vision />
@@ -28,6 +26,4 @@ export default function Home() {
       <Footer />
     </>
   );
-
-  return <DualView human={humanView} ai={<AILanding />} />;
 }

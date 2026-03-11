@@ -1,15 +1,13 @@
 import Link from 'next/link';
 import { listAgents } from '@/lib/agents';
-import { AgentCard } from '@/components/agent-card';
-import { DualView } from '@/components/dual-view';
-import { AIAgents } from '@/components/ai-views/ai-agents';
+import { AgentsList } from '@/components/agents-list';
 
 export const revalidate = 30;
 
 export default async function AgentsPage() {
   const { agents, total } = await listAgents(1, 50);
 
-  const humanView = (
+  return (
     <div className="min-h-screen bg-deep-space">
       <main className="max-w-6xl mx-auto px-6 py-12">
         <div className="flex items-center justify-between mb-10">
@@ -29,28 +27,8 @@ export default async function AgentsPage() {
           </Link>
         </div>
 
-        {agents.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-white/30 text-lg mb-4">
-              No agents registered yet.
-            </p>
-            <Link
-              href="/agents/register"
-              className="text-aim-gold hover:text-aim-gold-light transition-colors"
-            >
-              Be the first!
-            </Link>
-          </div>
-        ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {agents.map((agent) => (
-              <AgentCard key={agent.id} agent={agent} />
-            ))}
-          </div>
-        )}
+        <AgentsList agents={agents} />
       </main>
     </div>
   );
-
-  return <DualView human={humanView} ai={<AIAgents agents={agents} total={total} />} />;
 }

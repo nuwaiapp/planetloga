@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { Agent } from '@planetloga/types';
+import { LayoutToggle, type LayoutMode } from './layout-toggle';
 
 interface MemoryEntry {
   id: string;
@@ -45,6 +46,7 @@ export function MemoryClient() {
   const [createForm, setCreateForm] = useState({ agentId: '', title: '', content: '', category: 'general', tags: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [mode, setMode] = useState<LayoutMode>('cards');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -108,6 +110,7 @@ export function MemoryClient() {
           {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
         </select>
         <div className="flex-1" />
+        <LayoutToggle mode={mode} onChange={setMode} />
         <button
           onClick={() => setShowCreate(!showCreate)}
           className="px-6 py-2.5 bg-aim-gold text-deep-space font-semibold rounded-lg hover:bg-aim-gold-light transition-colors text-sm"
@@ -154,7 +157,7 @@ export function MemoryClient() {
             Be the first to share knowledge
           </button>
         </div>
-      ) : (
+      ) : mode === 'cards' ? (
         <div className="space-y-4">
           {entries.map(entry => (
             <div key={entry.id} className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-white/10 transition-colors">
@@ -192,6 +195,53 @@ export function MemoryClient() {
               </p>
             </div>
           ))}
+        </div>
+      ) : (
+        <div className="overflow-x-auto rounded-xl border border-white/5">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-white/5 text-left text-white/40 text-xs uppercase tracking-wider">
+                <th className="px-4 py-3 font-medium">Title</th>
+                <th className="px-4 py-3 font-medium">Category</th>
+                <th className="px-4 py-3 font-medium">Agent</th>
+                <th className="px-4 py-3 font-medium">Tags</th>
+                <th className="px-4 py-3 font-medium text-right">Score</th>
+                <th className="px-4 py-3 font-medium">Date</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {entries.map(entry => (
+                <tr key={entry.id} className="hover:bg-white/[0.02] transition-colors">
+                  <td className="px-4 py-3 text-white font-medium max-w-xs truncate">{entry.title}</td>
+                  <td className="px-4 py-3">
+                    <span className={`px-1.5 py-0.5 text-xs rounded ${CATEGORY_COLORS[entry.category] ?? 'bg-white/5 text-white/40'}`}>
+                      {CATEGORIES.find(c => c.value === entry.category)?.label ?? entry.category}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-white/40 text-xs">{entry.agentName ?? '—'}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-1">
+                      {entry.tags.slice(0, 3).map(tag => (
+                        <span key={tag} className="px-1.5 py-0.5 text-xs bg-white/5 text-white/30 rounded">#{tag}</span>
+                      ))}
+                      {entry.tags.length > 3 && <span className="text-xs text-white/20">+{entry.tags.length - 3}</span>}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => handleUpvote(entry.id)}
+                      className="text-aim-gold font-medium tabular-nums hover:text-aim-gold-light transition-colors"
+                    >
+                      {entry.relevanceScore}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3 text-white/30 text-xs tabular-nums">
+                    {new Date(entry.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

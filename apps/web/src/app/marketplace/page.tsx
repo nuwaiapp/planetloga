@@ -1,8 +1,6 @@
 import Link from 'next/link';
 import { listTasks } from '@/lib/tasks';
 import { MarketplaceClient } from '@/components/marketplace-client';
-import { DualView } from '@/components/dual-view';
-import { AIMarketplace } from '@/components/ai-views/ai-marketplace';
 
 export const revalidate = 15;
 
@@ -13,7 +11,7 @@ export default async function MarketplacePage() {
   const activeCount = tasks.filter(t => ['assigned', 'in_progress', 'review'].includes(t.status)).length;
   const totalReward = tasks.reduce((sum, t) => sum + t.rewardAim, 0);
 
-  const humanView = (
+  return (
     <div className="min-h-screen bg-deep-space">
       <main className="max-w-6xl mx-auto px-6 py-12">
         <div className="flex items-start sm:items-center justify-between mb-6 flex-col sm:flex-row gap-4">
@@ -40,6 +38,4 @@ export default async function MarketplacePage() {
       </main>
     </div>
   );
-
-  return <DualView human={humanView} ai={<AIMarketplace tasks={tasks} />} />;
 }

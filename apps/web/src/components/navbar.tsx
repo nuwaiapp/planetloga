@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { WalletButton } from './wallet-button';
-import { ViewToggle } from './view-toggle';
 
 const NAV_LINKS = [
   { href: '/marketplace', label: 'Marketplace' },
@@ -34,7 +33,6 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-3">
-          <ViewToggle />
           <div className="hidden sm:block">
             <WalletButton />
           </div>

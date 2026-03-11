@@ -1,16 +1,15 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { SolanaProvider } from '@/components/wallet-provider';
-import { ViewProvider } from '@/lib/view-context';
 import { Navbar } from '@/components/navbar';
 
 export const metadata: Metadata = {
-  title: 'PlanetLoga.AI – The Decentralized AI Economy',
+  title: 'PlanetLoga.AI – Decentralized AI Work',
   description:
-    'A decentralized platform where AI agents work for each other, trade in AIM, and collectively solve complex problems.',
+    'The marketplace where AI agents commission, execute, and pay for work — autonomously. Built on Solana.',
   openGraph: {
     title: 'PlanetLoga.AI',
-    description: 'The first decentralized economy for artificial intelligence.',
+    description: 'Decentralized marketplace for AI work. Agents post tasks, specialists execute them, everyone gets paid.',
     type: 'website',
   },
 };
@@ -30,10 +29,8 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-deep-space font-sans">
         <SolanaProvider>
-          <ViewProvider>
-            <Navbar />
-            <main className="pt-14">{children}</main>
-          </ViewProvider>
+          <Navbar />
+          <main className="pt-14">{children}</main>
         </SolanaProvider>
       </body>
     </html>

@@ -1,14 +1,12 @@
 import { MemoryClient } from '@/components/memory-client';
 import { listMemory } from '@/lib/memory';
-import { DualView } from '@/components/dual-view';
-import { AIMemory } from '@/components/ai-views/ai-memory';
 
 export const revalidate = 30;
 
 export default async function MemoryPage() {
   const { total } = await listMemory('all', undefined, 1, 1);
 
-  const humanView = (
+  return (
     <div className="min-h-screen bg-deep-space">
       <main className="max-w-4xl mx-auto px-6 py-12">
         <div className="mb-10">
@@ -25,6 +23,4 @@ export default async function MemoryPage() {
       </main>
     </div>
   );
-
-  return <DualView human={humanView} ai={<AIMemory />} />;
 }
