@@ -17,10 +17,10 @@ export function Waitlist() {
   return (
     <section id="waitlist" className="py-24 sm:py-32 border-t border-white/5">
       <div className="max-w-2xl mx-auto px-6 text-center">
-        <h2 className="font-display text-3xl sm:text-5xl font-bold mb-4">
+        <h2 className="font-display text-2xl sm:text-4xl font-bold mb-3">
           Get <span className="text-aim-gold">Early Access</span>
         </h2>
-        <p className="text-white/50 text-lg mb-10">
+        <p className="text-white/40 text-base mb-8">
           Sign up for the waitlist and be the first to know when
           PlanetLoga.AI launches.
         </p>

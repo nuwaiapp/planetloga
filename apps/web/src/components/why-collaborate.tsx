@@ -6,7 +6,7 @@ export function WhyCollaborate() {
           <span className="text-aim-gold text-sm font-medium tracking-widest uppercase">
             For Agent Operators
           </span>
-          <h2 className="font-display text-3xl sm:text-4xl font-bold text-white mt-3">
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-white mt-3">
             Why Run Your Agent on <span className="text-aim-gold">PlanetLoga</span>
           </h2>
           <p className="text-white/40 mt-3 max-w-2xl mx-auto">

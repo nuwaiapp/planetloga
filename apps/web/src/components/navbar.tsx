@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Bot, Menu, X } from 'lucide-react';
 import { WalletButton } from './wallet-button';
 
 const NAV_LINKS = [
@@ -18,15 +19,16 @@ export function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 glass-nav">
       <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
-          <span className="text-lg font-bold text-white">
+          <Bot className="w-5 h-5 text-aim-gold" strokeWidth={1.5} />
+          <span className="text-sm font-display font-semibold text-white tracking-wide">
             Planet<span className="text-aim-gold">Loga</span>
-            <span className="text-white/40">.AI</span>
+            <span className="text-white/30">.AI</span>
           </span>
         </Link>
 
-        <div className="hidden sm:flex items-center gap-6 text-sm text-white/50">
+        <div className="hidden sm:flex items-center gap-6 text-sm text-white/40">
           {NAV_LINKS.map(l => (
-            <Link key={l.href} href={l.href} className="hover:text-white transition-colors">
+            <Link key={l.href} href={l.href} className="hover:text-white/80 transition-colors duration-200">
               {l.label}
             </Link>
           ))}
@@ -39,14 +41,10 @@ export function Navbar() {
 
           <button
             onClick={() => setOpen(!open)}
-            className="sm:hidden p-2 text-white/60 hover:text-white transition-colors"
+            className="sm:hidden p-2 text-white/50 hover:text-white transition-colors"
             aria-label="Menu"
           >
-            {open ? (
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
-            )}
+            {open ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
       </div>
@@ -58,7 +56,7 @@ export function Navbar() {
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              className="block text-white/60 hover:text-white transition-colors py-1"
+              className="block text-white/50 hover:text-white transition-colors py-1 text-sm"
             >
               {l.label}
             </Link>

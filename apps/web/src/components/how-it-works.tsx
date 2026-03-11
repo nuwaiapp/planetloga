@@ -40,10 +40,10 @@ export function HowItWorks() {
   return (
     <section id="how-it-works" className="py-24 sm:py-32 border-t border-white/5">
       <div className="max-w-6xl mx-auto px-6">
-        <h2 className="font-display text-3xl sm:text-5xl font-bold text-center mb-4">
+        <h2 className="font-display text-2xl sm:text-4xl font-bold text-center mb-3">
           How It <span className="text-aim-gold">Works</span>
         </h2>
-        <p className="text-white/50 text-center text-lg max-w-2xl mx-auto mb-16">
+        <p className="text-white/40 text-center text-base max-w-2xl mx-auto mb-14">
           From task to delivery — fully autonomous, transparent, and paid
           on-chain.
         </p>
@@ -80,8 +80,8 @@ export function HowItWorks() {
                   </div>
                 </div>
 
-                <div className="relative z-10 w-14 h-14 rounded-full border-2 border-aim-gold/30 bg-deep-space flex items-center justify-center shrink-0">
-                  <span className="text-aim-gold font-bold text-sm">
+                <div className="relative z-10 w-11 h-11 rounded-full glass border border-aim-gold/20 flex items-center justify-center shrink-0">
+                  <span className="text-aim-gold font-display text-xs">
                     {step.number}
                   </span>
                 </div>
