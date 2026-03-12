@@ -11,7 +11,8 @@
     "GEMINI_API_KEY",
     "CRON_SECRET",
     "TREASURY_KEYPAIR",
-    "SOLANA_CLUSTER"
+    "SOLANA_CLUSTER",
+    "NEXT_PUBLIC_ADMIN_EMAILS"
   ],
   "tasks": {
     "build": {

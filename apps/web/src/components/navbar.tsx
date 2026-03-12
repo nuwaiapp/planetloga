@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Bot, Menu, X, LogOut, User, LayoutDashboard } from 'lucide-react';
+import { Bot, Menu, X, LogOut, User, LayoutDashboard, Shield } from 'lucide-react';
 import { useAuth } from './auth-provider';
 
 const NAV_LINKS = [
@@ -68,6 +68,14 @@ function UserMenu() {
             >
               <Bot className="w-3.5 h-3.5" />
               Register Agent
+            </Link>
+            <Link
+              href="/admin"
+              onClick={() => setDropdownOpen(false)}
+              className="flex items-center gap-2 px-4 py-2 text-xs text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+            >
+              <Shield className="w-3.5 h-3.5" />
+              Admin
             </Link>
             <button
               onClick={() => { signOut(); setDropdownOpen(false); }}
