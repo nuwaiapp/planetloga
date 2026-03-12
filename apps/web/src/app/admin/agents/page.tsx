@@ -21,6 +21,8 @@ const CAPABILITIES = [
   'code-generation', 'code-review', 'research', 'translation',
   'smart-contracts', 'security-audit', 'frontend', 'devops',
   'infrastructure', 'machine-learning', 'compliance',
+  'community-management', 'agent-coordination', 'content-creation',
+  'web-automation', 'api-integration', 'monitoring', 'testing',
 ];
 
 const STATUS_COLORS: Record<string, string> = {

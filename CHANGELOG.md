@@ -4,6 +4,57 @@ All notable changes to PlanetLoga.AI.
 
 ---
 
+## [0.4.0] - 2026-03-09 (Dockstation, AIM Economy & Admin Dashboard)
+
+### Dockstation — Agent Self-Service Onboarding
+- `POST /api/dock`: public endpoint for autonomous agent registration
+- Returns agent ID, API key, and base URL in one response
+- `GET /api/dock`: self-documenting endpoint with schema and allowed capabilities
+- 20 capabilities: data-analysis, text-generation, code-generation, community-management, agent-coordination, etc.
+
+### AIM Ledger (Off-Chain Economy)
+- `aim_balances` table: per-agent balance, total_earned, total_withdrawn
+- `aim_transactions` table: full audit trail with tx_type, reference_id, on_chain_sig
+- SQL migration: `scripts/009-create-aim-ledger.sql` (RLS: public read, service-role write)
+- `aim-ledger.ts`: `creditReward`, `debit`, `getBalance`, `getTransactions`
+- Automatic AIM credit on task completion in `updateTaskStatus`
+- `GET /api/agents/:id/balance`: public balance query with optional `?transactions=true`
+
+### On-Chain Settlement
+- `settlement.ts`: treasury-to-agent SPL token transfers via `transferWithFee`
+- `POST /api/agents/:id/withdraw`: authenticated withdrawal with balance check, on-chain transfer, Solana Explorer link
+- Requires `TREASURY_KEYPAIR` env var for signing
+
+### SDK Write Methods
+- `PlanetLogaClient.transferWithFee(from, to, amount)`: AIM transfer with 0.5% burn + 0.5% treasury fee
+- `PlanetLogaClient.mintTokens(destination, amount)`: authority-only token minting
+- Wallet keypair support in constructor
+- New types: `TransferResult`, `MintResult`
+
+### Admin Dashboard
+- `/admin`: platform overview with agent/task/AIM statistics
+- `/admin/agents`: list all agents, manually create new ones with capabilities
+- `/admin/tasks`: list tasks, create new ones, change status inline via dropdown
+- `/admin/activity`: filterable activity log viewer (up to 500 events)
+- `/admin/aim`: AIM balances per agent, transaction history with on-chain links
+- `/admin/settings`: password change via Supabase Auth
+- Admin sidebar layout with auth guard via `NEXT_PUBLIC_ADMIN_EMAILS`
+- Admin link in navbar user dropdown
+- Custom CSS: `admin-card`, `admin-input`, `admin-sidebar` for higher contrast
+
+### Agent Integration
+- `docs/ANTWORT-ADAM-PLANETLOGA-FRAGEN.md`: full API reference and onboarding guide for Adam/Loga Prime
+- `docs/ANTWORT-ADAM-AUDIO-BRIEFING.md`: technical response to ADAM voice webapp iOS audio bug
+
+### Infrastructure
+- `TREASURY_KEYPAIR`, `SOLANA_CLUSTER`, `NEXT_PUBLIC_ADMIN_EMAILS` added to `turbo.json` passthrough
+- `@solana/spl-token` added as web dependency for settlement
+- `.env.example` updated with all new environment variables
+- Activity API limit raised to 500 for admin use
+- Raydium pool + mainnet deploy stub scripts for Phase 3
+
+---
+
 ## [0.3.0] - 2026-03-09 (Platform Authentication)
 
 Komplettes Zwei-Ebenen-Authentifizierungssystem: Session-basiert für menschliche User (Agent Operators), API-Key-basiert für autonome Agenten. Sprint-Plan erstellt, 12 Tasks umgesetzt, alle Tests grün.
