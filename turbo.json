@@ -9,7 +9,9 @@
     "OPENAI_API_KEY",
     "CLAUDE_API_KEY",
     "GEMINI_API_KEY",
-    "CRON_SECRET"
+    "CRON_SECRET",
+    "TREASURY_KEYPAIR",
+    "SOLANA_CLUSTER"
   ],
   "tasks": {
     "build": {

@@ -1,4 +1,11 @@
-import { Connection, PublicKey, type Keypair } from '@solana/web3.js';
+import {
+  Connection,
+  Keypair,
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+  sendAndConfirmTransaction,
+} from '@solana/web3.js';
 import { CLUSTER_URLS, PROGRAM_IDS, type Cluster } from './constants';
 import {
   findConfigPda,
@@ -8,11 +15,24 @@ import {
   findTaskPda,
   findProposalPda,
 } from './pda';
-import { mapAnchorError } from './errors';
+import { mapAnchorError, SdkError } from './errors';
 
 export interface PlanetLogaClientConfig {
   cluster: Cluster;
   wallet?: Keypair;
+}
+
+export interface TransferResult {
+  signature: string;
+  grossAmount: number;
+  netAmount: number;
+  burnAmount: number;
+  treasuryAmount: number;
+}
+
+export interface MintResult {
+  signature: string;
+  amount: number;
 }
 
 export interface OnChainAgent {
@@ -65,10 +85,12 @@ export interface TokenStats {
 export class PlanetLogaClient {
   readonly connection: Connection;
   readonly cluster: Cluster;
+  private readonly wallet?: Keypair;
 
   constructor(config: PlanetLogaClientConfig) {
     this.cluster = config.cluster;
     this.connection = new Connection(CLUSTER_URLS[config.cluster], 'confirmed');
+    this.wallet = config.wallet;
   }
 
   get programIds() {
@@ -177,6 +199,99 @@ export class PlanetLogaClient {
         votingEndsAt: 0,
         quorum: 0,
       };
+    } catch (error) {
+      throw mapAnchorError(error);
+    }
+  }
+
+  // -- Write methods (require wallet) --
+
+  private requireWallet(): Keypair {
+    if (!this.wallet) {
+      throw new SdkError('NO_WALLET', 'Wallet keypair required for write operations');
+    }
+    return this.wallet;
+  }
+
+  async transferWithFee(
+    fromTokenAccount: PublicKey,
+    toTokenAccount: PublicKey,
+    amount: number,
+  ): Promise<TransferResult> {
+    const wallet = this.requireWallet();
+
+    try {
+      const [configPda] = findConfigPda();
+      const [mintPda] = findMintPda();
+      const [treasuryPda] = findTreasuryPda();
+
+      const amountBn = BigInt(amount);
+      const data = Buffer.alloc(16);
+      // Anchor discriminator for "transfer_with_fee"
+      const discriminator = Buffer.from([0x52, 0xf8, 0x2e, 0x0a, 0x5c, 0x9b, 0x3f, 0x01]);
+      discriminator.copy(data, 0);
+      data.writeBigUInt64LE(amountBn, 8);
+
+      const ix = new TransactionInstruction({
+        programId: new PublicKey(PROGRAM_IDS.aimToken),
+        keys: [
+          { pubkey: configPda, isSigner: false, isWritable: true },
+          { pubkey: mintPda, isSigner: false, isWritable: true },
+          { pubkey: fromTokenAccount, isSigner: false, isWritable: true },
+          { pubkey: toTokenAccount, isSigner: false, isWritable: true },
+          { pubkey: treasuryPda, isSigner: false, isWritable: true },
+          { pubkey: wallet.publicKey, isSigner: true, isWritable: false },
+          { pubkey: new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'), isSigner: false, isWritable: false },
+        ],
+        data,
+      });
+
+      const tx = new Transaction().add(ix);
+      const signature = await sendAndConfirmTransaction(this.connection, tx, [wallet]);
+
+      const burnAmount = Math.floor(amount * 50 / 10000);
+      const treasuryAmount = Math.floor(amount * 50 / 10000);
+      const netAmount = amount - burnAmount - treasuryAmount;
+
+      return { signature, grossAmount: amount, netAmount, burnAmount, treasuryAmount };
+    } catch (error) {
+      throw mapAnchorError(error);
+    }
+  }
+
+  async mintTokens(
+    destinationTokenAccount: PublicKey,
+    amount: number,
+  ): Promise<MintResult> {
+    const wallet = this.requireWallet();
+
+    try {
+      const [configPda] = findConfigPda();
+      const [mintPda] = findMintPda();
+
+      const amountBn = BigInt(amount);
+      const data = Buffer.alloc(16);
+      // Anchor discriminator for "mint_tokens"
+      const discriminator = Buffer.from([0x59, 0xc8, 0x83, 0xbb, 0x17, 0x4e, 0x3c, 0x88]);
+      discriminator.copy(data, 0);
+      data.writeBigUInt64LE(amountBn, 8);
+
+      const ix = new TransactionInstruction({
+        programId: new PublicKey(PROGRAM_IDS.aimToken),
+        keys: [
+          { pubkey: configPda, isSigner: false, isWritable: true },
+          { pubkey: mintPda, isSigner: false, isWritable: true },
+          { pubkey: destinationTokenAccount, isSigner: false, isWritable: true },
+          { pubkey: wallet.publicKey, isSigner: true, isWritable: false },
+          { pubkey: new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'), isSigner: false, isWritable: false },
+        ],
+        data,
+      });
+
+      const tx = new Transaction().add(ix);
+      const signature = await sendAndConfirmTransaction(this.connection, tx, [wallet]);
+
+      return { signature, amount };
     } catch (error) {
       throw mapAnchorError(error);
     }

@@ -2,6 +2,7 @@ import { adminSupabase, publicSupabase, type TaskRow, type TaskApplicationRow } 
 import type { Task, TaskApplication, CreateTaskRequest, TaskListResponse } from '@planetloga/types';
 import { logActivity } from './activity';
 import { AppError, logServerError } from './errors';
+import { creditReward } from './aim-ledger';
 
 function toTask(row: TaskRow, creatorName?: string, assigneeName?: string): Task {
   return {
@@ -187,6 +188,15 @@ export async function updateTaskStatus(taskId: string, status: Task['status']): 
   const eventType = eventMap[status];
   if (eventType) {
     const task = await getTask(taskId);
+
+    if (status === 'completed' && task?.assigneeId && task.rewardAim > 0) {
+      try {
+        await creditReward(task.assigneeId, task.rewardAim, taskId);
+      } catch (err) {
+        logServerError('tasks.updateTaskStatus.creditReward', err, { taskId, assigneeId: task.assigneeId });
+      }
+    }
+
     void logActivity({
       eventType,
       taskId,
@@ -194,7 +204,7 @@ export async function updateTaskStatus(taskId: string, status: Task['status']): 
       agentId: task?.assigneeId,
       agentName: task?.assigneeName,
       aimAmount: status === 'completed' ? task?.rewardAim : undefined,
-      detail: status === 'completed' ? `${task?.rewardAim} AIM earned` : undefined,
+      detail: status === 'completed' ? `${task?.rewardAim} AIM credited to balance` : undefined,
     }).catch((error: unknown) => {
       logServerError('tasks.updateTaskStatus.logActivity', error, { taskId, status });
     });

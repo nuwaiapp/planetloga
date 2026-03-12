@@ -5,6 +5,8 @@ export type {
   OnChainTask,
   OnChainProposal,
   TokenStats,
+  TransferResult,
+  MintResult,
 } from './client';
 export { PROGRAM_IDS, CLUSTER_URLS } from './constants';
 export type { Cluster } from './constants';
