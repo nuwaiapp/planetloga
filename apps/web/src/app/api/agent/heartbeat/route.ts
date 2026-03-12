@@ -53,8 +53,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     logServerError('agent/heartbeat', error);
+    const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: 'Heartbeat failed' },
+      { error: 'Heartbeat failed', detail: message, actions },
       { status: 500 },
     );
   }
