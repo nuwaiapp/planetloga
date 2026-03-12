@@ -24,9 +24,9 @@ const CAPABILITIES = [
 ];
 
 const STATUS_COLORS: Record<string, string> = {
-  active: 'bg-emerald-500/20 text-emerald-400',
-  inactive: 'bg-white/10 text-white/50',
-  suspended: 'bg-red-500/20 text-red-400',
+  active: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
+  inactive: 'bg-slate-500/15 text-slate-400 border-slate-500/20',
+  suspended: 'bg-red-500/15 text-red-400 border-red-500/20',
 };
 
 export default function AdminAgents() {
@@ -44,11 +44,8 @@ export default function AdminAgents() {
       const res = await authFetch('/api/agents?pageSize=100');
       const data = await res.json();
       setAgents(data.agents ?? []);
-    } catch {
-      setMessage('Fehler beim Laden');
-    } finally {
-      setLoading(false);
-    }
+    } catch { setMessage('Fehler beim Laden'); }
+    finally { setLoading(false); }
   }, [authFetch]);
 
   useEffect(() => { loadAgents(); }, [loadAgents]);
@@ -85,91 +82,88 @@ export default function AdminAgents() {
         setMessage(err.error?.message ?? 'Fehler');
         return;
       }
-      setMessage('Agent erstellt');
+      setMessage('Agent erfolgreich erstellt');
       setFormData({ name: '', bio: '', walletAddress: '', capabilities: [] });
       setShowForm(false);
       loadAgents();
-    } catch {
-      setMessage('Netzwerkfehler');
-    } finally {
-      setSubmitting(false);
-    }
+    } catch { setMessage('Netzwerkfehler'); }
+    finally { setSubmitting(false); }
   };
 
   return (
     <div className="space-y-6 max-w-5xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-display font-bold text-white">Agents</h1>
-          <p className="text-xs text-white/40">{agents.length} registriert</p>
+          <h1 className="text-2xl font-display font-bold text-white">Agents</h1>
+          <p className="text-sm text-white/35">{agents.length} registriert</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={loadAgents} className="p-2 rounded-lg glass text-white/50 hover:text-white transition-colors">
-            <RefreshCw className="w-3.5 h-3.5" />
+          <button onClick={loadAgents} className="p-2.5 rounded-lg admin-card text-white/40 hover:text-white transition-colors">
+            <RefreshCw className="w-4 h-4" />
           </button>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-aim-gold text-deep-space text-xs font-semibold hover:bg-aim-gold-light transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-aim-gold text-deep-space text-xs font-bold hover:bg-aim-gold-light transition-colors"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-4 h-4" />
             Agent anlegen
           </button>
         </div>
       </div>
 
       {message && (
-        <div className={`text-xs px-3 py-2 rounded-lg ${message.includes('erstellt') ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+        <div className={`text-sm px-4 py-3 rounded-lg border ${message.includes('erstellt') || message.includes('erfolgreich') ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
           {message}
         </div>
       )}
 
       {showForm && (
-        <div className="glass-card rounded-xl p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-white">Neuer Agent</h2>
+        <div className="admin-card rounded-xl p-6 space-y-5">
+          <h2 className="text-sm font-bold text-white uppercase tracking-wider">Neuer Agent</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs text-white/50 mb-1 block">Name *</label>
+              <label className="text-xs text-white/50 mb-1.5 block font-medium">Name *</label>
               <input
                 value={formData.name}
                 onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-aim-gold/40"
+                className="w-full admin-input rounded-lg px-3 py-2.5 text-sm"
                 placeholder="z.B. CodeReview-Agent"
               />
             </div>
             <div>
-              <label className="text-xs text-white/50 mb-1 block">Wallet (optional)</label>
+              <label className="text-xs text-white/50 mb-1.5 block font-medium">Wallet (optional)</label>
               <input
                 value={formData.walletAddress}
                 onChange={e => setFormData(p => ({ ...p, walletAddress: e.target.value }))}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-aim-gold/40"
+                className="w-full admin-input rounded-lg px-3 py-2.5 text-sm"
                 placeholder="Solana Wallet Address"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs text-white/50 mb-1 block">Bio (optional)</label>
+            <label className="text-xs text-white/50 mb-1.5 block font-medium">Bio (optional)</label>
             <textarea
               value={formData.bio}
               onChange={e => setFormData(p => ({ ...p, bio: e.target.value }))}
               rows={2}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-aim-gold/40 resize-none"
+              className="w-full admin-input rounded-lg px-3 py-2.5 text-sm resize-none"
               placeholder="Kurzbeschreibung des Agenten"
             />
           </div>
 
           <div>
-            <label className="text-xs text-white/50 mb-1.5 block">Capabilities *</label>
-            <div className="flex flex-wrap gap-1.5">
+            <label className="text-xs text-white/50 mb-2 block font-medium">Capabilities *</label>
+            <div className="flex flex-wrap gap-2">
               {CAPABILITIES.map(cap => (
                 <button
                   key={cap}
                   onClick={() => toggleCap(cap)}
-                  className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition-all ${
                     formData.capabilities.includes(cap)
-                      ? 'bg-aim-gold/20 text-aim-gold border border-aim-gold/30'
-                      : 'bg-white/5 text-white/40 border border-white/10 hover:text-white/60'
+                      ? 'bg-aim-gold/15 text-aim-gold border-aim-gold/25'
+                      : 'bg-white/3 text-white/35 border-white/8 hover:text-white/55 hover:border-white/15'
                   }`}
                 >
                   {cap}
@@ -178,17 +172,17 @@ export default function AdminAgents() {
             </div>
           </div>
 
-          <div className="flex gap-2 pt-2">
+          <div className="flex gap-3 pt-1">
             <button
               onClick={createAgent}
               disabled={submitting}
-              className="px-4 py-2 rounded-lg bg-aim-gold text-deep-space text-xs font-semibold hover:bg-aim-gold-light transition-colors disabled:opacity-50"
+              className="px-5 py-2.5 rounded-lg bg-aim-gold text-deep-space text-xs font-bold hover:bg-aim-gold-light transition-colors disabled:opacity-50"
             >
               {submitting ? 'Erstelle...' : 'Agent erstellen'}
             </button>
             <button
               onClick={() => setShowForm(false)}
-              className="px-4 py-2 rounded-lg glass text-white/50 text-xs hover:text-white transition-colors"
+              className="px-5 py-2.5 rounded-lg admin-card text-white/50 text-xs font-medium hover:text-white transition-colors"
             >
               Abbrechen
             </button>
@@ -197,34 +191,34 @@ export default function AdminAgents() {
       )}
 
       {loading ? (
-        <div className="flex justify-center py-12">
+        <div className="flex justify-center py-16">
           <div className="w-5 h-5 rounded-full border-2 border-aim-gold/30 border-t-aim-gold animate-spin" />
         </div>
       ) : (
         <div className="space-y-2">
           {agents.map(agent => (
-            <div key={agent.id} className="glass-card rounded-xl p-4 flex items-center gap-4">
-              <div className="w-9 h-9 rounded-lg bg-aim-gold/10 flex items-center justify-center shrink-0">
-                <Bot className="w-4 h-4 text-aim-gold" />
+            <div key={agent.id} className="admin-card rounded-xl p-4 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-lg bg-aim-gold/10 flex items-center justify-center shrink-0">
+                <Bot className="w-4.5 h-4.5 text-aim-gold" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-white truncate">{agent.name}</span>
-                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${STATUS_COLORS[agent.status] ?? 'bg-white/10 text-white/50'}`}>
+                <div className="flex items-center gap-2.5">
+                  <span className="text-sm font-bold text-white truncate">{agent.name}</span>
+                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border ${STATUS_COLORS[agent.status] ?? 'bg-white/10 text-white/50 border-white/10'}`}>
                     {agent.status}
                   </span>
                 </div>
-                <div className="text-[10px] text-white/30 mt-0.5">
-                  {agent.capabilities.join(', ') || 'keine'} · Rep: {agent.reputation} · Tasks: {agent.tasksCompleted}
+                <div className="text-[11px] text-white/30 mt-1">
+                  {agent.capabilities.join(' · ') || 'keine'} — Rep: {agent.reputation} · Tasks: {agent.tasksCompleted}
                 </div>
               </div>
-              <div className="text-[10px] text-white/20 shrink-0 font-mono">
-                {agent.id.slice(0, 8)}...
+              <div className="text-[11px] text-white/20 shrink-0 font-mono">
+                {agent.id.slice(0, 8)}
               </div>
             </div>
           ))}
           {agents.length === 0 && (
-            <div className="text-center text-sm text-white/30 py-12">Keine Agents registriert</div>
+            <div className="text-center text-sm text-white/25 py-16">Keine Agents registriert</div>
           )}
         </div>
       )}

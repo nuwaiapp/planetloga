@@ -4,10 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useAuthFetch } from '@/lib/use-auth-fetch';
 import { Coins, RefreshCw, ArrowUpRight, ArrowDownRight, Gift, Percent } from 'lucide-react';
 
-interface Agent {
-  id: string;
-  name: string;
-}
+interface Agent { id: string; name: string; }
 
 interface AimBalance {
   agentId: string;
@@ -27,17 +24,16 @@ interface AimTransaction {
   createdAt: string;
 }
 
-const TX_CONFIG: Record<string, { icon: React.ElementType; color: string; label: string }> = {
-  task_reward: { icon: Gift, color: 'text-emerald-400', label: 'Task Reward' },
-  withdrawal: { icon: ArrowUpRight, color: 'text-orange-400', label: 'Withdrawal' },
-  deposit: { icon: ArrowDownRight, color: 'text-blue-400', label: 'Deposit' },
-  fee: { icon: Percent, color: 'text-red-400', label: 'Fee' },
+const TX_CONFIG: Record<string, { icon: React.ElementType; color: string; bg: string; label: string }> = {
+  task_reward: { icon: Gift, color: 'text-emerald-400', bg: 'bg-emerald-500/10', label: 'Task Reward' },
+  withdrawal: { icon: ArrowUpRight, color: 'text-orange-400', bg: 'bg-orange-500/10', label: 'Withdrawal' },
+  deposit: { icon: ArrowDownRight, color: 'text-blue-400', bg: 'bg-blue-500/10', label: 'Deposit' },
+  fee: { icon: Percent, color: 'text-red-400', bg: 'bg-red-500/10', label: 'Fee' },
 };
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleString('de-DE', {
-    day: '2-digit', month: '2-digit', year: '2-digit',
-    hour: '2-digit', minute: '2-digit',
+    day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit',
   });
 }
 
@@ -69,9 +65,8 @@ export default function AdminAim() {
         }),
       );
       setBalances(balMap);
-    } catch { /* ignore */ } finally {
-      setLoading(false);
-    }
+    } catch { /* ignore */ }
+    finally { setLoading(false); }
   }, [authFetch]);
 
   useEffect(() => { loadData(); }, [loadData]);
@@ -83,11 +78,8 @@ export default function AdminAim() {
       const res = await authFetch(`/api/agents/${agentId}/balance?transactions=true`);
       const data = await res.json();
       setTransactions(data.transactions ?? []);
-    } catch {
-      setTransactions([]);
-    } finally {
-      setTxLoading(false);
-    }
+    } catch { setTransactions([]); }
+    finally { setTxLoading(false); }
   }, [authFetch]);
 
   const agentsWithBalance = agents
@@ -102,49 +94,54 @@ export default function AdminAim() {
     <div className="space-y-6 max-w-5xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-display font-bold text-white">AIM Economy</h1>
-          <p className="text-xs text-white/40">{balances.size} Konten mit Guthaben</p>
+          <h1 className="text-2xl font-display font-bold text-white">AIM Economy</h1>
+          <p className="text-sm text-white/35">{balances.size} Konten mit Guthaben</p>
         </div>
-        <button onClick={loadData} className="p-2 rounded-lg glass text-white/50 hover:text-white transition-colors">
-          <RefreshCw className="w-3.5 h-3.5" />
+        <button onClick={loadData} className="p-2.5 rounded-lg admin-card text-white/40 hover:text-white transition-colors">
+          <RefreshCw className="w-4 h-4" />
         </button>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        <div className="glass-card rounded-xl p-4">
-          <div className="text-xs text-white/40">Offene Guthaben</div>
-          <div className="text-xl font-display font-bold text-aim-gold mt-1">{totalBalance.toLocaleString()} AIM</div>
+        <div className="admin-card rounded-xl p-5">
+          <div className="text-xs text-white/40 mb-1 font-medium">Offene Guthaben</div>
+          <div className="text-2xl font-display font-bold text-aim-gold">{totalBalance.toLocaleString()}</div>
+          <div className="text-[10px] text-white/25 mt-0.5">AIM</div>
         </div>
-        <div className="glass-card rounded-xl p-4">
-          <div className="text-xs text-white/40">Total Earned</div>
-          <div className="text-xl font-display font-bold text-emerald-400 mt-1">{totalEarned.toLocaleString()} AIM</div>
+        <div className="admin-card rounded-xl p-5">
+          <div className="text-xs text-white/40 mb-1 font-medium">Total Earned</div>
+          <div className="text-2xl font-display font-bold text-emerald-400">{totalEarned.toLocaleString()}</div>
+          <div className="text-[10px] text-white/25 mt-0.5">AIM</div>
         </div>
-        <div className="glass-card rounded-xl p-4">
-          <div className="text-xs text-white/40">Total Withdrawn</div>
-          <div className="text-xl font-display font-bold text-orange-400 mt-1">{totalWithdrawn.toLocaleString()} AIM</div>
+        <div className="admin-card rounded-xl p-5">
+          <div className="text-xs text-white/40 mb-1 font-medium">Total Withdrawn</div>
+          <div className="text-2xl font-display font-bold text-orange-400">{totalWithdrawn.toLocaleString()}</div>
+          <div className="text-[10px] text-white/25 mt-0.5">AIM</div>
         </div>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12">
+        <div className="flex justify-center py-16">
           <div className="w-5 h-5 rounded-full border-2 border-aim-gold/30 border-t-aim-gold animate-spin" />
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <h2 className="text-sm font-semibold text-white mb-3">Agent-Konten</h2>
+            <h2 className="text-sm font-bold text-white mb-3 uppercase tracking-wider">Agent-Konten</h2>
             {agentsWithBalance.map(agent => (
               <button
                 key={agent.id}
                 onClick={() => loadTransactions(agent.id)}
-                className={`w-full glass-card rounded-lg p-3 flex items-center gap-3 text-left transition-colors ${
-                  selectedAgent === agent.id ? 'border-aim-gold/30' : ''
+                className={`w-full admin-card rounded-lg p-4 flex items-center gap-3 text-left transition-all ${
+                  selectedAgent === agent.id ? 'border-aim-gold/30 bg-aim-gold/5' : ''
                 }`}
               >
-                <Coins className="w-3.5 h-3.5 text-aim-gold shrink-0" />
+                <div className="w-8 h-8 rounded-lg bg-aim-gold/10 flex items-center justify-center shrink-0">
+                  <Coins className="w-3.5 h-3.5 text-aim-gold" />
+                </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs font-semibold text-white truncate">{agent.name}</div>
-                  <div className="text-[10px] text-white/30">
+                  <div className="text-xs font-bold text-white truncate">{agent.name}</div>
+                  <div className="text-[10px] text-white/25 mt-0.5">
                     Earned: {(agent.bal?.totalEarned ?? 0).toLocaleString()} · Withdrawn: {(agent.bal?.totalWithdrawn ?? 0).toLocaleString()}
                   </div>
                 </div>
@@ -154,51 +151,52 @@ export default function AdminAim() {
               </button>
             ))}
             {agentsWithBalance.length === 0 && (
-              <div className="text-xs text-white/30 text-center py-8">Keine Agents registriert</div>
+              <div className="text-xs text-white/25 text-center py-12">Keine Agents registriert</div>
             )}
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-sm font-semibold text-white mb-3">
+            <h2 className="text-sm font-bold text-white mb-3 uppercase tracking-wider">
               Transaktionen
               {selectedAgent && (
-                <span className="text-white/30 font-normal ml-1.5">
+                <span className="text-white/30 font-normal normal-case ml-2">
                   {agents.find(a => a.id === selectedAgent)?.name}
                 </span>
               )}
             </h2>
             {!selectedAgent ? (
-              <div className="text-xs text-white/30 text-center py-8">Agent auswählen um Transaktionen zu sehen</div>
+              <div className="admin-card rounded-lg p-8 text-center">
+                <div className="text-xs text-white/25">Agent auswählen um Transaktionen zu sehen</div>
+              </div>
             ) : txLoading ? (
-              <div className="flex justify-center py-8">
+              <div className="flex justify-center py-12">
                 <div className="w-4 h-4 rounded-full border-2 border-aim-gold/30 border-t-aim-gold animate-spin" />
               </div>
             ) : transactions.length === 0 ? (
-              <div className="text-xs text-white/30 text-center py-8">Keine Transaktionen</div>
+              <div className="admin-card rounded-lg p-8 text-center">
+                <div className="text-xs text-white/25">Keine Transaktionen</div>
+              </div>
             ) : (
               transactions.map(tx => {
-                const config = TX_CONFIG[tx.txType] ?? { icon: Coins, color: 'text-white/50', label: tx.txType };
+                const config = TX_CONFIG[tx.txType] ?? { icon: Coins, color: 'text-white/50', bg: 'bg-white/5', label: tx.txType };
                 const TxIcon = config.icon;
                 return (
-                  <div key={tx.id} className="glass-card rounded-lg p-3 flex items-center gap-3">
-                    <TxIcon className={`w-3.5 h-3.5 ${config.color} shrink-0`} />
+                  <div key={tx.id} className="admin-card rounded-lg p-3.5 flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg ${config.bg} flex items-center justify-center shrink-0`}>
+                      <TxIcon className={`w-3.5 h-3.5 ${config.color}`} />
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[10px] font-medium text-white/60">{config.label}</div>
+                      <div className="text-[11px] font-semibold text-white/60">{config.label}</div>
                       {tx.onChainSig && (
-                        <a
-                          href={`https://explorer.solana.com/tx/${tx.onChainSig}?cluster=devnet`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[9px] text-aim-gold hover:underline"
-                        >
-                          {tx.onChainSig.slice(0, 16)}...
+                        <a href={`https://explorer.solana.com/tx/${tx.onChainSig}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="text-[10px] text-aim-gold hover:underline">
+                          {tx.onChainSig.slice(0, 20)}...
                         </a>
                       )}
                     </div>
                     <div className={`text-xs font-display font-bold ${tx.amount >= 0 ? 'text-emerald-400' : 'text-orange-400'}`}>
-                      {tx.amount >= 0 ? '+' : ''}{tx.amount.toLocaleString()} AIM
+                      {tx.amount >= 0 ? '+' : ''}{tx.amount.toLocaleString()}
                     </div>
-                    <div className="text-[9px] text-white/20 font-mono shrink-0">{formatDate(tx.createdAt)}</div>
+                    <div className="text-[10px] text-white/20 font-mono shrink-0">{formatDate(tx.createdAt)}</div>
                   </div>
                 );
               })

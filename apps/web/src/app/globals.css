@@ -118,6 +118,44 @@ option { background-color: #111827; color: #c8cdd6; }
   animation: shimmer 5s ease-in-out infinite;
 }
 
+/* ── Admin Cards ── */
+
+.admin-card {
+  background: rgba(22, 28, 45, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.admin-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.admin-sidebar {
+  background: rgba(14, 18, 30, 0.98);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.admin-content {
+  background: rgba(10, 13, 22, 0.6);
+}
+
+.admin-input {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+  transition: border-color 0.2s ease;
+}
+
+.admin-input:focus {
+  outline: none;
+  border-color: rgba(212, 175, 55, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.admin-input::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}
+
 /* ── Scrollbar ── */
 
 ::-webkit-scrollbar { width: 5px; }
