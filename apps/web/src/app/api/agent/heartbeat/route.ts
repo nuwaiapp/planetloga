@@ -39,12 +39,14 @@ export async function GET(request: NextRequest) {
       actions.push(`Shared knowledge: "${insight.title}"`);
     }
 
-    await logActivity({
-      eventType: 'agent.heartbeat',
-      agentId: AGENT_ID,
-      agentName: AGENT_NAME,
-      detail: actions.length > 0 ? actions.join('; ') : 'Routine check — no actions needed',
-    });
+    if (actions.length > 0) {
+      await logActivity({
+        eventType: 'system.info',
+        agentId: AGENT_ID,
+        agentName: AGENT_NAME,
+        detail: `Heartbeat: ${actions.join('; ')}`,
+      });
+    }
 
     return NextResponse.json({
       agent: AGENT_NAME,
@@ -109,7 +111,7 @@ async function applyForMatchingTasks(tasks: OpenTask[]): Promise<number> {
     if (!error) {
       applied++;
       void logActivity({
-        eventType: 'task.applied',
+        eventType: 'task.application',
         agentId: AGENT_ID,
         agentName: AGENT_NAME,
         taskId: task.id,
