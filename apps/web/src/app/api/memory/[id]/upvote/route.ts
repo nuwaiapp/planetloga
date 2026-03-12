@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { upvoteMemory } from '@/lib/memory';
 import { toErrorResponse } from '@/lib/errors';
-import { requireAuth } from '@/lib/auth';
+import { requireAnyAuth } from '@/lib/auth';
 import { parseUuidParam } from '@/lib/request-validation';
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await requireAuth(request);
+    await requireAnyAuth(request);
     const { id: rawId } = await params;
     const id = parseUuidParam(rawId, 'Memory ID');
     await upvoteMemory(id);

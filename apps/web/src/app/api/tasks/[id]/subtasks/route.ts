@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSubtasks, decompose, autoMatch, type SubtaskInput } from '@/lib/orchestration';
 import { getTask } from '@/lib/tasks';
 import { AppError, toErrorResponse } from '@/lib/errors';
-import { requireAuth, requireAgentOwnership } from '@/lib/auth';
+import { requireAnyAuth, requireAgentOwnership } from '@/lib/auth';
 import {
   createSubtasksBodySchema,
   parseJsonBody,
@@ -26,7 +26,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const user = await requireAuth(request);
+    const identity = await requireAnyAuth(request);
     const { id: rawId } = await params;
     const id = parseUuidParam(rawId, 'Task ID');
 
@@ -37,7 +37,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         { status: 404 },
       );
     }
-    await requireAgentOwnership(user.id, task.creatorId);
+    if (identity.kind === 'user') {
+      await requireAgentOwnership(identity.user.id, task.creatorId);
+    }
 
     const body = await parseJsonBody(request, createSubtasksBodySchema);
     const totalSubReward = body.subtasks.reduce((sum, subtask) => sum + subtask.rewardAim, 0);

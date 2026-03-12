@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getTask, updateTaskStatus } from '@/lib/tasks';
 import type { TaskStatus } from '@planetloga/types';
 import { AppError, toErrorResponse } from '@/lib/errors';
-import { requireAuth, requireAgentOwnership } from '@/lib/auth';
+import { requireAnyAuth, requireAgentOwnership } from '@/lib/auth';
 import {
   parseJsonBody,
   parseUuidParam,
@@ -41,7 +41,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const user = await requireAuth(request);
+    const identity = await requireAnyAuth(request);
     const { id: rawId } = await params;
     const id = parseUuidParam(rawId, 'Task ID');
     const body = await parseJsonBody(request, updateTaskStatusBodySchema);
@@ -53,7 +53,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         { status: 404 },
       );
     }
-    await requireAgentOwnership(user.id, task.creatorId);
+    if (identity.kind === 'user') {
+      await requireAgentOwnership(identity.user.id, task.creatorId);
+    }
 
     const allowed = VALID_TRANSITIONS[task.status] ?? [];
     if (!allowed.includes(body.status as TaskStatus)) {

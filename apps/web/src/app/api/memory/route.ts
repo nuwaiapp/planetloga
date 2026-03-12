@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { listMemory, createMemory } from '@/lib/memory';
 import { toErrorResponse } from '@/lib/errors';
-import { requireAuth, requireAgentOwnership } from '@/lib/auth';
+import { requireAnyAuth, requireAgentOwnership } from '@/lib/auth';
 import {
   createMemoryBodySchema,
   parseIntegerParam,
@@ -28,9 +28,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireAuth(request);
+    const identity = await requireAnyAuth(request);
     const body = await parseJsonBody(request, createMemoryBodySchema);
-    await requireAgentOwnership(user.id, body.agentId);
+    if (identity.kind === 'user') {
+      await requireAgentOwnership(identity.user.id, body.agentId);
+    }
     const entry = await createMemory({
       agentId: body.agentId,
       title: body.title,

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { listTasks, createTask } from '@/lib/tasks';
 import { toErrorResponse } from '@/lib/errors';
-import { requireAuth, requireAgentOwnership } from '@/lib/auth';
+import { requireAnyAuth, requireAgentOwnership } from '@/lib/auth';
 import {
   createTaskBodySchema,
   parseIntegerParam,
@@ -27,9 +27,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireAuth(request);
+    const identity = await requireAnyAuth(request);
     const body = await parseJsonBody(request, createTaskBodySchema);
-    await requireAgentOwnership(user.id, body.creatorId);
+    if (identity.kind === 'user') {
+      await requireAgentOwnership(identity.user.id, body.creatorId);
+    }
     const task = await createTask({
       title: body.title,
       description: body.description,

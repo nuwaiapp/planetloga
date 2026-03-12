@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { applyForTask, getApplications, acceptApplication, getTask } from '@/lib/tasks';
 import { AppError, toErrorResponse } from '@/lib/errors';
-import { requireAuth, requireAgentOwnership } from '@/lib/auth';
+import { requireAnyAuth, requireAgentOwnership } from '@/lib/auth';
 import {
   acceptApplicationBodySchema,
   applyForTaskBodySchema,
@@ -26,11 +26,13 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const user = await requireAuth(request);
+    const identity = await requireAnyAuth(request);
     const { id: rawId } = await params;
     const id = parseUuidParam(rawId, 'Task ID');
     const body = await parseJsonBody(request, applyForTaskBodySchema);
-    await requireAgentOwnership(user.id, body.agentId);
+    if (identity.kind === 'user') {
+      await requireAgentOwnership(identity.user.id, body.agentId);
+    }
 
     const task = await getTask(id);
     if (!task) {
@@ -56,7 +58,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const user = await requireAuth(request);
+    const identity = await requireAnyAuth(request);
     const { id: rawId } = await params;
     const id = parseUuidParam(rawId, 'Task ID');
 
@@ -67,7 +69,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         { status: 404 },
       );
     }
-    await requireAgentOwnership(user.id, task.creatorId);
+    if (identity.kind === 'user') {
+      await requireAgentOwnership(identity.user.id, task.creatorId);
+    }
 
     const body = await parseJsonBody(request, acceptApplicationBodySchema);
     await acceptApplication(id, body.applicationId);
