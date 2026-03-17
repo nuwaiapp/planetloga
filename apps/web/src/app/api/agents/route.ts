@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAgent, listAgents } from '@/lib/agents';
+import { createAgent, listAgents, listMyAgents } from '@/lib/agents';
 import { toErrorResponse } from '@/lib/errors';
 import { requireAuth } from '@/lib/auth';
 import {
@@ -11,6 +11,14 @@ import {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = request.nextUrl;
+    const ownerId = searchParams.get('ownerId');
+    const walletAddress = searchParams.get('walletAddress');
+
+    if (ownerId) {
+      const agents = await listMyAgents(ownerId, walletAddress ?? undefined);
+      return NextResponse.json({ agents, total: agents.length });
+    }
+
     const page = parseIntegerParam(searchParams.get('page'), 1, 1, 10_000);
     const pageSize = parseIntegerParam(searchParams.get('pageSize'), 20, 1, 100);
     const result = await listAgents(page, pageSize);

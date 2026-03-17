@@ -11,9 +11,25 @@ import bs58 from 'bs58';
 
 type AuthMode = 'login' | 'signup';
 
+async function resolvePostLoginRedirect(userId: string, walletAddr?: string): Promise<string> {
+  try {
+    const params = new URLSearchParams({ ownerId: userId });
+    if (walletAddr) params.set('walletAddress', walletAddr);
+    const res = await fetch(`/api/agents?${params}`);
+    if (res.ok) {
+      const data = await res.json();
+      const agents = data.agents ?? [];
+      if (agents.length > 0) {
+        return `/agent/${agents[0].id}/dashboard`;
+      }
+    }
+  } catch { /* fall through */ }
+  return '/marketplace';
+}
+
 export default function AuthPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { publicKey, signMessage, connected, connecting } = useWallet();
   const { setVisible: openWalletModal } = useWalletModal();
 
@@ -26,10 +42,11 @@ export default function AuthPage() {
   const pendingWalletSign = useRef(false);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      router.replace('/dashboard');
+    if (isAuthenticated && user?.id) {
+      const wa = (user.user_metadata?.wallet_address as string | undefined) ?? undefined;
+      resolvePostLoginRedirect(user.id, wa).then(url => router.replace(url));
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, user, router]);
 
   const performWalletSign = useCallback(async () => {
     if (!publicKey || !signMessage) return;
@@ -56,13 +73,16 @@ export default function AuthPage() {
       if (!res.ok) throw new Error(data.error?.message ?? data.error ?? 'Wallet verification failed');
 
       const supabase = getSupabaseBrowser();
-      const { error: otpErr } = await supabase.auth.verifyOtp({
+      const { error: otpErr, data: otpData } = await supabase.auth.verifyOtp({
         token_hash: data.token_hash,
         type: 'magiclink',
       });
       if (otpErr) throw otpErr;
 
-      router.push('/dashboard');
+      const uid = otpData.user?.id;
+      const wa = publicKey?.toBase58();
+      const redirect = uid ? await resolvePostLoginRedirect(uid, wa) : '/marketplace';
+      router.push(redirect);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       if (msg.includes('User rejected') || msg.includes('rejected')) {
@@ -111,10 +131,12 @@ export default function AuthPage() {
         return;
       }
 
-      const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
+      const { data: loginData, error: err } = await supabase.auth.signInWithPassword({ email, password });
       if (err) throw err;
-      if (!data.session) throw new Error('Login succeeded but no session was returned');
-      router.push('/dashboard');
+      if (!loginData.session) throw new Error('Login succeeded but no session was returned');
+      const uid = loginData.user?.id;
+      const redirect = uid ? await resolvePostLoginRedirect(uid) : '/marketplace';
+      router.push(redirect);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Authentication failed');
       setLoading(false);

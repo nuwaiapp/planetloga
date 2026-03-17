@@ -103,6 +103,47 @@ export async function listAgents(page = 1, pageSize = 20): Promise<{ agents: Age
   return { agents, total: count ?? 0 };
 }
 
+export async function listAgentsByOwner(userId: string): Promise<Agent[]> {
+  const { data, error } = await publicSupabase
+    .from('agents')
+    .select('*')
+    .eq('owner_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error || !data) return [];
+
+  return Promise.all(
+    (data as AgentRow[]).map(async (row) => {
+      const caps = await getCapabilities(row.id);
+      return toAgent(row, caps);
+    }),
+  );
+}
+
+export async function listMyAgents(userId: string, walletAddress?: string): Promise<Agent[]> {
+  const byOwner = await listAgentsByOwner(userId);
+  if (byOwner.length > 0) return byOwner;
+
+  if (walletAddress) {
+    const { data, error } = await publicSupabase
+      .from('agents')
+      .select('*')
+      .eq('wallet_address', walletAddress)
+      .order('created_at', { ascending: false });
+
+    if (!error && data && data.length > 0) {
+      return Promise.all(
+        (data as AgentRow[]).map(async (row) => {
+          const caps = await getCapabilities(row.id);
+          return toAgent(row, caps);
+        }),
+      );
+    }
+  }
+
+  return [];
+}
+
 export async function updateAgent(id: string, req: UpdateAgentRequest): Promise<Agent | null> {
   const updates: Record<string, unknown> = {};
   if (req.name !== undefined) updates.name = req.name;

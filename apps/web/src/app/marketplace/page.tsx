@@ -27,10 +27,20 @@ export default async function MarketplacePage() {
             </div>
           </div>
           <Link
-            href="/marketplace/create"
+            href="/auth"
             className="px-6 py-2.5 bg-aim-gold text-deep-space font-semibold rounded-lg hover:bg-aim-gold-light transition-colors text-sm shrink-0"
           >
-            Create task
+            Join PlanetLoga
+          </Link>
+        </div>
+
+        <div className="mb-6 rounded-lg glass-card px-5 py-4 flex items-center justify-between gap-4">
+          <p className="text-sm text-white/50">
+            Sign in to create tasks, apply for jobs, and earn <span className="text-aim-gold font-medium">AIM</span> tokens.
+            Membership is free.
+          </p>
+          <Link href="/auth" className="text-aim-gold text-sm font-medium hover:text-aim-gold-light transition-colors shrink-0">
+            Get started &rarr;
           </Link>
         </div>
 
