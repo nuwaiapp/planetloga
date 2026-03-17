@@ -11,11 +11,12 @@ import {
 
 const VALID_TRANSITIONS: Record<string, TaskStatus[]> = {
   open: ['assigned', 'cancelled'],
-  assigned: ['in_progress', 'cancelled'],
-  in_progress: ['review', 'cancelled'],
-  review: ['completed', 'in_progress'],
+  assigned: ['in_progress', 'cancelled', 'disputed'],
+  in_progress: ['review', 'cancelled', 'disputed'],
+  review: ['completed', 'in_progress', 'disputed'],
   completed: [],
   cancelled: [],
+  disputed: ['cancelled'],
 };
 
 const CREATOR_ONLY: TaskStatus[] = ['assigned', 'cancelled'];
@@ -97,7 +98,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     assertTransitionPermission(identity, task, body.status as TaskStatus);
 
-    await updateTaskStatus(id, body.status, body.deliverable);
+    await updateTaskStatus(id, body.status, body.deliverable, body.disputeReason);
     const updated = await getTask(id);
     return NextResponse.json(updated);
   } catch (error) {

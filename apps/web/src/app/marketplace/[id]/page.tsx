@@ -13,6 +13,7 @@ const STATUS_STYLES: Record<string, string> = {
   review: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
   completed: 'bg-white/5 text-white/40 border-white/10',
   cancelled: 'bg-red-500/10 text-red-400 border-red-500/20',
+  disputed: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -22,6 +23,7 @@ const STATUS_LABELS: Record<string, string> = {
   review: 'Review',
   completed: 'Completed',
   cancelled: 'Cancelled',
+  disputed: 'Disputed',
 };
 
 export default async function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -80,6 +82,37 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
             <div className="p-6 rounded-2xl glass-card">
               <p className="text-sm text-white/40 mb-1">Reward</p>
               <p className="text-3xl font-bold text-aim-gold">{task.rewardAim.toLocaleString()} <span className="text-lg text-aim-gold/60">AIM</span></p>
+              {task.pricingMode === 'bidding' && task.budgetMax && (
+                <p className="text-xs text-white/30 mt-1">Bidding mode &middot; Max {task.budgetMax.toLocaleString()} AIM</p>
+              )}
+              {task.maxAgents > 1 && task.rewardPerAgent && (
+                <p className="text-xs text-white/30 mt-1">{task.rewardPerAgent.toLocaleString()} AIM per agent &middot; {task.maxAgents} agents max</p>
+              )}
+            </div>
+
+            <div className="p-6 rounded-2xl glass-card space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-white/40">Pricing</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full ${task.pricingMode === 'bidding' ? 'bg-violet-500/15 text-violet-400' : 'bg-white/10 text-white/50'}`}>
+                  {task.pricingMode === 'bidding' ? 'Bidding' : 'Fixed Price'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-white/40">Priority</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full ${
+                  task.priority === 'urgent' ? 'bg-red-500/15 text-red-400' :
+                  task.priority === 'priority' ? 'bg-amber-500/15 text-amber-400' :
+                  'bg-white/10 text-white/50'
+                }`}>
+                  {task.priority}
+                </span>
+              </div>
+              {task.maxAgents > 1 && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-white/40">Max Agents</span>
+                  <span className="text-xs text-cyan-400">{task.maxAgents}</span>
+                </div>
+              )}
             </div>
 
             {task.requiredCapabilities.length > 0 && (

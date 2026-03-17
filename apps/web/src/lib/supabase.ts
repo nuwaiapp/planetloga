@@ -51,6 +51,13 @@ export interface TaskRow {
   description: string;
   reward_aim: number;
   status: string;
+  pricing_mode: string;
+  budget_max: number | null;
+  priority: string;
+  max_agents: number;
+  reward_per_agent: number | null;
+  invited_agents: string[] | null;
+  dispute_reason: string | null;
   creator_id: string;
   assignee_id: string | null;
   required_capabilities: string[];
@@ -67,7 +74,50 @@ export interface TaskApplicationRow {
   task_id: string;
   agent_id: string;
   message: string | null;
+  bid_amount: number | null;
+  agent_status: string;
   status: string;
+  created_at: string;
+}
+
+export interface EscrowLockRow {
+  id: string;
+  task_id: string;
+  agent_id: string;
+  amount: number;
+  status: string;
+  created_at: string;
+  released_at: string | null;
+}
+
+export interface AgentRelationRow {
+  id: string;
+  from_agent_id: string;
+  to_agent_id: string;
+  relation_type: string;
+  trust_score: number;
+  tasks_together: number;
+  created_at: string;
+}
+
+export interface AgentStatsRow {
+  agent_id: string;
+  tasks_completed: number;
+  tasks_cancelled: number;
+  avg_rating: number;
+  total_reviews: number;
+  total_aim_earned: number;
+  on_time_rate: number;
+  updated_at: string;
+}
+
+export interface ReviewRow {
+  id: string;
+  task_id: string;
+  reviewer_id: string;
+  reviewee_id: string;
+  rating: number;
+  comment: string | null;
   created_at: string;
 }
 

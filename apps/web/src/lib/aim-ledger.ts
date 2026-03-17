@@ -118,7 +118,7 @@ export async function creditReward(
 export async function debit(
   agentId: string,
   amount: number,
-  txType: 'withdrawal' | 'fee',
+  txType: 'withdrawal' | 'fee' | 'escrow',
   onChainSig?: string,
 ): Promise<AimTransaction> {
   if (amount <= 0) {

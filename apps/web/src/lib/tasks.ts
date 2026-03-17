@@ -1,8 +1,12 @@
 import { adminSupabase, publicSupabase, type TaskRow, type TaskApplicationRow } from './supabase';
 import type { Task, TaskApplication, CreateTaskRequest, TaskListResponse } from '@planetloga/types';
+import { PRIORITY_MULTIPLIER } from '@planetloga/types';
 import { logActivity } from './activity';
 import { AppError, logServerError } from './errors';
 import { creditReward } from './aim-ledger';
+import { lockEscrow, releaseEscrow, refundEscrow, releaseEscrowPartial } from './escrow';
+import { recalculateReputation } from './reputation';
+import { incrementTrustAfterTask } from './agent-relations';
 
 function toTask(row: TaskRow, creatorName?: string, assigneeName?: string): Task {
   return {
@@ -11,6 +15,13 @@ function toTask(row: TaskRow, creatorName?: string, assigneeName?: string): Task
     description: row.description,
     rewardAim: Number(row.reward_aim),
     status: row.status as Task['status'],
+    pricingMode: (row.pricing_mode ?? 'fixed') as Task['pricingMode'],
+    budgetMax: row.budget_max != null ? Number(row.budget_max) : undefined,
+    priority: (row.priority ?? 'normal') as Task['priority'],
+    maxAgents: row.max_agents ?? 1,
+    rewardPerAgent: row.reward_per_agent != null ? Number(row.reward_per_agent) : undefined,
+    invitedAgents: row.invited_agents ?? undefined,
+    disputeReason: row.dispute_reason ?? undefined,
     creatorId: row.creator_id,
     creatorName,
     assigneeId: row.assignee_id ?? undefined,
@@ -32,6 +43,8 @@ function toApplication(row: TaskApplicationRow, agentName?: string): TaskApplica
     agentId: row.agent_id,
     agentName,
     message: row.message ?? undefined,
+    bidAmount: row.bid_amount != null ? Number(row.bid_amount) : undefined,
+    agentStatus: (row.agent_status ?? 'pending') as TaskApplication['agentStatus'],
     status: row.status as TaskApplication['status'],
     createdAt: row.created_at,
   };
@@ -140,12 +153,29 @@ export async function getTask(id: string): Promise<Task | null> {
 }
 
 export async function createTask(req: CreateTaskRequest): Promise<Task> {
+  const pricingMode = req.pricingMode ?? 'fixed';
+  const priority = req.priority ?? 'normal';
+  const maxAgents = req.maxAgents ?? 1;
+  const multiplier = PRIORITY_MULTIPLIER[priority];
+
+  const baseReward = req.rewardAim;
+  const effectiveReward = Math.round(baseReward * multiplier);
+  const budgetMax = pricingMode === 'bidding' ? (req.budgetMax ?? effectiveReward) : effectiveReward;
+  const rewardPerAgent = maxAgents > 1 ? Math.round(effectiveReward / maxAgents) : null;
+  const escrowAmount = maxAgents > 1 ? rewardPerAgent! * maxAgents : effectiveReward;
+
   const { data, error } = await adminSupabase
     .from('tasks')
     .insert({
       title: req.title,
       description: req.description,
-      reward_aim: req.rewardAim,
+      reward_aim: effectiveReward,
+      pricing_mode: pricingMode,
+      budget_max: budgetMax,
+      priority,
+      max_agents: maxAgents,
+      reward_per_agent: rewardPerAgent,
+      invited_agents: req.invitedAgents ?? [],
       creator_id: req.creatorId,
       required_capabilities: req.requiredCapabilities ?? [],
       deadline: req.deadline ?? null,
@@ -159,6 +189,14 @@ export async function createTask(req: CreateTaskRequest): Promise<Task> {
     });
   }
   const row = data as TaskRow;
+
+  try {
+    await lockEscrow(row.id, req.creatorId, escrowAmount);
+  } catch (escrowErr) {
+    await adminSupabase.from('tasks').delete().eq('id', row.id);
+    throw escrowErr;
+  }
+
   const nameMap = await getAgentNames([row.creator_id]);
   const task = toTask(row, nameMap[row.creator_id]);
   void logActivity({
@@ -167,27 +205,37 @@ export async function createTask(req: CreateTaskRequest): Promise<Task> {
     agentName: task.creatorName,
     taskId: task.id,
     taskTitle: task.title,
-    aimAmount: task.rewardAim,
-    detail: `${task.rewardAim} AIM reward`,
+    aimAmount: effectiveReward,
+    detail: `${effectiveReward} AIM${priority !== 'normal' ? ` (${priority} +${Math.round((multiplier - 1) * 100)}%)` : ''} locked in escrow`,
   }).catch((error: unknown) => {
     logServerError('tasks.createTask.logActivity', error, { taskId: task.id });
   });
   return task;
 }
 
-export async function applyForTask(taskId: string, agentId: string, message?: string): Promise<TaskApplication> {
+export async function applyForTask(taskId: string, agentId: string, message?: string, bidAmount?: number): Promise<TaskApplication> {
+  const task = await getTask(taskId);
+  if (task?.pricingMode === 'bidding' && bidAmount != null && task.budgetMax != null && bidAmount > task.budgetMax) {
+    throw new AppError('BID_EXCEEDS_BUDGET', `Bid ${bidAmount} exceeds max budget ${task.budgetMax}`, 400);
+  }
+
   const { data, error } = await adminSupabase
     .from('task_applications')
-    .insert({ task_id: taskId, agent_id: agentId, message: message ?? null })
+    .insert({
+      task_id: taskId,
+      agent_id: agentId,
+      message: message ?? null,
+      bid_amount: bidAmount ?? null,
+    })
     .select('*')
     .single();
 
   if (error || !data) {
-    const message = error?.message ?? 'Bewerbung fehlgeschlagen';
-    const duplicate = message.toLowerCase().includes('duplicate') || message.toLowerCase().includes('unique');
+    const msg = error?.message ?? 'Bewerbung fehlgeschlagen';
+    const duplicate = msg.toLowerCase().includes('duplicate') || msg.toLowerCase().includes('unique');
     throw new AppError(
       duplicate ? 'ALREADY_APPLIED' : 'APPLY_FAILED',
-      message,
+      msg,
       duplicate ? 409 : 500,
       { cause: error },
     );
@@ -213,7 +261,7 @@ export async function getApplications(taskId: string): Promise<TaskApplication[]
 export async function acceptApplication(taskId: string, applicationId: string): Promise<void> {
   const { data: app } = await adminSupabase
     .from('task_applications')
-    .select('agent_id')
+    .select('agent_id, bid_amount')
     .eq('id', applicationId)
     .single();
 
@@ -221,27 +269,64 @@ export async function acceptApplication(taskId: string, applicationId: string): 
     throw new AppError('NOT_FOUND', 'Bewerbung nicht gefunden', 404);
   }
 
-  await adminSupabase.from('task_applications').update({ status: 'accepted' }).eq('id', applicationId);
-  await adminSupabase.from('task_applications').update({ status: 'rejected' }).eq('task_id', taskId).neq('id', applicationId);
-  await adminSupabase.from('tasks').update({ status: 'assigned', assignee_id: app.agent_id }).eq('id', taskId);
-
   const task = await getTask(taskId);
+  if (!task) throw new AppError('NOT_FOUND', 'Task nicht gefunden', 404);
+
+  if (task.pricingMode === 'bidding' && app.bid_amount != null) {
+    await adminSupabase.from('tasks').update({ reward_aim: app.bid_amount }).eq('id', taskId);
+  }
+
+  await adminSupabase.from('task_applications')
+    .update({ status: 'accepted', agent_status: 'working' })
+    .eq('id', applicationId);
+
+  if (task.maxAgents <= 1) {
+    await adminSupabase.from('task_applications')
+      .update({ status: 'rejected', agent_status: 'rejected' })
+      .eq('task_id', taskId)
+      .neq('id', applicationId);
+    await adminSupabase.from('tasks')
+      .update({ status: 'assigned', assignee_id: app.agent_id })
+      .eq('id', taskId);
+  } else {
+    const { count } = await adminSupabase
+      .from('task_applications')
+      .select('id', { count: 'exact', head: true })
+      .eq('task_id', taskId)
+      .eq('status', 'accepted');
+
+    const acceptedCount = (count ?? 0);
+    if (acceptedCount >= task.maxAgents) {
+      await adminSupabase.from('task_applications')
+        .update({ status: 'rejected', agent_status: 'rejected' })
+        .eq('task_id', taskId)
+        .eq('status', 'pending');
+    }
+
+    if (acceptedCount === 1) {
+      await adminSupabase.from('tasks')
+        .update({ status: 'assigned', assignee_id: app.agent_id })
+        .eq('id', taskId);
+    }
+  }
+
   const nameMap = await getAgentNames([app.agent_id]);
   void logActivity({
     eventType: 'task.assigned',
     agentId: app.agent_id,
     agentName: nameMap[app.agent_id],
     taskId,
-    taskTitle: task?.title,
+    taskTitle: task.title,
     detail: `assigned to ${nameMap[app.agent_id] ?? 'agent'}`,
   }).catch((error: unknown) => {
     logServerError('tasks.acceptApplication.logActivity', error, { taskId, applicationId });
   });
 }
 
-export async function updateTaskStatus(taskId: string, status: Task['status'], deliverable?: string): Promise<void> {
+export async function updateTaskStatus(taskId: string, status: Task['status'], deliverable?: string, disputeReason?: string): Promise<void> {
   const update: Record<string, unknown> = { status };
   if (status === 'completed') update.completed_at = new Date().toISOString();
+  if (status === 'disputed' && disputeReason) update.dispute_reason = disputeReason;
   if (deliverable) {
     update.deliverable = deliverable;
     update.deliverable_at = new Date().toISOString();
@@ -251,17 +336,50 @@ export async function updateTaskStatus(taskId: string, status: Task['status'], d
     throw new AppError('UPDATE_FAILED', error.message, 500, { cause: error });
   }
 
-  const eventMap: Record<string, string> = { in_progress: 'task.started', review: 'task.review', completed: 'task.completed', cancelled: 'task.cancelled' };
+  const eventMap: Record<string, string> = {
+    in_progress: 'task.started',
+    review: 'task.review',
+    completed: 'task.completed',
+    cancelled: 'task.cancelled',
+    disputed: 'task.disputed',
+  };
   const eventType = eventMap[status];
   if (eventType) {
     const task = await getTask(taskId);
 
     if (status === 'completed' && task?.assigneeId && task.rewardAim > 0) {
       try {
-        await creditReward(task.assigneeId, task.rewardAim, taskId);
+        if (task.maxAgents > 1 && task.rewardPerAgent) {
+          await releaseEscrowPartial(taskId, task.assigneeId, task.rewardPerAgent);
+        } else {
+          await releaseEscrow(taskId, task.assigneeId);
+        }
       } catch (err) {
-        logServerError('tasks.updateTaskStatus.creditReward', err, { taskId, assigneeId: task.assigneeId });
+        logServerError('tasks.updateTaskStatus.releaseEscrow', err, { taskId, assigneeId: task.assigneeId });
+        try {
+          await creditReward(task.assigneeId, task.rewardAim, taskId);
+        } catch (fallbackErr) {
+          logServerError('tasks.updateTaskStatus.creditRewardFallback', fallbackErr, { taskId });
+        }
       }
+    }
+
+    if (status === 'cancelled') {
+      try {
+        await refundEscrow(taskId);
+      } catch (err) {
+        logServerError('tasks.updateTaskStatus.refundEscrow', err, { taskId });
+      }
+    }
+
+    if (status === 'completed' && task?.assigneeId && task.creatorId) {
+      void Promise.all([
+        recalculateReputation(task.assigneeId),
+        recalculateReputation(task.creatorId),
+        incrementTrustAfterTask(task.creatorId, task.assigneeId),
+      ]).catch((err: unknown) => {
+        logServerError('tasks.updateTaskStatus.postCompletion', err, { taskId });
+      });
     }
 
     void logActivity({
@@ -271,7 +389,7 @@ export async function updateTaskStatus(taskId: string, status: Task['status'], d
       agentId: task?.assigneeId,
       agentName: task?.assigneeName,
       aimAmount: status === 'completed' ? task?.rewardAim : undefined,
-      detail: status === 'completed' ? `${task?.rewardAim} AIM credited to balance` : undefined,
+      detail: status === 'completed' ? `${task?.rewardAim} AIM released from escrow` : undefined,
     }).catch((error: unknown) => {
       logServerError('tasks.updateTaskStatus.logActivity', error, { taskId, status });
     });

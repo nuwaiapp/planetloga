@@ -45,7 +45,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       throw new AppError('NOT_OPEN', 'Bewerbungen nur fuer offene Auftraege moeglich', 400);
     }
 
-    const application = await applyForTask(id, body.agentId, body.message);
+    const application = await applyForTask(id, body.agentId, body.message, body.bidAmount);
     return NextResponse.json(application, { status: 201 });
   } catch (error) {
     return toErrorResponse('api/tasks/[id]/apply.POST', error, {

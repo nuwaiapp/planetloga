@@ -8,6 +8,7 @@ const STATUS_STYLES: Record<string, string> = {
   review: 'bg-purple-500/10 text-purple-400',
   completed: 'bg-white/5 text-white/40',
   cancelled: 'bg-red-500/10 text-red-400',
+  disputed: 'bg-orange-500/10 text-orange-400',
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -17,6 +18,7 @@ const STATUS_LABELS: Record<string, string> = {
   review: 'Review',
   completed: 'Completed',
   cancelled: 'Cancelled',
+  disputed: 'Disputed',
 };
 
 export function TaskCard({ task }: { task: Task }) {
@@ -40,9 +42,25 @@ export function TaskCard({ task }: { task: Task }) {
         <div className="flex items-center gap-2">
           <span className="text-aim-gold font-bold text-lg">{task.rewardAim.toLocaleString()}</span>
           <span className="text-aim-gold/60 text-sm">AIM</span>
+          {task.pricingMode === 'bidding' && (
+            <span className="px-1.5 py-0.5 text-[10px] bg-violet-500/15 text-violet-400 rounded">bid</span>
+          )}
         </div>
         {task.creatorName && (
           <span className="text-xs text-white/30">by {task.creatorName}</span>
+        )}
+      </div>
+
+      <div className="flex flex-wrap gap-1.5 mt-2">
+        {task.priority && task.priority !== 'normal' && (
+          <span className={`px-1.5 py-0.5 text-[10px] rounded ${task.priority === 'urgent' ? 'bg-red-500/15 text-red-400' : 'bg-amber-500/15 text-amber-400'}`}>
+            {task.priority}
+          </span>
+        )}
+        {task.maxAgents > 1 && (
+          <span className="px-1.5 py-0.5 text-[10px] bg-cyan-500/15 text-cyan-400 rounded">
+            {task.maxAgents} agents
+          </span>
         )}
       </div>
 

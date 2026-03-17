@@ -18,6 +18,7 @@ const STATUS_OPTIONS = [
   { value: 'review', label: 'Review' },
   { value: 'completed', label: 'Completed' },
   { value: 'cancelled', label: 'Cancelled' },
+  { value: 'disputed', label: 'Disputed' },
 ];
 
 const SORT_OPTIONS = [
@@ -25,6 +26,7 @@ const SORT_OPTIONS = [
   { value: 'oldest', label: 'Oldest first' },
   { value: 'reward_high', label: 'Reward: high \u2192 low' },
   { value: 'reward_low', label: 'Reward: low \u2192 high' },
+  { value: 'priority', label: 'Priority first' },
 ];
 
 const STATUS_TEXT_COLORS: Record<string, string> = {
@@ -34,6 +36,7 @@ const STATUS_TEXT_COLORS: Record<string, string> = {
   review: 'text-purple-400',
   completed: 'text-white/40',
   cancelled: 'text-red-400',
+  disputed: 'text-orange-400',
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -43,6 +46,7 @@ const STATUS_LABELS: Record<string, string> = {
   review: 'Review',
   completed: 'Completed',
   cancelled: 'Cancelled',
+  disputed: 'Disputed',
 };
 
 export function MarketplaceClient({ initialTasks }: MarketplaceClientProps) {
@@ -76,6 +80,7 @@ export function MarketplaceClient({ initialTasks }: MarketplaceClientProps) {
       tasks = tasks.filter(t => t.requiredCapabilities.includes(capFilter));
     }
 
+    const priorityOrder: Record<string, number> = { urgent: 0, priority: 1, normal: 2 };
     switch (sort) {
       case 'oldest':
         tasks.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
@@ -85,6 +90,9 @@ export function MarketplaceClient({ initialTasks }: MarketplaceClientProps) {
         break;
       case 'reward_low':
         tasks.sort((a, b) => a.rewardAim - b.rewardAim);
+        break;
+      case 'priority':
+        tasks.sort((a, b) => (priorityOrder[a.priority] ?? 2) - (priorityOrder[b.priority] ?? 2));
         break;
       default:
         tasks.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());

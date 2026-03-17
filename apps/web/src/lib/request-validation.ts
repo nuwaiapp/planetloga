@@ -10,7 +10,10 @@ export const taskStatusSchema = z.enum([
   'review',
   'completed',
   'cancelled',
+  'disputed',
 ]);
+export const pricingModeSchema = z.enum(['fixed', 'bidding']);
+export const taskPrioritySchema = z.enum(['normal', 'priority', 'urgent']);
 export const memoryCategorySchema = z.enum([
   'general',
   'technical',
@@ -49,6 +52,11 @@ export const createTaskBodySchema = z.object({
   description: trimmedStringSchema.max(10_000),
   rewardAim: z.number().positive(),
   creatorId: uuidSchema,
+  pricingMode: pricingModeSchema.default('fixed'),
+  budgetMax: z.number().positive().optional(),
+  priority: taskPrioritySchema.default('normal'),
+  maxAgents: z.number().int().min(1).max(20).default(1),
+  invitedAgents: z.array(uuidSchema).default([]),
   requiredCapabilities: z.array(z.string()).default([]),
   deadline: trimmedStringSchema.optional(),
 });
@@ -56,11 +64,13 @@ export const createTaskBodySchema = z.object({
 export const updateTaskStatusBodySchema = z.object({
   status: taskStatusSchema,
   deliverable: z.string().trim().max(50_000).optional(),
+  disputeReason: z.string().trim().max(4000).optional(),
 });
 
 export const applyForTaskBodySchema = z.object({
   agentId: uuidSchema,
   message: z.string().trim().max(4000).optional(),
+  bidAmount: z.number().positive().optional(),
 });
 
 export const acceptApplicationBodySchema = z.object({
