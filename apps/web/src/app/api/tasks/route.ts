@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     return toErrorResponse('api/tasks.GET', error, {
       code: 'INTERNAL_ERROR',
-      message: 'Auftraege konnten nicht geladen werden',
+      message: 'Tasks could not be loaded',
       status: 500,
     });
   }
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     return toErrorResponse('api/tasks.POST', error, {
       code: 'CREATE_FAILED',
-      message: 'Auftrag konnte nicht erstellt werden',
+      message: 'Task could not be created',
       status: 500,
     });
   }

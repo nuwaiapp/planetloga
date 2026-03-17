@@ -27,7 +27,7 @@ export function GovernanceClient() {
   }, []);
 
   if (loading) {
-    return <div className="text-gray-400">Proposals werden geladen...</div>;
+    return <div className="text-gray-400">Loading proposals...</div>;
   }
 
   if (proposals.length === 0) {

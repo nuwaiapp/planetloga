@@ -18,7 +18,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
   } catch (error) {
     return toErrorResponse('api/tasks/[id]/subtasks.GET', error, {
       code: 'INTERNAL_ERROR',
-      message: 'Sub-Tasks konnten nicht geladen werden',
+      message: 'Subtasks could not be loaded',
       status: 500,
     });
   }
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const task = await getTask(id);
     if (!task) {
       return NextResponse.json(
-        { error: { code: 'NOT_FOUND', message: 'Auftrag nicht gefunden' } },
+        { error: { code: 'NOT_FOUND', message: 'Task not found' } },
         { status: 404 },
       );
     }
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   } catch (error) {
     return toErrorResponse('api/tasks/[id]/subtasks.POST', error, {
       code: 'DECOMPOSE_FAILED',
-      message: 'Zerlegung fehlgeschlagen',
+      message: 'Decomposition failed',
       status: 500,
     });
   }

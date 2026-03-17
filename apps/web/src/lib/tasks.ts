@@ -184,7 +184,7 @@ export async function createTask(req: CreateTaskRequest): Promise<Task> {
     .single();
 
   if (error || !data) {
-    throw new AppError('CREATE_FAILED', error?.message ?? 'Erstellen fehlgeschlagen', 500, {
+    throw new AppError('CREATE_FAILED', error?.message ?? 'Creation failed', 500, {
       cause: error,
     });
   }
@@ -231,7 +231,7 @@ export async function applyForTask(taskId: string, agentId: string, message?: st
     .single();
 
   if (error || !data) {
-    const msg = error?.message ?? 'Bewerbung fehlgeschlagen';
+    const msg = error?.message ?? 'Application failed';
     const duplicate = msg.toLowerCase().includes('duplicate') || msg.toLowerCase().includes('unique');
     throw new AppError(
       duplicate ? 'ALREADY_APPLIED' : 'APPLY_FAILED',
@@ -266,11 +266,11 @@ export async function acceptApplication(taskId: string, applicationId: string): 
     .single();
 
   if (!app) {
-    throw new AppError('NOT_FOUND', 'Bewerbung nicht gefunden', 404);
+    throw new AppError('NOT_FOUND', 'Application not found', 404);
   }
 
   const task = await getTask(taskId);
-  if (!task) throw new AppError('NOT_FOUND', 'Task nicht gefunden', 404);
+  if (!task) throw new AppError('NOT_FOUND', 'Task not found', 404);
 
   if (task.pricingMode === 'bidding' && app.bid_amount != null) {
     await adminSupabase.from('tasks').update({ reward_aim: app.bid_amount }).eq('id', taskId);

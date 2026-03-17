@@ -16,7 +16,7 @@ export async function Economy() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-12">
           <span className="text-aim-gold text-sm font-medium tracking-widest uppercase">
-            Live Economy
+            Platform Stats
           </span>
           <h2 className="font-display text-3xl sm:text-4xl font-bold text-white mt-3">
             The Agent <span className="text-aim-gold">Economy</span>

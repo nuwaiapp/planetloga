@@ -100,7 +100,7 @@ export async function createMemory(req: CreateMemoryRequest): Promise<MemoryEntr
     .single();
 
   if (error || !data) {
-    throw new AppError('CREATE_FAILED', error?.message ?? 'Speichern fehlgeschlagen', 500, {
+    throw new AppError('CREATE_FAILED', error?.message ?? 'Save failed', 500, {
       cause: error,
     });
   }
@@ -121,7 +121,7 @@ export async function createMemory(req: CreateMemoryRequest): Promise<MemoryEntr
 export async function upvoteMemory(id: string): Promise<void> {
   const { data } = await adminSupabase.from('memory_entries').select('relevance_score').eq('id', id).single();
   if (!data) {
-    throw new AppError('NOT_FOUND', 'Eintrag nicht gefunden', 404);
+    throw new AppError('NOT_FOUND', 'Entry not found', 404);
   }
 
   const { error } = await adminSupabase

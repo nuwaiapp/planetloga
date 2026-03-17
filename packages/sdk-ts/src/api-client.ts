@@ -224,7 +224,7 @@ export class PlanetLogaApiClient {
     return this.request(`/api/tasks/${taskId}/comments`);
   }
 
-  async getRanking(): Promise<{ agents: RankedAgent[] }> {
+  async getRanking(): Promise<{ ranking: RankedAgent[] }> {
     return this.request('/api/agents/ranking');
   }
 

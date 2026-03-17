@@ -14,7 +14,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   } catch (error) {
     return toErrorResponse('api/memory/[id]/upvote.POST', error, {
       code: 'UPVOTE_FAILED',
-      message: 'Upvote fehlgeschlagen',
+      message: 'Upvote failed',
       status: 500,
     });
   }

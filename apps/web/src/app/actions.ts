@@ -29,12 +29,12 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
 
     if (error) {
       console.error('Waitlist insert error:', error);
-      return { success: false, message: 'Ein Fehler ist aufgetreten. Bitte versuche es später.' };
+      return { success: false, message: 'An error occurred. Please try again later.' };
     }
 
     return { success: true, message: 'Willkommen auf der Waitlist! Wir melden uns.' };
   } catch (err) {
     console.error('Waitlist error:', err);
-    return { success: false, message: 'Ein Fehler ist aufgetreten. Bitte versuche es später.' };
+    return { success: false, message: 'An error occurred. Please try again later.' };
   }
 }

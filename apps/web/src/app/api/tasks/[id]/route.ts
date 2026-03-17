@@ -54,7 +54,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
     const task = await getTask(id);
     if (!task) {
       return NextResponse.json(
-        { error: { code: 'NOT_FOUND', message: 'Auftrag nicht gefunden' } },
+        { error: { code: 'NOT_FOUND', message: 'Task not found' } },
         { status: 404 },
       );
     }
@@ -62,7 +62,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
   } catch (error) {
     return toErrorResponse('api/tasks/[id].GET', error, {
       code: 'INTERNAL_ERROR',
-      message: 'Fehler beim Laden',
+      message: 'Failed to load',
       status: 500,
     });
   }
@@ -78,7 +78,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const task = await getTask(id);
     if (!task) {
       return NextResponse.json(
-        { error: { code: 'NOT_FOUND', message: 'Auftrag nicht gefunden' } },
+        { error: { code: 'NOT_FOUND', message: 'Task not found' } },
         { status: 404 },
       );
     }
@@ -91,7 +91,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (!allowed.includes(body.status as TaskStatus)) {
       throw new AppError(
         'INVALID_TRANSITION',
-        `Status-Wechsel von '${task.status}' nach '${body.status}' nicht erlaubt`,
+        `Status transition from '${task.status}' to '${body.status}' not allowed`,
         400,
       );
     }
@@ -104,7 +104,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   } catch (error) {
     return toErrorResponse('api/tasks/[id].PATCH', error, {
       code: 'UPDATE_FAILED',
-      message: 'Status-Update fehlgeschlagen',
+      message: 'Status update failed',
       status: 500,
     });
   }

@@ -53,7 +53,7 @@ export default function AdminTasks() {
       const agentsData = await agentsRes.json();
       setTasks(tasksData.tasks ?? []);
       setAgents(agentsData.agents ?? []);
-    } catch { setMessage('Fehler beim Laden'); }
+    } catch { setMessage('Failed to load'); }
     finally { setLoading(false); }
   }, [authFetch]);
 
@@ -61,7 +61,7 @@ export default function AdminTasks() {
 
   const createTask = async () => {
     if (!formData.title.trim() || !formData.description.trim() || !formData.creatorId) {
-      setMessage('Titel, Beschreibung und Creator sind erforderlich');
+      setMessage('Title, description and creator are required');
       return;
     }
     setSubmitting(true);
@@ -80,14 +80,14 @@ export default function AdminTasks() {
       });
       if (!res.ok) {
         const err = await res.json();
-        setMessage(err.error?.message ?? 'Fehler');
+        setMessage(err.error?.message ?? 'Error');
         return;
       }
-      setMessage('Task erfolgreich erstellt');
+      setMessage('Task created successfully');
       setFormData({ title: '', description: '', rewardAim: '100', creatorId: '' });
       setShowForm(false);
       loadData();
-    } catch { setMessage('Netzwerkfehler'); }
+    } catch { setMessage('Network error'); }
     finally { setSubmitting(false); }
   };
 
@@ -101,11 +101,11 @@ export default function AdminTasks() {
       });
       if (!res.ok) {
         const err = await res.json();
-        setMessage(err.error?.message ?? 'Statusänderung fehlgeschlagen');
+        setMessage(err.error?.message ?? 'Status change failed');
         return;
       }
       setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
-    } catch { setMessage('Netzwerkfehler'); }
+    } catch { setMessage('Network error'); }
   };
 
   return (
@@ -124,20 +124,20 @@ export default function AdminTasks() {
             className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-aim-gold text-deep-space text-xs font-bold hover:bg-aim-gold-light transition-colors"
           >
             <Plus className="w-4 h-4" />
-            Task anlegen
+            Create Task
           </button>
         </div>
       </div>
 
       {message && (
-        <div className={`text-sm px-4 py-3 rounded-lg border ${message.includes('erstellt') || message.includes('erfolgreich') ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
+        <div className={`text-sm px-4 py-3 rounded-lg border ${message.includes('created') || message.includes('successfully') ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
           {message}
         </div>
       )}
 
       {showForm && (
         <div className="admin-card rounded-xl p-6 space-y-5">
-          <h2 className="text-sm font-bold text-white uppercase tracking-wider">Neuer Task</h2>
+          <h2 className="text-sm font-bold text-white uppercase tracking-wider">New Task</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-white/50 mb-1.5 block font-medium">Titel *</label>
@@ -158,14 +158,14 @@ export default function AdminTasks() {
             </div>
           </div>
           <div>
-            <label className="text-xs text-white/50 mb-1.5 block font-medium">Beschreibung *</label>
+            <label className="text-xs text-white/50 mb-1.5 block font-medium">Description *</label>
             <textarea value={formData.description} onChange={e => setFormData(p => ({ ...p, description: e.target.value }))} rows={3} className="w-full admin-input rounded-lg px-3 py-2.5 text-sm resize-none" placeholder="Detaillierte Aufgabenbeschreibung" />
           </div>
           <div className="flex gap-3 pt-1">
             <button onClick={createTask} disabled={submitting} className="px-5 py-2.5 rounded-lg bg-aim-gold text-deep-space text-xs font-bold hover:bg-aim-gold-light transition-colors disabled:opacity-50">
-              {submitting ? 'Erstelle...' : 'Task erstellen'}
+              {submitting ? 'Creating...' : 'Create Task'}
             </button>
-            <button onClick={() => setShowForm(false)} className="px-5 py-2.5 rounded-lg admin-card text-white/50 text-xs font-medium hover:text-white transition-colors">Abbrechen</button>
+            <button onClick={() => setShowForm(false)} className="px-5 py-2.5 rounded-lg admin-card text-white/50 text-xs font-medium hover:text-white transition-colors">Cancel</button>
           </div>
         </div>
       )}

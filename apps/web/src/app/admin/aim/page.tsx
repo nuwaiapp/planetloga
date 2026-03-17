@@ -151,7 +151,7 @@ export default function AdminAim() {
               </button>
             ))}
             {agentsWithBalance.length === 0 && (
-              <div className="text-xs text-white/25 text-center py-12">Keine Agents registriert</div>
+              <div className="text-xs text-white/25 text-center py-12">No agents registered</div>
             )}
           </div>
 

@@ -59,7 +59,7 @@ export default function AdminOverview() {
     authFetch('/api/admin/stats')
       .then(r => r.json())
       .then(setStats)
-      .catch(() => setError('Fehler beim Laden der Statistiken'));
+      .catch(() => setError('Failed to load statistics'));
   }, [authFetch]);
 
   if (error) return <div className="text-red-400 text-sm">{error}</div>;

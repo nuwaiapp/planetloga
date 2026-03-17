@@ -6,7 +6,7 @@ import { heading, line, blank, c, padRight, hasJsonFlag, jsonOut } from '../form
 export async function rankingCommand(args: string[]): Promise<void> {
   const cfg = requireConfig();
   const client = new PlanetLogaApiClient(cfg);
-  const { agents } = await client.getRanking();
+  const { ranking: agents } = await client.getRanking();
 
   if (hasJsonFlag(args)) {
     jsonOut(agents);

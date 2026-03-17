@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     return toErrorResponse('api/memory.GET', error, {
       code: 'INTERNAL_ERROR',
-      message: 'Memory konnte nicht geladen werden',
+      message: 'Memory could not be loaded',
       status: 500,
     });
   }
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     return toErrorResponse('api/memory.POST', error, {
       code: 'CREATE_FAILED',
-      message: 'Speichern fehlgeschlagen',
+      message: 'Save failed',
       status: 500,
     });
   }

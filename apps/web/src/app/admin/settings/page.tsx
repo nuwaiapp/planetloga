@@ -16,12 +16,12 @@ export default function AdminSettings() {
   const changePassword = async () => {
     setMessage('');
     if (!newPassword || newPassword.length < 6) {
-      setMessage('Passwort muss mindestens 6 Zeichen haben');
+      setMessage('Password must be at least 6 characters');
       setMessageType('error');
       return;
     }
     if (newPassword !== confirmPassword) {
-      setMessage('Passwörter stimmen nicht überein');
+      setMessage('Passwords do not match');
       setMessageType('error');
       return;
     }
@@ -37,12 +37,12 @@ export default function AdminSettings() {
         return;
       }
 
-      setMessage('Passwort erfolgreich geändert');
+      setMessage('Password changed successfully');
       setMessageType('success');
       setNewPassword('');
       setConfirmPassword('');
     } catch {
-      setMessage('Fehler beim Ändern des Passworts');
+      setMessage('Failed to change password');
       setMessageType('error');
     } finally {
       setLoading(false);
@@ -53,7 +53,7 @@ export default function AdminSettings() {
     <div className="space-y-8 max-w-2xl">
       <div>
         <h1 className="text-2xl font-display font-bold text-white">Settings</h1>
-        <p className="text-sm text-white/35">Konto- und Sicherheitseinstellungen</p>
+        <p className="text-sm text-white/35">Account and security settings</p>
       </div>
 
       <div className="admin-card rounded-xl p-6">
@@ -77,9 +77,9 @@ export default function AdminSettings() {
             <div className="text-white/60 font-mono mt-0.5">{user?.id?.slice(0, 16)}...</div>
           </div>
           <div>
-            <span className="text-white/35">Erstellt</span>
+            <span className="text-white/35">Created</span>
             <div className="text-white/60 mt-0.5">
-              {user?.created_at ? new Date(user.created_at).toLocaleDateString('de-DE') : '–'}
+              {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US') : '–'}
             </div>
           </div>
         </div>
@@ -91,8 +91,8 @@ export default function AdminSettings() {
             <KeyRound className="w-5 h-5 text-aim-gold" />
           </div>
           <div>
-            <div className="text-sm font-bold text-white">Passwort ändern</div>
-            <div className="text-xs text-white/35">Neues Passwort setzen</div>
+            <div className="text-sm font-bold text-white">Change Password</div>
+            <div className="text-xs text-white/35">Set a new password</div>
           </div>
         </div>
 
@@ -109,24 +109,24 @@ export default function AdminSettings() {
 
         <div className="space-y-4">
           <div>
-            <label className="text-xs text-white/50 mb-1.5 block font-medium">Neues Passwort</label>
+            <label className="text-xs text-white/50 mb-1.5 block font-medium">New Password</label>
             <input
               type="password"
               value={newPassword}
               onChange={e => setNewPassword(e.target.value)}
               className="w-full admin-input rounded-lg px-3 py-2.5 text-sm"
-              placeholder="Mindestens 6 Zeichen"
+              placeholder="At least 6 characters"
               minLength={6}
             />
           </div>
           <div>
-            <label className="text-xs text-white/50 mb-1.5 block font-medium">Passwort bestätigen</label>
+            <label className="text-xs text-white/50 mb-1.5 block font-medium">Confirm Password</label>
             <input
               type="password"
               value={confirmPassword}
               onChange={e => setConfirmPassword(e.target.value)}
               className="w-full admin-input rounded-lg px-3 py-2.5 text-sm"
-              placeholder="Nochmal eingeben"
+              placeholder="Enter again"
             />
           </div>
           <button
@@ -134,7 +134,7 @@ export default function AdminSettings() {
             disabled={loading || !newPassword}
             className="px-5 py-2.5 rounded-lg bg-aim-gold text-deep-space text-xs font-bold hover:bg-aim-gold-light transition-colors disabled:opacity-50"
           >
-            {loading ? 'Ändere...' : 'Passwort ändern'}
+            {loading ? 'Saving...' : 'Change Password'}
           </button>
         </div>
       </div>

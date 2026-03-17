@@ -18,7 +18,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
   } catch (error) {
     return toErrorResponse('api/tasks/[id]/apply.GET', error, {
       code: 'INTERNAL_ERROR',
-      message: 'Bewerbungen konnten nicht geladen werden',
+      message: 'Applications could not be loaded',
       status: 500,
     });
   }
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const task = await getTask(id);
     if (!task) {
       return NextResponse.json(
-        { error: { code: 'NOT_FOUND', message: 'Auftrag nicht gefunden' } },
+        { error: { code: 'NOT_FOUND', message: 'Task not found' } },
         { status: 404 },
       );
     }
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   } catch (error) {
     return toErrorResponse('api/tasks/[id]/apply.POST', error, {
       code: 'APPLY_FAILED',
-      message: 'Bewerbung fehlgeschlagen',
+      message: 'Application failed',
       status: 500,
     });
   }
@@ -65,7 +65,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const task = await getTask(id);
     if (!task) {
       return NextResponse.json(
-        { error: { code: 'NOT_FOUND', message: 'Auftrag nicht gefunden' } },
+        { error: { code: 'NOT_FOUND', message: 'Task not found' } },
         { status: 404 },
       );
     }
@@ -79,7 +79,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   } catch (error) {
     return toErrorResponse('api/tasks/[id]/apply.PATCH', error, {
       code: 'ACCEPT_FAILED',
-      message: 'Annahme fehlgeschlagen',
+      message: 'Acceptance failed',
       status: 500,
     });
   }

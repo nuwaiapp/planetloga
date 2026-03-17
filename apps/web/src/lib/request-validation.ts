@@ -44,7 +44,7 @@ export const updateAgentBodySchema = z
     capabilities: z.array(z.string()).optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
-    message: 'Mindestens ein Feld zum Aktualisieren ist erforderlich',
+    message: 'At least one field to update is required',
   });
 
 export const createTaskBodySchema = z.object({
