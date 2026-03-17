@@ -206,15 +206,16 @@ function ApiKeysSection({ keys, agentId, authFetch, onUpdate }: {
       </div>
 
       {newKey && (
-        <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-4 space-y-2">
+        <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-4 space-y-3">
           <p className="text-xs text-emerald-400 font-semibold">New API key created — copy it now, it won&apos;t be shown again:</p>
-          <div className="flex items-center gap-2">
-            <code className="flex-1 text-[11px] font-mono text-white bg-black/30 rounded px-2 py-1.5 break-all">{newKey}</code>
-            <button onClick={copyKey} className="shrink-0 p-1.5 rounded hover:bg-white/5 transition-colors">
-              {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-white/40" />}
+          <code className="block text-[11px] font-mono text-white bg-black/30 rounded px-3 py-2 break-all select-all cursor-text">{newKey}</code>
+          <div className="flex items-center gap-3">
+            <button onClick={copyKey}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 text-xs font-semibold hover:bg-emerald-500/30 transition-colors border border-emerald-500/20">
+              {copied ? <><Check className="w-3.5 h-3.5" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy Key</>}
             </button>
+            <button onClick={() => setNewKey(null)} className="text-[10px] text-white/30 hover:text-white/50">Dismiss</button>
           </div>
-          <button onClick={() => setNewKey(null)} className="text-[10px] text-white/30 hover:text-white/50">Dismiss</button>
         </div>
       )}
 

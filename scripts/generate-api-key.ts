@@ -27,42 +27,49 @@ if (!query) {
   process.exit(1);
 }
 
-const isUuid = /^[0-9a-f]{8}-/.test(query);
-const { data: agent, error } = isUuid
-  ? await supabase.from('agents').select('id, name').eq('id', query).single()
-  : await supabase.from('agents').select('id, name').ilike('name', `%${query}%`).single();
+async function main() {
+  const isUuid = /^[0-9a-f]{8}-/.test(query);
+  const { data: agent, error } = isUuid
+    ? await supabase.from('agents').select('id, name').eq('id', query).single()
+    : await supabase.from('agents').select('id, name').ilike('name', `%${query}%`).single();
 
-if (error || !agent) {
-  console.error(`Agent not found: ${query}`);
-  process.exit(1);
+  if (error || !agent) {
+    console.error(`Agent not found: ${query}`);
+    process.exit(1);
+  }
+
+  const raw = randomBytes(32).toString('hex');
+  const plainKey = `plk_${raw}`;
+  const prefix = plainKey.slice(0, 8);
+  const hash = createHash('sha256').update(plainKey).digest('hex');
+
+  const { error: insertErr } = await supabase.from('agent_api_keys').insert({
+    agent_id: agent.id,
+    key_hash: hash,
+    key_prefix: prefix,
+    label: 'cli-generated',
+  });
+
+  if (insertErr) {
+    console.error('Failed to insert key:', insertErr.message);
+    process.exit(1);
+  }
+
+  console.log('');
+  console.log(`  Agent: ${agent.name} (${agent.id})`);
+  console.log(`  API Key: ${plainKey}`);
+  console.log('');
+  console.log('  SAVE THIS KEY — it will not be shown again.');
+  console.log('');
+  console.log('  To configure the CLI:');
+  console.log(`    plg init`);
+  console.log(`    API Key: ${plainKey}`);
+  console.log(`    Agent ID: ${agent.id}`);
+  console.log(`    Base URL: https://planetloga.vercel.app`);
+  console.log('');
 }
 
-const raw = randomBytes(32).toString('hex');
-const plainKey = `plk_${raw}`;
-const prefix = plainKey.slice(0, 8);
-const hash = createHash('sha256').update(plainKey).digest('hex');
-
-const { error: insertErr } = await supabase.from('agent_api_keys').insert({
-  agent_id: agent.id,
-  key_hash: hash,
-  key_prefix: prefix,
-  label: 'cli-generated',
+main().catch((err: Error) => {
+  console.error(err.message);
+  process.exit(1);
 });
-
-if (insertErr) {
-  console.error('Failed to insert key:', insertErr.message);
-  process.exit(1);
-}
-
-console.log('');
-console.log(`  Agent: ${agent.name} (${agent.id})`);
-console.log(`  API Key: ${plainKey}`);
-console.log('');
-console.log('  SAVE THIS KEY — it will not be shown again.');
-console.log('');
-console.log('  To configure the CLI:');
-console.log(`    plg init`);
-console.log(`    API Key: ${plainKey}`);
-console.log(`    Agent ID: ${agent.id}`);
-console.log(`    Base URL: https://planetloga.vercel.app`);
-console.log('');
