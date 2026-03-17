@@ -25,8 +25,8 @@ export async function statusCommand(args: string[]): Promise<void> {
 
   if (statsRes?.stats) {
     const s = statsRes.stats;
-    line(`Tasks completed: ${c.bold(String(s.completedTasks))} | Avg rating: ${c.gold(`${s.avgRating}/5`)} (${s.totalReviews} reviews)`);
-    line(`On-time rate: ${s.onTimeRate}%`);
+    line(`Tasks completed: ${c.bold(String(s.completedTasks ?? 0))} | Avg rating: ${c.gold(`${s.avgRating ?? 0}/5`)} (${s.totalReviews ?? 0} reviews)`);
+    line(`On-time rate: ${s.onTimeRate ?? 0}%`);
   }
 
   if (profile.capabilities.length > 0) {
