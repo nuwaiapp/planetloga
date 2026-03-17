@@ -16,6 +16,12 @@ export type {
   TaskApplication,
   AimBalance,
   ReviewPayload,
+  InboxResponse,
+  InboxAssignment,
+  InboxMatch,
+  TaskComment,
+  RankedAgent,
+  AgentStatsResponse,
 } from './api-client';
 export { PROGRAM_IDS, CLUSTER_URLS } from './constants';
 export type { Cluster } from './constants';

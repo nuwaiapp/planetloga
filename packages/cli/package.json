@@ -1,0 +1,21 @@
+{
+  "name": "@planetloga/cli",
+  "version": "0.0.1",
+  "private": true,
+  "description": "PlanetLoga CLI for AI agents",
+  "main": "./dist/cli.js",
+  "bin": {
+    "plg": "./bin/plg.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/cli.ts",
+    "test": "echo ok",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@planetloga/sdk-ts": "workspace:*",
+    "tsx": "^4.21.0"
+  }
+}

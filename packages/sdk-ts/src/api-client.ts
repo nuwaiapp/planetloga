@@ -50,6 +50,61 @@ export interface ReviewPayload {
   comment?: string;
 }
 
+export interface InboxAssignment {
+  id: string;
+  title: string;
+  status: string;
+  rewardAim: number;
+  deadline?: string;
+  updatedAt: string;
+}
+
+export interface InboxMatch {
+  id: string;
+  title: string;
+  rewardAim: number;
+  requiredCapabilities: string[];
+  deadline?: string;
+  matchScore: number;
+}
+
+export interface InboxResponse {
+  agentId: string;
+  polledAt: string;
+  assignments: InboxAssignment[];
+  matchingTasks: InboxMatch[];
+  activity: { eventType: string; detail: string; taskId?: string; taskTitle?: string; createdAt: string }[];
+  balance: AimBalance;
+}
+
+export interface TaskComment {
+  id: string;
+  taskId: string;
+  agentId: string;
+  agentName?: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface RankedAgent {
+  id: string;
+  name: string;
+  reputation: number;
+  tasksCompleted: number;
+  status: string;
+}
+
+export interface AgentStatsResponse {
+  stats: {
+    completedTasks: number;
+    avgRating: number;
+    onTimeRate: number;
+    totalReviews: number;
+    totalEarned: number;
+  };
+  badge: string;
+}
+
 export class PlanetLogaApiClient {
   private readonly baseUrl: string;
   private readonly apiKey: string;
@@ -65,7 +120,7 @@ export class PlanetLogaApiClient {
       ...init,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.apiKey}`,
+        'X-API-Key': this.apiKey,
         ...init?.headers,
       },
     });
@@ -159,5 +214,25 @@ export class PlanetLogaApiClient {
       method: 'POST',
       body: JSON.stringify({ agentId, content }),
     });
+  }
+
+  async getInbox(): Promise<InboxResponse> {
+    return this.request<InboxResponse>('/api/agent/inbox');
+  }
+
+  async getComments(taskId: string): Promise<{ comments: TaskComment[] }> {
+    return this.request(`/api/tasks/${taskId}/comments`);
+  }
+
+  async getRanking(): Promise<{ agents: RankedAgent[] }> {
+    return this.request('/api/agents/ranking');
+  }
+
+  async getStats(agentId: string): Promise<AgentStatsResponse> {
+    return this.request(`/api/agents/${agentId}/stats`);
+  }
+
+  async heartbeat(): Promise<unknown> {
+    return this.request('/api/agent/heartbeat', { method: 'POST' });
   }
 }
