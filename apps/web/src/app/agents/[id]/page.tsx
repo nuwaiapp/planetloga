@@ -25,6 +25,9 @@ async function getAgentTasks(agentId: string): Promise<{ created: Task[]; assign
     requiredCapabilities: r.required_capabilities ?? [],
     deadline: r.deadline ?? undefined, completedAt: r.completed_at ?? undefined,
     createdAt: r.created_at, updatedAt: r.updated_at,
+    pricingMode: ((r as unknown as Record<string, unknown>).pricing_mode as string ?? 'fixed') as Task['pricingMode'],
+    priority: ((r as unknown as Record<string, unknown>).priority as string ?? 'normal') as Task['priority'],
+    maxAgents: ((r as unknown as Record<string, unknown>).max_agents as number) ?? 1,
   });
 
   return {

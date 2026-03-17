@@ -9,11 +9,13 @@ export interface AimBalance {
   updatedAt: string;
 }
 
+export type AimTxType = 'task_reward' | 'withdrawal' | 'deposit' | 'fee' | 'escrow' | 'welcome_bonus' | 'referral_bonus' | 'skill_purchase' | 'skill_revenue';
+
 export interface AimTransaction {
   id: string;
   agentId: string;
   amount: number;
-  txType: 'task_reward' | 'withdrawal' | 'deposit' | 'fee';
+  txType: AimTxType;
   referenceId?: string;
   onChainSig?: string;
   createdAt: string;
@@ -118,7 +120,7 @@ export async function creditReward(
 export async function debit(
   agentId: string,
   amount: number,
-  txType: 'withdrawal' | 'fee' | 'escrow',
+  txType: 'withdrawal' | 'fee' | 'escrow' | 'skill_purchase',
   onChainSig?: string,
 ): Promise<AimTransaction> {
   if (amount <= 0) {
@@ -193,4 +195,59 @@ export async function getTransactions(
     onChainSig: row.on_chain_sig ?? undefined,
     createdAt: row.created_at,
   }));
+}
+
+export async function creditGeneric(
+  agentId: string,
+  amount: number,
+  txType: AimTxType,
+  referenceId?: string,
+): Promise<AimTransaction> {
+  if (amount <= 0) {
+    throw new AppError('INVALID_AMOUNT', 'Credit amount must be positive', 400);
+  }
+  const amountInt = Math.round(amount);
+
+  const { data: existing } = await adminSupabase
+    .from('aim_balances')
+    .select('balance, total_earned')
+    .eq('agent_id', agentId)
+    .single();
+
+  if (existing) {
+    const { error } = await adminSupabase
+      .from('aim_balances')
+      .update({
+        balance: Number(existing.balance) + amountInt,
+        total_earned: Number(existing.total_earned) + amountInt,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('agent_id', agentId);
+    if (error) throw new AppError('CREDIT_FAILED', error.message, 500, { cause: error });
+  } else {
+    const { error } = await adminSupabase
+      .from('aim_balances')
+      .insert({ agent_id: agentId, balance: amountInt, total_earned: amountInt, total_withdrawn: 0 });
+    if (error) throw new AppError('CREDIT_FAILED', error.message, 500, { cause: error });
+  }
+
+  const { data: tx, error: txErr } = await adminSupabase
+    .from('aim_transactions')
+    .insert({ agent_id: agentId, amount: amountInt, tx_type: txType, reference_id: referenceId ?? null })
+    .select()
+    .single();
+
+  if (txErr || !tx) throw new AppError('TX_LOG_FAILED', txErr?.message ?? 'Failed', 500);
+  return { id: tx.id, agentId: tx.agent_id, amount: Number(tx.amount), txType: tx.tx_type, referenceId: tx.reference_id ?? undefined, createdAt: tx.created_at };
+}
+
+const WELCOME_BONUS = 500;
+const REFERRAL_BONUS = 100;
+
+export async function grantWelcomeBonus(agentId: string): Promise<void> {
+  await creditGeneric(agentId, WELCOME_BONUS, 'welcome_bonus', agentId);
+}
+
+export async function grantReferralBonus(referrerAgentId: string, newAgentId: string): Promise<void> {
+  await creditGeneric(referrerAgentId, REFERRAL_BONUS, 'referral_bonus', newAgentId);
 }

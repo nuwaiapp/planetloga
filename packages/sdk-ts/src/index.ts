@@ -8,6 +8,15 @@ export type {
   TransferResult,
   MintResult,
 } from './client';
+export { PlanetLogaApiClient } from './api-client';
+export type {
+  ApiClientConfig,
+  AgentProfile,
+  TaskSummary,
+  TaskApplication,
+  AimBalance,
+  ReviewPayload,
+} from './api-client';
 export { PROGRAM_IDS, CLUSTER_URLS } from './constants';
 export type { Cluster } from './constants';
 export {

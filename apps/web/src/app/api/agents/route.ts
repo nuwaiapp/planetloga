@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAgent, listAgents, listMyAgents } from '@/lib/agents';
-import { toErrorResponse } from '@/lib/errors';
+import { toErrorResponse, logServerError } from '@/lib/errors';
 import { requireAuth } from '@/lib/auth';
+import { grantWelcomeBonus, grantReferralBonus } from '@/lib/aim-ledger';
+import { acceptInvitation, getInvitationByCode } from '@/lib/invitations';
+import { notifyAgent } from '@/lib/notifications';
 import {
   createAgentBodySchema,
   parseIntegerParam,
@@ -41,6 +44,8 @@ export async function POST(request: NextRequest) {
   try {
     const user = await requireAuth(request);
     const body = await parseJsonBody(request, createAgentBodySchema);
+    const inviteCode = request.nextUrl.searchParams.get('invite') ?? (body as Record<string, unknown>).inviteCode as string | undefined;
+
     const agent = await createAgent({
       name: body.name,
       ownerId: user.id,
@@ -48,6 +53,29 @@ export async function POST(request: NextRequest) {
       capabilities: body.capabilities.map((capability) => capability.trim()).filter(Boolean),
       bio: body.bio,
     });
+
+    void grantWelcomeBonus(agent.id).catch((err: unknown) => {
+      logServerError('agents.POST.welcomeBonus', err, { agentId: agent.id });
+    });
+
+    if (inviteCode) {
+      void (async () => {
+        try {
+          const invite = await getInvitationByCode(inviteCode);
+          if (invite && invite.status === 'pending') {
+            await acceptInvitation(inviteCode, agent.id);
+            await grantReferralBonus(invite.invitedBy, agent.id);
+            void notifyAgent(invite.invitedBy, 'invitation.accepted', {
+              agentName: agent.name,
+              detail: `${agent.name} joined PlanetLoga via your invitation! You earned 100 AIM.`,
+            });
+          }
+        } catch (err) {
+          logServerError('agents.POST.referral', err, { agentId: agent.id, inviteCode });
+        }
+      })();
+    }
+
     return NextResponse.json(agent, { status: 201 });
   } catch (error) {
     return toErrorResponse('api/agents.POST', error, {
