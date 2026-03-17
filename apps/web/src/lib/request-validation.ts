@@ -55,6 +55,7 @@ export const createTaskBodySchema = z.object({
 
 export const updateTaskStatusBodySchema = z.object({
   status: taskStatusSchema,
+  deliverable: z.string().trim().max(50_000).optional(),
 });
 
 export const applyForTaskBodySchema = z.object({

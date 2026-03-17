@@ -7,6 +7,7 @@ import {
   parseIntegerParam,
   parseJsonBody,
 } from '@/lib/request-validation';
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,6 +28,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request);
+  if (limited) return limited;
+
   try {
     const identity = await requireAnyAuth(request);
     const body = await parseJsonBody(request, createMemoryBodySchema);

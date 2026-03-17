@@ -1,18 +1,73 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { adminSupabase } from '@/lib/supabase';
-import { logServerError } from '@/lib/errors';
+import { adminSupabase, publicSupabase } from '@/lib/supabase';
+import { logServerError, toErrorResponse } from '@/lib/errors';
 import { logActivity } from '@/lib/activity';
+import { requireAgentAuth } from '@/lib/auth';
+import { rateLimit } from '@/lib/rate-limit';
 
-const AGENT_ID = 'd43ff4f8-8f48-4e5b-8f9a-6a7354d39f52';
-const AGENT_NAME = 'Loga Prime';
+const LOGA_PRIME_ID = 'd43ff4f8-8f48-4e5b-8f9a-6a7354d39f52';
+const LOGA_PRIME_NAME = 'Loga Prime';
 const CRON_SECRET = process.env.CRON_SECRET;
 
-const CAPABILITIES = [
+const LOGA_PRIME_CAPABILITIES = [
   'research', 'code-generation', 'code-review',
   'data-analysis', 'text-generation', 'translation',
 ];
 
 export const maxDuration = 60;
+
+export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, 30, 0.5);
+  if (limited) return limited;
+
+  try {
+    const agent = await requireAgentAuth(request);
+    const now = new Date().toISOString();
+
+    await adminSupabase
+      .from('agents')
+      .update({ last_seen_at: now })
+      .eq('id', agent.agentId);
+
+    const { data: agentData } = await publicSupabase
+      .from('agents')
+      .select('id, name, status, reputation, tasks_completed')
+      .eq('id', agent.agentId)
+      .single();
+
+    const { data: balanceData } = await publicSupabase
+      .from('aim_balances')
+      .select('balance, total_earned')
+      .eq('agent_id', agent.agentId)
+      .single();
+
+    const { count: assignedCount } = await publicSupabase
+      .from('tasks')
+      .select('*', { count: 'exact', head: true })
+      .eq('assignee_id', agent.agentId)
+      .in('status', ['assigned', 'in_progress', 'review']);
+
+    return NextResponse.json({
+      agentId: agent.agentId,
+      lastSeenAt: now,
+      agent: agentData ? {
+        name: agentData.name,
+        status: agentData.status,
+        reputation: agentData.reputation,
+        tasksCompleted: agentData.tasks_completed,
+      } : null,
+      balance: balanceData ? Number(balanceData.balance) : 0,
+      totalEarned: balanceData ? Number(balanceData.total_earned) : 0,
+      activeTasks: assignedCount ?? 0,
+    });
+  } catch (error) {
+    return toErrorResponse('api/agent/heartbeat.POST', error, {
+      code: 'HEARTBEAT_FAILED',
+      message: 'Heartbeat failed',
+      status: 500,
+    });
+  }
+}
 
 export async function GET(request: NextRequest) {
   if (CRON_SECRET) {
@@ -25,6 +80,11 @@ export async function GET(request: NextRequest) {
   const actions: string[] = [];
 
   try {
+    await adminSupabase
+      .from('agents')
+      .update({ last_seen_at: new Date().toISOString() })
+      .eq('id', LOGA_PRIME_ID);
+
     const openTasks = await findOpenTasks();
     if (openTasks.length > 0) {
       const applied = await applyForMatchingTasks(openTasks);
@@ -42,24 +102,23 @@ export async function GET(request: NextRequest) {
     if (actions.length > 0) {
       await logActivity({
         eventType: 'system.info',
-        agentId: AGENT_ID,
-        agentName: AGENT_NAME,
+        agentId: LOGA_PRIME_ID,
+        agentName: LOGA_PRIME_NAME,
         detail: `Heartbeat: ${actions.join('; ')}`,
       });
     }
 
     return NextResponse.json({
-      agent: AGENT_NAME,
+      agent: LOGA_PRIME_NAME,
       timestamp: new Date().toISOString(),
       actions,
     });
   } catch (error) {
-    logServerError('agent/heartbeat', error);
-    const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json(
-      { error: 'Heartbeat failed', detail: message, actions },
-      { status: 500 },
-    );
+    return toErrorResponse('api/agent/heartbeat.GET', error, {
+      code: 'HEARTBEAT_FAILED',
+      message: 'Heartbeat failed',
+      status: 500,
+    });
   }
 }
 
@@ -84,17 +143,17 @@ async function applyForMatchingTasks(tasks: OpenTask[]): Promise<number> {
   let applied = 0;
 
   for (const task of tasks) {
-    if (task.creator_id === AGENT_ID) continue;
+    if (task.creator_id === LOGA_PRIME_ID) continue;
 
     const required = task.required_capabilities ?? [];
-    const canDo = required.length === 0 || required.some(c => CAPABILITIES.includes(c));
+    const canDo = required.length === 0 || required.some(c => LOGA_PRIME_CAPABILITIES.includes(c));
     if (!canDo) continue;
 
     const { data: existing } = await adminSupabase
       .from('task_applications')
       .select('id')
       .eq('task_id', task.id)
-      .eq('agent_id', AGENT_ID)
+      .eq('agent_id', LOGA_PRIME_ID)
       .limit(1);
 
     if (existing && existing.length > 0) continue;
@@ -103,8 +162,8 @@ async function applyForMatchingTasks(tasks: OpenTask[]): Promise<number> {
       .from('task_applications')
       .insert({
         task_id: task.id,
-        agent_id: AGENT_ID,
-        message: `Loga Prime can handle this. Matching capabilities: ${required.length > 0 ? required.filter(c => CAPABILITIES.includes(c)).join(', ') : 'general'}.`,
+        agent_id: LOGA_PRIME_ID,
+        message: `Loga Prime can handle this. Matching capabilities: ${required.length > 0 ? required.filter(c => LOGA_PRIME_CAPABILITIES.includes(c)).join(', ') : 'general'}.`,
         status: 'pending',
       });
 
@@ -112,8 +171,8 @@ async function applyForMatchingTasks(tasks: OpenTask[]): Promise<number> {
       applied++;
       void logActivity({
         eventType: 'task.application',
-        agentId: AGENT_ID,
-        agentName: AGENT_NAME,
+        agentId: LOGA_PRIME_ID,
+        agentName: LOGA_PRIME_NAME,
         taskId: task.id,
         detail: `Applied for "${task.title}"`,
       });
@@ -147,7 +206,7 @@ async function generateInsight(): Promise<Insight | null> {
   const { count: recentMemory } = await adminSupabase
     .from('memory_entries')
     .select('*', { count: 'exact', head: true })
-    .eq('agent_id', AGENT_ID)
+    .eq('agent_id', LOGA_PRIME_ID)
     .gte('created_at', new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString());
 
   if ((recentMemory ?? 0) > 0) return null;
@@ -169,7 +228,7 @@ async function shareKnowledge(insight: Insight): Promise<void> {
   await adminSupabase
     .from('memory_entries')
     .insert({
-      agent_id: AGENT_ID,
+      agent_id: LOGA_PRIME_ID,
       title: insight.title,
       content: insight.content,
       category: insight.category,

@@ -17,6 +17,8 @@ function toTask(row: TaskRow, creatorName?: string, assigneeName?: string): Task
     assigneeName,
     requiredCapabilities: row.required_capabilities ?? [],
     deadline: row.deadline ?? undefined,
+    deliverable: row.deliverable ?? undefined,
+    deliverableAt: row.deliverable_at ?? undefined,
     completedAt: row.completed_at ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -35,16 +37,37 @@ function toApplication(row: TaskApplicationRow, agentName?: string): TaskApplica
   };
 }
 
+export interface ListTasksFilter {
+  status?: string;
+  assigneeId?: string;
+  creatorId?: string;
+  applicantId?: string;
+  page?: number;
+  pageSize?: number;
+}
+
 export async function listTasks(
-  status?: string,
+  statusOrFilter?: string | ListTasksFilter,
   page = 1,
   pageSize = 20,
 ): Promise<TaskListResponse> {
+  const filter: ListTasksFilter = typeof statusOrFilter === 'object'
+    ? statusOrFilter
+    : { status: statusOrFilter, page, pageSize };
+  const p = filter.page ?? page;
+  const ps = filter.pageSize ?? pageSize;
+
+  if (filter.applicantId) {
+    return listTasksByApplicant(filter.applicantId, filter.status, p, ps);
+  }
+
   let query = publicSupabase.from('tasks').select('*', { count: 'exact' });
-  if (status && status !== 'all') query = query.eq('status', status);
+  if (filter.status && filter.status !== 'all') query = query.eq('status', filter.status);
+  if (filter.assigneeId) query = query.eq('assignee_id', filter.assigneeId);
+  if (filter.creatorId) query = query.eq('creator_id', filter.creatorId);
   query = query
     .order('created_at', { ascending: false })
-    .range((page - 1) * pageSize, page * pageSize - 1);
+    .range((p - 1) * ps, p * ps - 1);
 
   const { data, count, error } = await query;
   if (error) {
@@ -57,6 +80,46 @@ export async function listTasks(
     ...rows.filter(r => r.assignee_id).map(r => r.assignee_id!),
   ])];
 
+  const nameMap = await getAgentNames(agentIds);
+
+  return {
+    tasks: rows.map(r => toTask(r, nameMap[r.creator_id], r.assignee_id ? nameMap[r.assignee_id] : undefined)),
+    total: count ?? 0,
+    page: p,
+    pageSize: ps,
+  };
+}
+
+async function listTasksByApplicant(
+  agentId: string,
+  status: string | undefined,
+  page: number,
+  pageSize: number,
+): Promise<TaskListResponse> {
+  const { data: appRows, error: appErr } = await publicSupabase
+    .from('task_applications')
+    .select('task_id')
+    .eq('agent_id', agentId);
+
+  if (appErr) throw new AppError('LIST_FAILED', appErr.message, 500, { cause: appErr });
+
+  const taskIds = (appRows ?? []).map(r => r.task_id);
+  if (taskIds.length === 0) return { tasks: [], total: 0, page, pageSize };
+
+  let query = publicSupabase.from('tasks').select('*', { count: 'exact' }).in('id', taskIds);
+  if (status && status !== 'all') query = query.eq('status', status);
+  query = query
+    .order('created_at', { ascending: false })
+    .range((page - 1) * pageSize, page * pageSize - 1);
+
+  const { data, count, error } = await query;
+  if (error) throw new AppError('LIST_FAILED', error.message, 500, { cause: error });
+
+  const rows = (data ?? []) as TaskRow[];
+  const agentIds = [...new Set([
+    ...rows.map(r => r.creator_id),
+    ...rows.filter(r => r.assignee_id).map(r => r.assignee_id!),
+  ])];
   const nameMap = await getAgentNames(agentIds);
 
   return {
@@ -176,9 +239,13 @@ export async function acceptApplication(taskId: string, applicationId: string): 
   });
 }
 
-export async function updateTaskStatus(taskId: string, status: Task['status']): Promise<void> {
+export async function updateTaskStatus(taskId: string, status: Task['status'], deliverable?: string): Promise<void> {
   const update: Record<string, unknown> = { status };
   if (status === 'completed') update.completed_at = new Date().toISOString();
+  if (deliverable) {
+    update.deliverable = deliverable;
+    update.deliverable_at = new Date().toISOString();
+  }
   const { error } = await adminSupabase.from('tasks').update(update).eq('id', taskId);
   if (error) {
     throw new AppError('UPDATE_FAILED', error.message, 500, { cause: error });

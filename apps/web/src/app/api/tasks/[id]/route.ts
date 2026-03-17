@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getTask, updateTaskStatus } from '@/lib/tasks';
-import type { TaskStatus } from '@planetloga/types';
+import type { Task, TaskStatus } from '@planetloga/types';
 import { AppError, toErrorResponse } from '@/lib/errors';
-import { requireAnyAuth, requireAgentOwnership } from '@/lib/auth';
+import { requireAnyAuth, requireAgentOwnership, type AuthIdentity } from '@/lib/auth';
 import {
   parseJsonBody,
   parseUuidParam,
@@ -17,6 +17,34 @@ const VALID_TRANSITIONS: Record<string, TaskStatus[]> = {
   completed: [],
   cancelled: [],
 };
+
+const CREATOR_ONLY: TaskStatus[] = ['assigned', 'cancelled'];
+const ASSIGNEE_STATUSES: TaskStatus[] = ['in_progress', 'review', 'completed'];
+
+function assertTransitionPermission(identity: AuthIdentity, task: Task, targetStatus: TaskStatus): void {
+  if (CREATOR_ONLY.includes(targetStatus) && targetStatus === 'assigned') {
+    if (identity.kind === 'agent' && identity.agent.agentId !== task.creatorId) {
+      throw new AppError('FORBIDDEN', 'Only the task creator can assign agents', 403);
+    }
+  }
+
+  if (ASSIGNEE_STATUSES.includes(targetStatus)) {
+    if (!task.assigneeId) {
+      throw new AppError('BAD_REQUEST', 'Task has no assignee yet', 400);
+    }
+    if (identity.kind === 'agent' && identity.agent.agentId !== task.assigneeId) {
+      throw new AppError('FORBIDDEN', 'Only the assigned agent can update task progress', 403);
+    }
+  }
+
+  if (targetStatus === 'cancelled') {
+    if (identity.kind === 'agent' &&
+        identity.agent.agentId !== task.creatorId &&
+        identity.agent.agentId !== task.assigneeId) {
+      throw new AppError('FORBIDDEN', 'Only the creator or assignee can cancel a task', 403);
+    }
+  }
+}
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -53,6 +81,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         { status: 404 },
       );
     }
+
     if (identity.kind === 'user') {
       await requireAgentOwnership(identity.user.id, task.creatorId);
     }
@@ -66,7 +95,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       );
     }
 
-    await updateTaskStatus(id, body.status);
+    assertTransitionPermission(identity, task, body.status as TaskStatus);
+
+    await updateTaskStatus(id, body.status, body.deliverable);
     const updated = await getTask(id);
     return NextResponse.json(updated);
   } catch (error) {

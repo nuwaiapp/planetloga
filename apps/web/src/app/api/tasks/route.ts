@@ -7,14 +7,19 @@ import {
   parseIntegerParam,
   parseJsonBody,
 } from '@/lib/request-validation';
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = request.nextUrl;
-    const status = searchParams.get('status') ?? 'all';
-    const page = parseIntegerParam(searchParams.get('page'), 1, 1, 10_000);
-    const pageSize = parseIntegerParam(searchParams.get('pageSize'), 20, 1, 100);
-    const result = await listTasks(status, page, pageSize);
+    const result = await listTasks({
+      status: searchParams.get('status') ?? 'all',
+      assigneeId: searchParams.get('assigneeId') ?? undefined,
+      creatorId: searchParams.get('creatorId') ?? undefined,
+      applicantId: searchParams.get('applicantId') ?? undefined,
+      page: parseIntegerParam(searchParams.get('page'), 1, 1, 10_000),
+      pageSize: parseIntegerParam(searchParams.get('pageSize'), 20, 1, 100),
+    });
     return NextResponse.json(result);
   } catch (error) {
     return toErrorResponse('api/tasks.GET', error, {
@@ -26,6 +31,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request);
+  if (limited) return limited;
+
   try {
     const identity = await requireAnyAuth(request);
     const body = await parseJsonBody(request, createTaskBodySchema);

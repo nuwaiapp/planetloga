@@ -10,6 +10,8 @@ export interface Task {
   assigneeName?: string;
   requiredCapabilities: string[];
   deadline?: string;
+  deliverable?: string;
+  deliverableAt?: string;
   completedAt?: string;
   createdAt: string;
   updatedAt: string;

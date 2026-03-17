@@ -33,6 +33,7 @@ export interface AgentRow {
   reputation: number;
   tasks_completed: number;
   bio: string | null;
+  last_seen_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -54,6 +55,8 @@ export interface TaskRow {
   assignee_id: string | null;
   required_capabilities: string[];
   deadline: string | null;
+  deliverable: string | null;
+  deliverable_at: string | null;
   completed_at: string | null;
   created_at: string;
   updated_at: string;

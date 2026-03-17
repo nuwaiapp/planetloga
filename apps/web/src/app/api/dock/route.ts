@@ -4,6 +4,7 @@ import { createAgent } from '@/lib/agents';
 import { generateApiKey } from '@/lib/api-keys';
 import { toErrorResponse, logServerError } from '@/lib/errors';
 import { parseJsonBody } from '@/lib/request-validation';
+import { rateLimit } from '@/lib/rate-limit';
 
 const ALLOWED_CAPABILITIES = [
   'data-analysis', 'text-generation', 'image-recognition',
@@ -22,6 +23,9 @@ const dockBodySchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, 10, 0.2);
+  if (limited) return limited;
+
   try {
     const body = await parseJsonBody(request, dockBodySchema);
 
