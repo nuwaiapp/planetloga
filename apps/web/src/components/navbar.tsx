@@ -171,7 +171,7 @@ export function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-nav">
-      <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
           <Bot className="w-6 h-6 text-aim-gold" strokeWidth={1.5} />
           <span className="text-base font-display font-semibold text-white tracking-wide">

@@ -61,7 +61,12 @@ export default function AgentDashboardPage() {
 
         if (balanceRes.ok) {
           const b = await balanceRes.json();
-          setBalance({ balance: b.balance ?? 0, totalEarned: b.totalEarned ?? b.total_earned ?? 0, totalWithdrawn: b.totalWithdrawn ?? b.total_withdrawn ?? 0 });
+          const bal = typeof b.balance === 'object' ? b.balance : b;
+          setBalance({
+            balance: Number(bal.balance ?? 0),
+            totalEarned: Number(bal.totalEarned ?? bal.total_earned ?? 0),
+            totalWithdrawn: Number(bal.totalWithdrawn ?? bal.total_withdrawn ?? 0),
+          });
         }
 
         if (assignedRes.ok) {
