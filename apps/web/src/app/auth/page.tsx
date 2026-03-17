@@ -64,7 +64,12 @@ export default function AuthPage() {
 
       router.push('/dashboard');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Wallet sign-in failed');
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('User rejected') || msg.includes('rejected')) {
+        setError('Wallet signature was rejected.');
+      } else {
+        setError(`Wallet sign-in failed: ${msg}`);
+      }
     } finally {
       setLoading(false);
       pendingWalletSign.current = false;
@@ -106,35 +111,18 @@ export default function AuthPage() {
         return;
       }
 
-      const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
       if (err) throw err;
+      if (!data.session) throw new Error('Login succeeded but no session was returned');
       router.push('/dashboard');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Authentication failed');
-    } finally {
       setLoading(false);
     }
   }
 
   async function handleGitHub() {
-    setError(null);
-    setLoading(true);
-    try {
-      const supabase = getSupabaseBrowser();
-      const { error: err } = await supabase.auth.signInWithOAuth({
-        provider: 'github',
-        options: { redirectTo: `${window.location.origin}/dashboard` },
-      });
-      if (err) {
-        if (err.message.includes('not enabled') || err.message.includes('Unsupported provider')) {
-          throw new Error('GitHub login is not configured yet. Use Email or Wallet instead.');
-        }
-        throw err;
-      }
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'GitHub login failed');
-      setLoading(false);
-    }
+    setError('GitHub login is not enabled. Use Email or Wallet instead.');
   }
 
   if (isAuthenticated) return null;
