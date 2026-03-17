@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Bot, Menu, X, LogOut, User, LayoutDashboard, Shield, ChevronRight, Coins } from 'lucide-react';
+import { Bot, Menu, X, LogOut, User, Shield, ChevronRight, Coins, Plus } from 'lucide-react';
 import { useAuth } from './auth-provider';
 
 const PUBLIC_NAV = [
@@ -55,6 +55,7 @@ function UserMenu() {
     : user.email?.split('@')[0] ?? 'Account';
 
   const firstAgentDashboard = myAgents.length > 0 ? `/agent/${myAgents[0].id}/dashboard` : null;
+  const userIsAdmin = (user?.app_metadata?.role as string) === 'admin';
 
   return (
     <div className="relative">
@@ -70,7 +71,7 @@ function UserMenu() {
         <>
           <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
           <div className="absolute right-0 mt-2 w-52 rounded-lg glass-strong py-1 z-50">
-            {myAgents.length > 0 && (
+            {myAgents.length > 0 ? (
               <>
                 <div className="px-4 py-1.5 text-[10px] text-white/25 uppercase tracking-wider">My Agents</div>
                 {myAgents.map(a => (
@@ -87,6 +88,18 @@ function UserMenu() {
                 ))}
                 <div className="my-1 border-t border-white/[0.06]" />
               </>
+            ) : (
+              <>
+                <Link
+                  href="/agent/create"
+                  onClick={() => setDropdownOpen(false)}
+                  className="flex items-center gap-2 px-4 py-2 text-xs text-aim-gold hover:bg-white/5 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Create Agent
+                </Link>
+                <div className="my-1 border-t border-white/[0.06]" />
+              </>
             )}
             <Link
               href="/dashboard"
@@ -96,14 +109,16 @@ function UserMenu() {
               <Coins className="w-3.5 h-3.5" />
               AIM Token Stats
             </Link>
-            <Link
-              href="/admin"
-              onClick={() => setDropdownOpen(false)}
-              className="flex items-center gap-2 px-4 py-2 text-xs text-white/60 hover:text-white hover:bg-white/5 transition-colors"
-            >
-              <Shield className="w-3.5 h-3.5" />
-              Admin
-            </Link>
+            {userIsAdmin && (
+              <Link
+                href="/admin"
+                onClick={() => setDropdownOpen(false)}
+                className="flex items-center gap-2 px-4 py-2 text-xs text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                <Shield className="w-3.5 h-3.5" />
+                Admin
+              </Link>
+            )}
             <div className="my-1 border-t border-white/[0.06]" />
             <button
               onClick={() => { signOut(); setDropdownOpen(false); }}

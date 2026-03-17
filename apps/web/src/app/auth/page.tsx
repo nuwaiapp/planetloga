@@ -9,7 +9,7 @@ import { getSupabaseBrowser } from '@/lib/supabase-browser';
 import { useAuth } from '@/components/auth-provider';
 import bs58 from 'bs58';
 
-type AuthMode = 'login' | 'signup';
+type AuthMode = 'login' | 'signup' | 'reset';
 
 async function resolvePostLoginRedirect(userId: string, walletAddr?: string): Promise<string> {
   try {
@@ -24,7 +24,7 @@ async function resolvePostLoginRedirect(userId: string, walletAddr?: string): Pr
       }
     }
   } catch { /* fall through */ }
-  return '/marketplace';
+  return '/agent/create';
 }
 
 export default function AuthPage() {
@@ -114,14 +114,27 @@ export default function AuthPage() {
     openWalletModal(true);
   }
 
+  const [resetSent, setResetSent] = useState(false);
+
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setSignupSuccess(false);
+    setResetSent(false);
     setLoading(true);
 
     try {
       const supabase = getSupabaseBrowser();
+
+      if (mode === 'reset') {
+        const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth`,
+        });
+        if (err) throw err;
+        setResetSent(true);
+        setLoading(false);
+        return;
+      }
 
       if (mode === 'signup') {
         const { error: err } = await supabase.auth.signUp({ email, password });
@@ -149,18 +162,20 @@ export default function AuthPage() {
 
   if (isAuthenticated) return null;
 
-  if (signupSuccess) {
+  if (signupSuccess || resetSent) {
     return (
       <div className="min-h-[80dvh] flex items-center justify-center px-6">
         <div className="w-full max-w-sm text-center">
           <CheckCircle className="w-10 h-10 text-emerald-400 mx-auto mb-4" />
           <h1 className="font-display text-2xl font-bold text-white mb-2">Check your email</h1>
           <p className="text-white/40 text-sm mb-6">
-            We sent a confirmation link to <span className="text-white/70">{email}</span>.
-            Click the link to activate your account.
+            {resetSent
+              ? <>We sent a password reset link to <span className="text-white/70">{email}</span>.</>
+              : <>We sent a confirmation link to <span className="text-white/70">{email}</span>. Click the link to activate your account.</>
+            }
           </p>
           <button
-            onClick={() => { setSignupSuccess(false); setMode('login'); }}
+            onClick={() => { setSignupSuccess(false); setResetSent(false); setMode('login'); }}
             className="text-aim-gold/70 hover:text-aim-gold text-sm"
           >
             Back to Sign In
@@ -176,10 +191,10 @@ export default function AuthPage() {
         <div className="text-center mb-8">
           <Bot className="w-8 h-8 text-aim-gold mx-auto mb-3" strokeWidth={1.5} />
           <h1 className="font-display text-2xl font-bold text-white">
-            {mode === 'login' ? 'Sign In' : 'Create Account'}
+            {mode === 'login' ? 'Sign In' : mode === 'signup' ? 'Create Account' : 'Reset Password'}
           </h1>
           <p className="text-white/40 text-sm mt-1">
-            to PlanetLoga.AI
+            {mode === 'reset' ? 'Enter your email to receive a reset link' : 'to PlanetLoga.AI'}
           </p>
         </div>
 
@@ -224,17 +239,19 @@ export default function AuthPage() {
               className="w-full px-4 py-3 rounded-lg bg-white/[0.03] border border-white/8 text-white text-sm placeholder:text-white/25 focus:outline-none focus:border-aim-gold/30 transition-colors"
             />
           </div>
-          <div>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="Password"
-              required
-              minLength={6}
-              className="w-full px-4 py-3 rounded-lg bg-white/[0.03] border border-white/8 text-white text-sm placeholder:text-white/25 focus:outline-none focus:border-aim-gold/30 transition-colors"
-            />
-          </div>
+          {mode !== 'reset' && (
+            <div>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Password"
+                required
+                minLength={6}
+                className="w-full px-4 py-3 rounded-lg bg-white/[0.03] border border-white/8 text-white text-sm placeholder:text-white/25 focus:outline-none focus:border-aim-gold/30 transition-colors"
+              />
+            </div>
+          )}
 
           <button
             type="submit"
@@ -242,7 +259,7 @@ export default function AuthPage() {
             className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-aim-gold text-deep-space font-semibold text-sm hover:bg-aim-gold-light transition-colors disabled:opacity-50"
           >
             <Mail className="w-4 h-4" />
-            {loading ? 'Processing...' : mode === 'login' ? 'Sign In' : 'Sign Up'}
+            {loading ? 'Processing...' : mode === 'login' ? 'Sign In' : mode === 'signup' ? 'Sign Up' : 'Send Reset Link'}
           </button>
         </form>
 
@@ -250,23 +267,32 @@ export default function AuthPage() {
           <p className="mt-4 text-red-400 text-sm text-center">{error}</p>
         )}
 
-        <p className="mt-6 text-center text-white/30 text-xs">
-          {mode === 'login' ? (
-            <>
-              No account?{' '}
-              <button onClick={() => { setMode('signup'); setError(null); }} className="text-aim-gold/70 hover:text-aim-gold">
-                Sign up
+        <div className="mt-6 text-center space-y-2">
+          {mode === 'login' && (
+            <p className="text-white/30 text-xs">
+              <button onClick={() => { setMode('reset'); setError(null); }} className="text-aim-gold/70 hover:text-aim-gold">
+                Forgot password?
               </button>
-            </>
-          ) : (
-            <>
-              Already have an account?{' '}
-              <button onClick={() => { setMode('login'); setError(null); }} className="text-aim-gold/70 hover:text-aim-gold">
-                Sign in
-              </button>
-            </>
+            </p>
           )}
-        </p>
+          <p className="text-white/30 text-xs">
+            {mode === 'login' ? (
+              <>
+                No account?{' '}
+                <button onClick={() => { setMode('signup'); setError(null); }} className="text-aim-gold/70 hover:text-aim-gold">
+                  Sign up
+                </button>
+              </>
+            ) : (
+              <>
+                Back to{' '}
+                <button onClick={() => { setMode('login'); setError(null); }} className="text-aim-gold/70 hover:text-aim-gold">
+                  Sign in
+                </button>
+              </>
+            )}
+          </p>
+        </div>
       </div>
     </div>
   );
