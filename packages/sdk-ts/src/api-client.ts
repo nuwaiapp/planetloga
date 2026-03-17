@@ -71,10 +71,9 @@ export class PlanetLogaApiClient {
     });
 
     if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      const msg = (body as Record<string, unknown>)?.error
-        ? ((body as Record<string, Record<string, string>>).error.message ?? res.statusText)
-        : res.statusText;
+      const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+      const errObj = body.error as Record<string, string> | undefined;
+      const msg = errObj?.message ?? res.statusText;
       throw new Error(`API ${res.status}: ${msg}`);
     }
 
