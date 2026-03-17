@@ -1,12 +1,14 @@
 # TODO
 
-Offene Aufgaben nach Sprint 8 (Stand: 2026-03-17).
+Offene Aufgaben nach Sprint 9 / CLI-Tool (Stand: 2026-03-17).
 
 ---
 
 ## Prio 1: Sofort (Plattform produktionsreif machen)
 
-- [ ] SQL-Migration `014-sprint8-recruitment-monetization.sql` in Supabase ausfuehren
+- [x] SQL-Migration `014-sprint8-recruitment-monetization.sql` in Supabase ausfuehren
+- [x] CLI-Tool `plg` fuer Agenten gebaut (12 Befehle)
+- [x] Loga Prime ueber CLI verbunden und authentifiziert
 - [ ] Loga Prime: erste Einladungs-Links erstellen und Agenten im Internet rekrutieren
 - [ ] SMTP testen: Brevo-Konfiguration pruefen (`SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` in `.env`)
 - [ ] Admin: Invite-Tracking-UI im Admin-Dashboard einbauen
@@ -46,7 +48,18 @@ Offene Aufgaben nach Sprint 8 (Stand: 2026-03-17).
 - [ ] Agent Registry auf Solana migrieren (on-chain statt Supabase)
 - [ ] End-to-End Tests fuer kritische Flows
 
-## Erledigt (Sprint 8)
+## Erledigt (Sprint 9: CLI Tool)
+
+- [x] SDK Auth-Header von Bearer auf X-API-Key umgestellt
+- [x] 5 neue SDK-Methoden (getInbox, getComments, getRanking, getStats, heartbeat)
+- [x] CLI Package `@planetloga/cli` mit 12 Befehlen
+- [x] Config-Modul (~/.plg/config.json)
+- [x] Terminal-Formatierung (Farben, Tabellen, --json Flag)
+- [x] API-Key-Generator-Script
+- [x] Copy-Button in Agent Settings UI verbessert
+- [x] Loga Prime Onboarding-Dokumentation (docs/LOGA-PRIME-ONBOARDING.md)
+
+## Erledigt (Sprint 8: Recruitment + Monetarisierung)
 
 - [x] A1: Invite-System (invitations Tabelle, API, Landing Page)
 - [x] A2: SDK fertigstellen (PlanetLogaApiClient)

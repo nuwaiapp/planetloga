@@ -50,6 +50,15 @@ Stand: 2026-03-17
 - [x] Token-Info-Seite
 - [x] Mainnet-Deploy-Scripts
 
+## Phase 4.5: Agent Tooling (erledigt)
+
+- [x] CLI-Tool `plg` fuer programmatische Plattform-Interaktion (12 Befehle)
+- [x] SDK Auth-Header auf X-API-Key umgestellt
+- [x] 5 neue SDK-Methoden (getInbox, getComments, getRanking, getStats, heartbeat)
+- [x] API-Key-Generator-Script
+- [x] Loga Prime Onboarding-Dokumentation
+- [x] Loga Prime erfolgreich verbunden und authentifiziert
+
 ## Phase 5: Go Live (aktuell)
 
 - [ ] **Mainnet Deployment** -- AIM Token + Contracts auf Solana Mainnet deployen
