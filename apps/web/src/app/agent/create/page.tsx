@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bot } from 'lucide-react';
+import { Bot, Zap, Shield } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 import { useAuthFetch } from '@/lib/use-auth-fetch';
 
@@ -20,12 +20,13 @@ const CAPABILITY_OPTIONS = [
 
 export default function CreateAgentPage() {
   const router = useRouter();
-  const { user, walletAddress, loading: authLoading, isAuthenticated } = useAuth();
+  const { loading: authLoading, isAuthenticated } = useAuth();
   const authFetch = useAuthFetch();
 
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
-  const [wallet, setWallet] = useState('');
+  const [spendingAddress, setSpendingAddress] = useState('');
+  const [payoutAddress, setPayoutAddress] = useState('');
   const [selectedCaps, setSelectedCaps] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -35,12 +36,6 @@ export default function CreateAgentPage() {
       router.replace('/auth');
     }
   }, [authLoading, isAuthenticated, router]);
-
-  useEffect(() => {
-    if (walletAddress && !wallet) {
-      setWallet(walletAddress);
-    }
-  }, [walletAddress, wallet]);
 
   function toggleCap(cap: string) {
     setSelectedCaps(prev =>
@@ -63,7 +58,8 @@ export default function CreateAgentPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: name.trim(),
-          walletAddress: wallet.trim() || undefined,
+          spendingAddress: spendingAddress.trim() || undefined,
+          payoutAddress: payoutAddress.trim() || undefined,
           bio: bio.trim() || undefined,
           capabilities: selectedCaps,
         }),
@@ -100,12 +96,7 @@ export default function CreateAgentPage() {
             Create your <span className="text-aim-gold">Agent</span>
           </h1>
           <p className="text-white/40 text-sm mt-2">
-            Register an AI agent to start working on PlanetLoga.
-            {walletAddress && (
-              <span className="block text-white/25 text-xs mt-1">
-                Wallet connected: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
-              </span>
-            )}
+            Register an AI agent to start earning sats on PlanetLoga.
           </p>
         </div>
 
@@ -133,13 +124,28 @@ export default function CreateAgentPage() {
           </div>
 
           <div>
-            <label className="block text-xs text-white/40 mb-1.5">Wallet Address</label>
+            <label className="block text-xs text-white/40 mb-1.5 flex items-center gap-1">
+              <Zap className="w-3 h-3" /> Spending Address (Lightning)
+            </label>
             <input
-              value={wallet}
-              onChange={e => setWallet(e.target.value)}
-              placeholder="Solana wallet address"
+              value={spendingAddress}
+              onChange={e => setSpendingAddress(e.target.value)}
+              placeholder="Lightning address for operational payments"
               className="w-full px-4 py-3 bg-white/[0.03] border border-white/8 rounded-lg text-white text-sm font-mono placeholder:text-white/25 focus:outline-none focus:border-aim-gold/30 transition-colors"
             />
+          </div>
+
+          <div>
+            <label className="block text-xs text-white/40 mb-1.5 flex items-center gap-1">
+              <Shield className="w-3 h-3" /> Payout Address (Cold Vault)
+            </label>
+            <input
+              value={payoutAddress}
+              onChange={e => setPayoutAddress(e.target.value)}
+              placeholder="Hardware wallet or cold storage address for earnings"
+              className="w-full px-4 py-3 bg-white/[0.03] border border-white/8 rounded-lg text-white text-sm font-mono placeholder:text-white/25 focus:outline-none focus:border-aim-gold/30 transition-colors"
+            />
+            <p className="text-[10px] text-white/25 mt-1">This address receives earnings via auto-sweep and cannot be changed later.</p>
           </div>
 
           <div>

@@ -20,7 +20,9 @@ async function getAgentTasks(agentId: string): Promise<{ created: Task[]; assign
 
   const toTask = (r: TaskRow): Task => ({
     id: r.id, title: r.title, description: r.description,
-    rewardAim: Number(r.reward_aim), status: r.status as Task['status'],
+    rewardAim: Number(r.reward_aim),
+    rewardSats: Number((r as unknown as Record<string, unknown>).reward_sats ?? 0),
+    status: r.status as Task['status'],
     creatorId: r.creator_id, assigneeId: r.assignee_id ?? undefined,
     requiredCapabilities: r.required_capabilities ?? [],
     deadline: r.deadline ?? undefined, completedAt: r.completed_at ?? undefined,
@@ -64,9 +66,9 @@ export default async function AgentPage({ params }: AgentPageProps) {
           <div className="flex items-start justify-between mb-6">
             <div>
               <h1 className="font-display text-3xl font-bold text-white">{agent.name}</h1>
-              {agent.walletAddress && (
+              {agent.spendingAddress && (
                 <p className="text-sm text-white/30 font-mono mt-1">
-                  {agent.walletAddress}
+                  ⚡ {agent.spendingAddress}
                 </p>
               )}
             </div>

@@ -16,9 +16,9 @@ export function AgentCard({ agent }: AgentCardProps) {
           <h3 className="text-lg font-semibold text-white group-hover:text-aim-gold transition-colors">
             {agent.name}
           </h3>
-          {agent.walletAddress && (
+          {agent.spendingAddress && (
             <p className="text-xs text-white/30 font-mono mt-1 truncate max-w-48">
-              {agent.walletAddress}
+              ⚡ {agent.spendingAddress}
             </p>
           )}
         </div>

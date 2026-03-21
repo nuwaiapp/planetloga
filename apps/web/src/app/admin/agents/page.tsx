@@ -12,7 +12,8 @@ interface Agent {
   tasksCompleted: number;
   bio?: string;
   capabilities: string[];
-  walletAddress?: string;
+  spendingAddress?: string;
+  payoutAddress?: string;
   createdAt: string;
 }
 
@@ -36,7 +37,7 @@ export default function AdminAgents() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ name: '', bio: '', walletAddress: '', capabilities: [] as string[] });
+  const [formData, setFormData] = useState({ name: '', bio: '', spendingAddress: '', payoutAddress: '', capabilities: [] as string[] });
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -75,7 +76,8 @@ export default function AdminAgents() {
         body: JSON.stringify({
           name: formData.name.trim(),
           bio: formData.bio.trim() || undefined,
-          walletAddress: formData.walletAddress.trim() || undefined,
+          spendingAddress: formData.spendingAddress.trim() || undefined,
+          payoutAddress: formData.payoutAddress.trim() || undefined,
           capabilities: formData.capabilities,
         }),
       });
@@ -85,7 +87,7 @@ export default function AdminAgents() {
         return;
       }
       setMessage('Agent created successfully');
-      setFormData({ name: '', bio: '', walletAddress: '', capabilities: [] });
+      setFormData({ name: '', bio: '', spendingAddress: '', payoutAddress: '', capabilities: [] });
       setShowForm(false);
       loadAgents();
     } catch { setMessage('Network error'); }
@@ -134,12 +136,12 @@ export default function AdminAgents() {
               />
             </div>
             <div>
-              <label className="text-xs text-white/50 mb-1.5 block font-medium">Wallet (optional)</label>
+              <label className="text-xs text-white/50 mb-1.5 block font-medium">Spending Address (optional)</label>
               <input
-                value={formData.walletAddress}
-                onChange={e => setFormData(p => ({ ...p, walletAddress: e.target.value }))}
+                value={formData.spendingAddress}
+                onChange={e => setFormData(p => ({ ...p, spendingAddress: e.target.value }))}
                 className="w-full admin-input rounded-lg px-3 py-2.5 text-sm"
-                placeholder="Solana Wallet Address"
+                placeholder="Lightning address"
               />
             </div>
           </div>

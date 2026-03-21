@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { Coins, ListTodo, Activity, ExternalLink, Search, Star, Award, Users } from 'lucide-react';
+import { Zap, ListTodo, Activity, ExternalLink, Search, Star, Award, Users, Shield } from 'lucide-react';
 import { useAuthFetch } from '@/lib/use-auth-fetch';
 
 interface AgentInfo {
@@ -54,6 +54,7 @@ interface StatsData {
 interface RecommendedTask {
   id: string;
   title: string;
+  rewardSats: number;
   rewardAim: number;
   priority: string;
   pricingMode: string;
@@ -73,6 +74,7 @@ export default function AgentDashboardPage() {
 
   const [agent, setAgent] = useState<AgentInfo | null>(null);
   const [balance, setBalance] = useState<BalanceData>({ balance: 0, totalEarned: 0, totalWithdrawn: 0 });
+  const [satsBalance, setSatsBalance] = useState<{ balance: number; totalEarned: number }>({ balance: 0, totalEarned: 0 });
   const [tasks, setTasks] = useState<TaskSummary>({ assigned: 0, inProgress: 0, review: 0, completed: 0, created: 0 });
   const [activity, setActivity] = useState<ActivityEvent[]>([]);
   const [reviews, setReviews] = useState<ReviewData[]>([]);
@@ -85,9 +87,10 @@ export default function AgentDashboardPage() {
   useEffect(() => {
     async function load() {
       try {
-        const [agentRes, balanceRes, assignedRes, createdRes, activityRes, reviewsRes, statsRes, relationsRes, openTasksRes] = await Promise.all([
+        const [agentRes, balanceRes, satsRes, assignedRes, createdRes, activityRes, reviewsRes, statsRes, relationsRes, openTasksRes] = await Promise.all([
           fetch(`/api/agents/${agentId}`),
           fetch(`/api/agents/${agentId}/balance`),
+          fetch(`/api/agents/${agentId}/sats`),
           fetch(`/api/tasks?assigneeId=${agentId}&pageSize=100`),
           fetch(`/api/tasks?creatorId=${agentId}&pageSize=100`),
           authFetch(`/api/activity?limit=10`),
@@ -106,6 +109,15 @@ export default function AgentDashboardPage() {
             balance: Number(bal.balance ?? 0),
             totalEarned: Number(bal.totalEarned ?? bal.total_earned ?? 0),
             totalWithdrawn: Number(bal.totalWithdrawn ?? bal.total_withdrawn ?? 0),
+          });
+        }
+
+        if (satsRes.ok) {
+          const s = await satsRes.json();
+          const sb = s.balance ?? s;
+          setSatsBalance({
+            balance: Number(sb.balance ?? 0),
+            totalEarned: Number(sb.totalEarned ?? sb.total_earned ?? 0),
           });
         }
 
@@ -161,6 +173,7 @@ export default function AgentDashboardPage() {
           setRecommended((data.tasks ?? []).slice(0, 3).map((t: Record<string, unknown>) => ({
             id: t.id as string,
             title: t.title as string,
+            rewardSats: Number(t.rewardSats ?? t.reward_sats ?? 0),
             rewardAim: Number(t.rewardAim ?? t.reward_aim ?? 0),
             priority: (t.priority ?? 'normal') as string,
             pricingMode: (t.pricingMode ?? t.pricing_mode ?? 'fixed') as string,
@@ -208,10 +221,29 @@ export default function AgentDashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Coins} label="AIM Balance" value={balance.balance.toLocaleString()} sub={`${balance.totalEarned.toLocaleString()} earned`} />
+        <StatCard icon={Zap} label="Sats Balance" value={`${satsBalance.balance.toLocaleString()} sats`} sub={`${satsBalance.totalEarned.toLocaleString()} earned`} />
         <StatCard icon={ListTodo} label="Active Tasks" value={String(tasks.assigned + tasks.inProgress + tasks.review)} sub={`${tasks.inProgress} in progress`} />
         <StatCard icon={Star} label="Rating" value={stats?.avgRating ? `${stats.avgRating}/5` : '-'} sub={`${stats?.totalReviews ?? 0} reviews`} />
         <StatCard icon={Award} label="Reputation" value={String(agent?.reputation ?? 0)} sub={`${stats?.onTimeRate ?? 100}% on time`} />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="admin-card rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Shield className="w-4 h-4 text-aim-gold/60" />
+            <span className="text-[10px] text-white/35 uppercase tracking-wider">AIM Governance</span>
+          </div>
+          <p className="text-xl font-display font-bold text-white">{balance.balance.toLocaleString()} AIM</p>
+          <p className="text-[10px] text-white/30 mt-0.5">{balance.totalEarned.toLocaleString()} earned through work</p>
+        </div>
+        <div className="admin-card rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Zap className="w-4 h-4 text-aim-gold/60" />
+            <span className="text-[10px] text-white/35 uppercase tracking-wider">Lightning</span>
+          </div>
+          <p className="text-xl font-display font-bold text-white">{satsBalance.balance.toLocaleString()} sats</p>
+          <p className="text-[10px] text-white/30 mt-0.5">via Bitcoin Lightning Network</p>
+        </div>
       </div>
 
       {stats && (
@@ -221,7 +253,7 @@ export default function AgentDashboardPage() {
             <MiniStat label="Completed" value={String(stats.tasksCompleted)} />
             <MiniStat label="Cancelled" value={String(stats.tasksCancelled)} />
             <MiniStat label="On Time" value={`${stats.onTimeRate}%`} />
-            <MiniStat label="Total Earned" value={`${stats.totalAimEarned.toLocaleString()} AIM`} />
+            <MiniStat label="Total Earned" value={`${satsBalance.totalEarned.toLocaleString()} sats`} />
             <MiniStat label="Completion Rate" value={
               stats.tasksCompleted + stats.tasksCancelled > 0
                 ? `${Math.round((stats.tasksCompleted / (stats.tasksCompleted + stats.tasksCancelled)) * 100)}%`
@@ -297,7 +329,7 @@ export default function AgentDashboardPage() {
                   className="block px-3 py-2.5 rounded-lg hover:bg-white/4 transition-colors">
                   <p className="text-xs text-white/70 truncate">{t.title}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[10px] text-aim-gold/60">{t.rewardAim} AIM</span>
+                    <span className="text-[10px] text-aim-gold/60">{t.rewardSats.toLocaleString()} sats</span>
                     {t.priority !== 'normal' && (
                       <span className={`text-[10px] px-1 py-0.5 rounded ${t.priority === 'urgent' ? 'bg-red-500/15 text-red-400' : 'bg-amber-500/15 text-amber-400'}`}>
                         {t.priority}

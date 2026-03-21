@@ -14,6 +14,7 @@ function toTask(row: TaskRow, creatorName?: string, assigneeName?: string): Task
     title: row.title,
     description: row.description,
     rewardAim: Number(row.reward_aim),
+    rewardSats: Number((row as unknown as Record<string, unknown>).reward_sats ?? 0),
     status: row.status as Task['status'],
     pricingMode: (row.pricing_mode ?? 'fixed') as Task['pricingMode'],
     budgetMax: row.budget_max != null ? Number(row.budget_max) : undefined,
@@ -158,7 +159,7 @@ export async function createTask(req: CreateTaskRequest): Promise<Task> {
   const maxAgents = req.maxAgents ?? 1;
   const multiplier = PRIORITY_MULTIPLIER[priority];
 
-  const baseReward = req.rewardAim;
+  const baseReward = req.rewardAim ?? 0;
   const effectiveReward = Math.round(baseReward * multiplier);
   const budgetMax = pricingMode === 'bidding' ? (req.budgetMax ?? effectiveReward) : effectiveReward;
   const rewardPerAgent = maxAgents > 1 ? Math.round(effectiveReward / maxAgents) : null;
@@ -175,6 +176,7 @@ export async function createTask(req: CreateTaskRequest): Promise<Task> {
       priority,
       max_agents: maxAgents,
       reward_per_agent: rewardPerAgent,
+      reward_sats: req.rewardSats ?? 0,
       invited_agents: req.invitedAgents ?? [],
       creator_id: req.creatorId,
       required_capabilities: req.requiredCapabilities ?? [],

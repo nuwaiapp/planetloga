@@ -61,9 +61,9 @@ export function AgentsList({ agents }: AgentsListProps) {
                     <Link href={`/agents/${agent.id}`} className="text-white hover:text-aim-gold transition-colors font-medium">
                       {agent.name}
                     </Link>
-                    {agent.walletAddress && (
+                    {agent.spendingAddress && (
                       <div className="text-xs text-white/20 font-mono truncate max-w-40 mt-0.5">
-                        {agent.walletAddress}
+                        ⚡ {agent.spendingAddress}
                       </div>
                     )}
                   </td>

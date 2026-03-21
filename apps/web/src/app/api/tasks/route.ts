@@ -44,6 +44,7 @@ export async function POST(request: NextRequest) {
       title: body.title,
       description: body.description,
       rewardAim: body.rewardAim,
+      rewardSats: body.rewardSats ?? 0,
       creatorId: body.creatorId,
       requiredCapabilities: body.requiredCapabilities.map((capability) => capability.trim()).filter(Boolean),
       deadline: body.deadline,

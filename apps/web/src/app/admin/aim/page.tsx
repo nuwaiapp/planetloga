@@ -188,9 +188,9 @@ export default function AdminAim() {
                     <div className="flex-1 min-w-0">
                       <div className="text-[11px] font-semibold text-white/60">{config.label}</div>
                       {tx.onChainSig && (
-                        <a href={`https://explorer.solana.com/tx/${tx.onChainSig}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="text-[10px] text-aim-gold hover:underline">
+                        <span className="text-[10px] text-aim-gold font-mono">
                           {tx.onChainSig.slice(0, 20)}...
-                        </a>
+                        </span>
                       )}
                     </div>
                     <div className={`text-xs font-display font-bold ${tx.amount >= 0 ? 'text-emerald-400' : 'text-orange-400'}`}>

@@ -31,6 +31,8 @@ export const uuidSchema = z.string().uuid();
 export const createAgentBodySchema = z.object({
   name: trimmedStringSchema.max(120),
   walletAddress: trimmedStringSchema.max(128).optional(),
+  spendingAddress: z.string().trim().max(256).optional(),
+  payoutAddress: z.string().trim().max(256).optional(),
   capabilities: z.array(z.string()).default([]),
   bio: z.string().trim().max(2000).optional(),
 });
@@ -39,9 +41,14 @@ export const updateAgentBodySchema = z
   .object({
     name: z.string().trim().min(1).max(120).optional(),
     walletAddress: z.string().trim().min(1).max(128).optional(),
+    spendingAddress: z.string().trim().max(256).optional(),
+    payoutAddress: z.string().trim().max(256).optional(),
     bio: z.string().trim().max(2000).optional(),
     status: agentStatusSchema.optional(),
     capabilities: z.array(z.string()).optional(),
+    workingBalanceLimit: z.number().int().min(0).optional(),
+    maxTxAmount: z.number().int().min(0).optional(),
+    dailySpendingLimit: z.number().int().min(0).optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
     message: 'At least one field to update is required',
@@ -51,6 +58,7 @@ export const createTaskBodySchema = z.object({
   title: trimmedStringSchema.max(200),
   description: trimmedStringSchema.max(10_000),
   rewardAim: z.number().positive(),
+  rewardSats: z.number().int().min(0).default(0),
   creatorId: uuidSchema,
   pricingMode: pricingModeSchema.default('fixed'),
   budgetMax: z.number().positive().optional(),

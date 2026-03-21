@@ -1,96 +1,106 @@
 'use client';
 
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { PublicKey } from '@solana/web3.js';
 import { useEffect, useState, useCallback } from 'react';
+import { useAuth } from '@/components/auth-provider';
+import { Zap, RefreshCw } from 'lucide-react';
 
-const PROGRAM_ID = new PublicKey('C3kqYcX6T2wfnhM2HpR32TJTdZahJF2cBByS17zsRbVh');
-const [MINT_PDA] = PublicKey.findProgramAddressSync([Buffer.from('aim-mint')], PROGRAM_ID);
-
-interface WalletTokenInfo {
-  balance: string;
-  hasAccount: boolean;
+interface AgentSummary {
+  id: string;
+  name: string;
+  satsBalance: number;
+  aimBalance: number;
 }
 
 export function DashboardClient() {
-  const { connection } = useConnection();
-  const { publicKey, connected } = useWallet();
-  const [tokenInfo, setTokenInfo] = useState<WalletTokenInfo | null>(null);
+  const { user, isAuthenticated } = useAuth();
+  const [agents, setAgents] = useState<AgentSummary[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchBalance = useCallback(async () => {
-    if (!publicKey || !connected) {
-      setTokenInfo(null);
-      return;
-    }
-
+  const fetchAgents = useCallback(async () => {
+    if (!isAuthenticated || !user) return;
     setLoading(true);
     try {
-      const accounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
-        mint: MINT_PDA,
-      });
+      const res = await fetch(`/api/agents?ownerId=${user.id}&pageSize=10`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const agentList = data.agents ?? [];
 
-      if (accounts.value.length > 0) {
-        const balance = accounts.value[0].account.data.parsed.info.tokenAmount.uiAmountString;
-        setTokenInfo({ balance, hasAccount: true });
-      } else {
-        setTokenInfo({ balance: '0', hasAccount: false });
-      }
+      const summaries: AgentSummary[] = await Promise.all(
+        agentList.map(async (a: { id: string; name: string }) => {
+          const [satsRes, balRes] = await Promise.all([
+            fetch(`/api/agents/${a.id}/sats`),
+            fetch(`/api/agents/${a.id}/balance`),
+          ]);
+          const sats = satsRes.ok ? await satsRes.json() : {};
+          const bal = balRes.ok ? await balRes.json() : {};
+          const sb = sats.balance ?? sats;
+          const bb = typeof bal.balance === 'object' ? bal.balance : bal;
+          return {
+            id: a.id,
+            name: a.name,
+            satsBalance: Number(sb.balance ?? 0),
+            aimBalance: Number(bb.balance ?? 0),
+          };
+        }),
+      );
+      setAgents(summaries);
     } catch {
-      setTokenInfo({ balance: '0', hasAccount: false });
+      /* network error */
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  }, [publicKey, connected, connection]);
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
-    fetchBalance();
-  }, [fetchBalance]);
+    fetchAgents();
+  }, [fetchAgents]);
 
   return (
     <div className="rounded-2xl glass-card p-8">
-      <h2 className="text-xl font-semibold text-white mb-6">Your Wallet</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold text-white">Your Agents</h2>
+        {isAuthenticated && (
+          <button onClick={fetchAgents} disabled={loading}
+            className="p-1.5 rounded-lg hover:bg-white/5 text-white/30 hover:text-white/60 transition-colors disabled:opacity-50">
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+        )}
+      </div>
 
-      {!connected ? (
+      {!isAuthenticated ? (
         <div className="text-center py-8">
-          <div className="text-4xl mb-4">🔗</div>
-          <p className="text-white/50 mb-2">Wallet not connected</p>
+          <div className="text-4xl mb-4">⚡</div>
+          <p className="text-white/50 mb-2">Not signed in</p>
           <p className="text-white/30 text-sm">
-            Connect your Solana wallet in the top right to view your AIM balance.
+            Sign in to view your agents and their Lightning balances.
+          </p>
+        </div>
+      ) : agents.length === 0 ? (
+        <div className="text-center py-8">
+          <div className="text-4xl mb-4">🤖</div>
+          <p className="text-white/50 mb-2">No agents yet</p>
+          <p className="text-white/30 text-sm">
+            Create your first agent to start earning sats.
           </p>
         </div>
       ) : (
-        <div className="space-y-6">
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-white/[0.03] border border-white/5">
-            <div className="w-2 h-2 rounded-full bg-green-400" />
-            <span className="text-sm text-white/50 font-mono">
-              {publicKey?.toBase58().slice(0, 4)}...{publicKey?.toBase58().slice(-4)}
-            </span>
-            <span className="ml-auto text-xs text-white/30 border border-white/10 rounded px-2 py-0.5">
-              Devnet
-            </span>
-          </div>
-
-          <div className="text-center py-6">
-            {loading ? (
-              <div className="text-white/30 animate-pulse">Loading...</div>
-            ) : (
-              <>
-                <div className="text-5xl font-bold text-aim-gold mb-2">
-                  {tokenInfo ? Number(tokenInfo.balance).toLocaleString('en-US') : '0'}
+        <div className="space-y-3">
+          {agents.map((a) => (
+            <a key={a.id} href={`/agent/${a.id}/dashboard`}
+              className="block px-4 py-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-aim-gold/20 transition-colors">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-white font-medium">{a.name}</span>
+                <div className="flex items-center gap-1 text-aim-gold">
+                  <Zap className="w-3.5 h-3.5" />
+                  <span className="text-sm font-semibold">{a.satsBalance.toLocaleString()} sats</span>
                 </div>
-                <div className="text-white/40 text-sm uppercase tracking-widest">
-                  AIM Balance
-                </div>
-              </>
-            )}
-          </div>
-
-          <button
-            onClick={fetchBalance}
-            className="w-full py-2.5 rounded-lg border border-white/10 text-white/50 text-sm hover:border-white/20 hover:text-white/70 transition-all"
-          >
-            Refresh Balance
-          </button>
+              </div>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-[10px] text-white/25 font-mono">{a.id.slice(0, 8)}...</span>
+                <span className="text-[10px] text-white/30">{a.aimBalance.toLocaleString()} AIM</span>
+              </div>
+            </a>
+          ))}
         </div>
       )}
     </div>

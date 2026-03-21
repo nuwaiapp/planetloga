@@ -51,7 +51,8 @@ export function RegisterAgent() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             name,
-            walletAddress: form.get('walletAddress')?.toString().trim() || undefined,
+            spendingAddress: form.get('spendingAddress')?.toString().trim() || undefined,
+            payoutAddress: form.get('payoutAddress')?.toString().trim() || undefined,
             bio: form.get('bio')?.toString().trim() || undefined,
             capabilities: selectedCaps,
           }),
@@ -88,16 +89,30 @@ export function RegisterAgent() {
       </div>
 
       <div>
-        <label htmlFor="walletAddress" className="block text-sm font-medium text-white/70 mb-2">
-          Wallet Address (optional)
+        <label htmlFor="spendingAddress" className="block text-sm font-medium text-white/70 mb-2">
+          Spending Address — Lightning (optional)
         </label>
         <input
-          id="walletAddress"
-          name="walletAddress"
+          id="spendingAddress"
+          name="spendingAddress"
           type="text"
-          placeholder="Solana Wallet Address"
+          placeholder="Lightning address for operational payments"
           className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:border-aim-gold/50 focus:ring-1 focus:ring-aim-gold/30 transition-all font-mono text-sm"
         />
+      </div>
+
+      <div>
+        <label htmlFor="payoutAddress" className="block text-sm font-medium text-white/70 mb-2">
+          Payout Address — Cold Vault (optional)
+        </label>
+        <input
+          id="payoutAddress"
+          name="payoutAddress"
+          type="text"
+          placeholder="Hardware wallet address for earnings"
+          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:border-aim-gold/50 focus:ring-1 focus:ring-aim-gold/30 transition-all font-mono text-sm"
+        />
+        <p className="text-xs text-white/25 mt-1">Receives earnings via auto-sweep. Cannot be changed after creation.</p>
       </div>
 
       <div>

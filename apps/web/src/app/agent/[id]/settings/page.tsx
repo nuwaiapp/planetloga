@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Key, Wallet, User, Copy, Trash2, Plus, Check, AlertTriangle } from 'lucide-react';
+import { Key, Zap, User, Copy, Trash2, Plus, Check, AlertTriangle, Shield, Gauge } from 'lucide-react';
 import { useAuthFetch } from '@/lib/use-auth-fetch';
 
 interface ApiKeyInfo {
@@ -19,6 +19,11 @@ interface AgentProfile {
   name: string;
   bio?: string;
   walletAddress?: string;
+  spendingAddress?: string;
+  payoutAddress?: string;
+  workingBalanceLimit: number;
+  maxTxAmount: number;
+  dailySpendingLimit: number;
   capabilities: string[];
 }
 
@@ -54,6 +59,7 @@ export default function AgentSettingsPage() {
       <h1 className="text-2xl font-display font-bold text-white">Settings</h1>
 
       <ProfileSection agent={agent} agentId={agentId} authFetch={authFetch} onUpdate={setAgent} />
+      <VaultSection agent={agent} agentId={agentId} authFetch={authFetch} onUpdate={setAgent} />
       <ApiKeysSection keys={keys} agentId={agentId} authFetch={authFetch} onUpdate={setKeys} />
     </div>
   );
@@ -67,7 +73,7 @@ function ProfileSection({ agent, agentId, authFetch, onUpdate }: {
 }) {
   const [name, setName] = useState(agent?.name ?? '');
   const [bio, setBio] = useState(agent?.bio ?? '');
-  const [wallet, setWallet] = useState(agent?.walletAddress ?? '');
+  const [spendingAddr, setSpendingAddr] = useState(agent?.spendingAddress ?? '');
   const [caps, setCaps] = useState(agent?.capabilities?.join(', ') ?? '');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -85,7 +91,7 @@ function ProfileSection({ agent, agentId, authFetch, onUpdate }: {
         body: JSON.stringify({
           name: name.trim(),
           bio: bio.trim() || undefined,
-          walletAddress: wallet.trim() || undefined,
+          spendingAddress: spendingAddr.trim() || undefined,
           capabilities: caps.split(',').map(c => c.trim()).filter(Boolean),
         }),
       });
@@ -131,17 +137,111 @@ function ProfileSection({ agent, agentId, authFetch, onUpdate }: {
 
       <div>
         <label className="text-xs text-white/40 block mb-1 flex items-center gap-1">
-          <Wallet className="w-3 h-3" /> Wallet Address
+          <Zap className="w-3 h-3" /> Spending Address (Lightning)
         </label>
-        <input value={wallet} onChange={e => setWallet(e.target.value)}
-          className="w-full admin-input rounded-lg px-3 py-2 text-sm font-mono text-[11px]" placeholder="Solana wallet address" />
+        <input value={spendingAddr} onChange={e => setSpendingAddr(e.target.value)}
+          className="w-full admin-input rounded-lg px-3 py-2 text-sm font-mono text-[11px]" placeholder="Lightning address for sending payments" />
       </div>
+
+      {agent?.payoutAddress && (
+        <div>
+          <label className="text-xs text-white/40 block mb-1 flex items-center gap-1">
+            <Shield className="w-3 h-3" /> Payout Address (Cold Vault)
+          </label>
+          <div className="w-full admin-input rounded-lg px-3 py-2 text-sm font-mono text-[11px] text-white/40 bg-white/[0.01]">
+            {agent.payoutAddress}
+          </div>
+          <p className="text-[10px] text-white/25 mt-1">Payout address is set at creation and cannot be changed here for security.</p>
+        </div>
+      )}
 
       {error && <p className="text-red-400 text-xs flex items-center gap-1"><AlertTriangle className="w-3 h-3" />{error}</p>}
 
       <button type="submit" disabled={saving}
         className="flex items-center gap-1.5 px-4 py-2 bg-aim-gold text-deep-space text-xs font-semibold rounded-lg hover:bg-aim-gold-light transition-colors disabled:opacity-50">
         {saving ? 'Saving...' : saved ? <><Check className="w-3.5 h-3.5" /> Saved</> : 'Save Changes'}
+      </button>
+    </form>
+  );
+}
+
+function VaultSection({ agent, agentId, authFetch, onUpdate }: {
+  agent: AgentProfile | null;
+  agentId: string;
+  authFetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+  onUpdate: (a: AgentProfile) => void;
+}) {
+  const [workingLimit, setWorkingLimit] = useState(String(agent?.workingBalanceLimit ?? 50000));
+  const [maxTx, setMaxTx] = useState(String(agent?.maxTxAmount ?? 10000));
+  const [dailyLimit, setDailyLimit] = useState(String(agent?.dailySpendingLimit ?? 100000));
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    setSaved(false);
+    try {
+      const res = await authFetch(`/api/agents/${agentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workingBalanceLimit: Number(workingLimit),
+          maxTxAmount: Number(maxTx),
+          dailySpendingLimit: Number(dailyLimit),
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error?.message ?? 'Update failed');
+      }
+      const updated = await res.json();
+      onUpdate(updated);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form onSubmit={save} className="admin-card rounded-xl p-6 space-y-4">
+      <div className="flex items-center gap-2 mb-2">
+        <Gauge className="w-4 h-4 text-aim-gold/60" />
+        <h2 className="text-sm font-semibold text-white">Vault Security</h2>
+      </div>
+      <p className="text-xs text-white/30">Configure spending limits and auto-sweep thresholds for your agent&apos;s Lightning wallet.</p>
+
+      <div className="grid sm:grid-cols-3 gap-4">
+        <div>
+          <label className="text-xs text-white/40 block mb-1">Working Balance Limit (sats)</label>
+          <input type="number" value={workingLimit} onChange={e => setWorkingLimit(e.target.value)} min={0}
+            className="w-full admin-input rounded-lg px-3 py-2 text-sm" />
+          <p className="text-[10px] text-white/20 mt-0.5">Auto-sweep surplus above this amount</p>
+        </div>
+        <div>
+          <label className="text-xs text-white/40 block mb-1">Max Transaction (sats)</label>
+          <input type="number" value={maxTx} onChange={e => setMaxTx(e.target.value)} min={0}
+            className="w-full admin-input rounded-lg px-3 py-2 text-sm" />
+          <p className="text-[10px] text-white/20 mt-0.5">Max single payment allowed</p>
+        </div>
+        <div>
+          <label className="text-xs text-white/40 block mb-1">Daily Spending Limit (sats)</label>
+          <input type="number" value={dailyLimit} onChange={e => setDailyLimit(e.target.value)} min={0}
+            className="w-full admin-input rounded-lg px-3 py-2 text-sm" />
+          <p className="text-[10px] text-white/20 mt-0.5">Total spending cap per 24h</p>
+        </div>
+      </div>
+
+      {error && <p className="text-red-400 text-xs flex items-center gap-1"><AlertTriangle className="w-3 h-3" />{error}</p>}
+
+      <button type="submit" disabled={saving}
+        className="flex items-center gap-1.5 px-4 py-2 bg-aim-gold text-deep-space text-xs font-semibold rounded-lg hover:bg-aim-gold-light transition-colors disabled:opacity-50">
+        {saving ? 'Saving...' : saved ? <><Check className="w-3.5 h-3.5" /> Saved</> : 'Save Vault Config'}
       </button>
     </form>
   );

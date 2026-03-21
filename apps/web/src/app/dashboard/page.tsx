@@ -1,55 +1,60 @@
-import { fetchTokenStats, ADDRESSES } from '@/lib/solana';
+import { publicSupabase } from '@/lib/supabase';
 import { DashboardClient } from '@/components/dashboard-client';
 
 export const revalidate = 30;
 
-function formatNumber(n: number): string {
-  return n.toLocaleString('en-US');
-}
+async function fetchEconomyStats() {
+  try {
+    const [agentsRes, tasksRes, satsRes, aimRes] = await Promise.all([
+      publicSupabase.from('agents').select('id', { count: 'exact', head: true }),
+      publicSupabase.from('tasks').select('id, status, reward_sats', { count: 'exact' }),
+      publicSupabase.from('sats_transactions').select('amount').eq('tx_type', 'task_reward'),
+      publicSupabase.from('aim_ledger').select('amount').eq('type', 'task_reward'),
+    ]);
 
-function truncateAddress(addr: string): string {
-  return addr.slice(0, 6) + '...' + addr.slice(-4);
+    const totalAgents = agentsRes.count ?? 0;
+    const tasks = tasksRes.data ?? [];
+    const totalTasks = tasksRes.count ?? 0;
+    const completedTasks = tasks.filter(t => t.status === 'completed').length;
+    const totalSatsVolume = (satsRes.data ?? []).reduce((sum, tx) => sum + Number(tx.amount), 0);
+    const totalAimDistributed = (aimRes.data ?? []).reduce((sum, tx) => sum + Number(tx.amount), 0);
+
+    return { totalAgents, totalTasks, completedTasks, totalSatsVolume, totalAimDistributed };
+  } catch {
+    return { totalAgents: 0, totalTasks: 0, completedTasks: 0, totalSatsVolume: 0, totalAimDistributed: 0 };
+  }
 }
 
 export default async function DashboardPage() {
-  const stats = await fetchTokenStats();
+  const stats = await fetchEconomyStats();
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
       <div className="mb-10">
         <h1 className="font-display text-3xl sm:text-4xl font-bold text-white mb-2">
-          AIM Token <span className="text-aim-gold">Dashboard</span>
+          Economy <span className="text-aim-gold">Dashboard</span>
         </h1>
         <p className="text-white/40">
-          Live data directly from the Solana blockchain (Devnet)
+          Live platform economy &mdash; payments in sats via Lightning, governance in AIM
         </p>
       </div>
 
-      {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {[
-            { label: 'Max Supply', value: formatNumber(stats.maxSupply), sub: 'AIM' },
-            { label: 'Circulating', value: formatNumber(stats.circulatingSupply), sub: 'AIM' },
-            { label: 'Burned', value: formatNumber(stats.totalBurned), sub: 'AIM' },
-            {
-              label: 'Burn Rate',
-              value: `${(stats.burnRateBps / 100).toFixed(1)}%`,
-              sub: 'per TX',
-            },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className="p-5 rounded-xl glass-card"
-            >
-              <div className="text-[10px] text-white/30 uppercase tracking-widest mb-2">
-                {item.label}
-              </div>
-              <div className="text-2xl font-bold text-white">{item.value}</div>
-              <div className="text-xs text-white/30 mt-1">{item.sub}</div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        {[
+          { label: 'Active Agents', value: String(stats.totalAgents), sub: 'registered' },
+          { label: 'Total Tasks', value: String(stats.totalTasks), sub: `${stats.completedTasks} completed` },
+          { label: 'Sats Volume', value: `${stats.totalSatsVolume.toLocaleString()}`, sub: 'sats transacted' },
+          { label: 'AIM Distributed', value: `${stats.totalAimDistributed.toLocaleString()}`, sub: 'governance tokens' },
+        ].map((item) => (
+          <div key={item.label} className="p-5 rounded-xl glass-card">
+            <div className="text-[10px] text-white/30 uppercase tracking-widest mb-2">
+              {item.label}
             </div>
-          ))}
-        </div>
-      )}
+            <div className="text-2xl font-bold text-white">{item.value}</div>
+            <div className="text-xs text-white/30 mt-1">{item.sub}</div>
+          </div>
+        ))}
+      </div>
 
       <div className="grid md:grid-cols-2 gap-8">
         <DashboardClient />
@@ -57,44 +62,25 @@ export default async function DashboardPage() {
         <div className="space-y-6">
           <div className="rounded-2xl glass-card p-8">
             <h2 className="text-xl font-semibold text-white mb-6">
-              Token Details
+              Two-Token Model
             </h2>
             <div className="space-y-4">
               {[
-                {
-                  label: 'Program',
-                  value: truncateAddress(ADDRESSES.programId),
-                  href: `https://explorer.solana.com/address/${ADDRESSES.programId}?cluster=devnet`,
-                },
-                {
-                  label: 'Mint',
-                  value: truncateAddress(ADDRESSES.mint),
-                  href: `https://explorer.solana.com/address/${ADDRESSES.mint}?cluster=devnet`,
-                },
-                { label: 'Name', value: 'AI Money' },
-                { label: 'Symbol', value: 'AIM' },
-                { label: 'Decimals', value: '9' },
-                { label: 'Network', value: 'Solana Devnet' },
+                { label: 'Payment', value: 'Bitcoin (sats)', detail: 'via Lightning Network' },
+                { label: 'Governance', value: 'AIM Token', detail: 'earned through work' },
+                { label: 'Settlement', value: 'Instant', detail: 'Lightning ~milliseconds' },
+                { label: 'Security', value: 'Vault Model', detail: 'dual-address + auto-sweep' },
+                { label: 'Phase', value: 'I — Lightning Launch', detail: 'custodial layer' },
               ].map((item) => (
                 <div
                   key={item.label}
                   className="flex justify-between items-center py-2 border-b border-white/5 last:border-0"
                 >
                   <span className="text-sm text-white/40">{item.label}</span>
-                  {'href' in item && item.href ? (
-                    <a
-                      href={item.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-aim-gold/70 hover:text-aim-gold font-mono transition-colors"
-                    >
-                      {item.value} ↗
-                    </a>
-                  ) : (
-                    <span className="text-sm text-white/70 font-mono">
-                      {item.value}
-                    </span>
-                  )}
+                  <div className="text-right">
+                    <span className="text-sm text-white/70">{item.value}</span>
+                    <span className="block text-[10px] text-white/25">{item.detail}</span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -102,14 +88,14 @@ export default async function DashboardPage() {
 
           <div className="rounded-2xl border border-aim-gold/20 bg-aim-gold/5 p-6">
             <div className="flex items-start gap-3">
-              <span className="text-aim-gold text-lg">💡</span>
+              <span className="text-aim-gold text-lg">⚡</span>
               <div>
                 <h3 className="text-sm font-semibold text-aim-gold mb-1">
-                  Devnet Mode
+                  Phase I: Lightning Launch
                 </h3>
                 <p className="text-xs text-aim-gold/60 leading-relaxed">
-                  The AIM token is currently running on Solana Devnet. All values are
-                  test data. Switch your wallet to Devnet to see AIM.
+                  All payments are processed in satoshis via the Bitcoin Lightning Network.
+                  AIM governance tokens are earned through completed work — never purchased.
                 </p>
               </div>
             </div>

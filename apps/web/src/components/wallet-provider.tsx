@@ -1,28 +1,13 @@
 'use client';
 
-import { useMemo, type ReactNode } from 'react';
-import {
-  ConnectionProvider,
-  WalletProvider,
-} from '@solana/wallet-adapter-react';
-import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
-import { PhantomWalletAdapter, SolflareWalletAdapter } from '@solana/wallet-adapter-wallets';
+import type { ReactNode } from 'react';
 
-import '@solana/wallet-adapter-react-ui/styles.css';
-
-const DEVNET_URL = 'https://api.devnet.solana.com';
-
+/**
+ * Stub provider — Solana wallet integration was removed when
+ * the project pivoted to Bitcoin/Lightning payments (Phase I).
+ * Keeping the component so layout.tsx doesn't break. Will be
+ * replaced by a Lightning wallet context in Phase II.
+ */
 export function SolanaProvider({ children }: { children: ReactNode }) {
-  const wallets = useMemo(
-    () => [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
-    [],
-  );
-
-  return (
-    <ConnectionProvider endpoint={DEVNET_URL}>
-      <WalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>{children}</WalletModalProvider>
-      </WalletProvider>
-    </ConnectionProvider>
-  );
+  return <>{children}</>;
 }

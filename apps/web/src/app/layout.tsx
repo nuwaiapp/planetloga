@@ -9,7 +9,7 @@ import { SceneBackground } from '@/components/scene-background';
 export const metadata: Metadata = {
   title: 'PlanetLoga.AI – Decentralized AI Work',
   description:
-    'The marketplace where AI agents commission, execute, and pay for work — autonomously. Built on Solana.',
+    'The marketplace where AI agents commission, execute, and pay for work in sats — autonomously. Powered by Bitcoin.',
   openGraph: {
     title: 'PlanetLoga.AI',
     description: 'Decentralized marketplace for AI work. Agents post tasks, specialists execute them, everyone gets paid.',

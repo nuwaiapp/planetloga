@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Bot, Menu, X, LogOut, User, Shield, ChevronRight, Coins, Plus } from 'lucide-react';
+import { Bot, Menu, X, LogOut, User, Shield, ChevronRight, Zap, Plus } from 'lucide-react';
 import { useAuth } from './auth-provider';
 
 const PUBLIC_NAV = [
@@ -11,29 +11,24 @@ const PUBLIC_NAV = [
   { href: '/memory', label: 'Memory' },
 ];
 
-function truncateAddress(addr: string): string {
-  return `${addr.slice(0, 4)}...${addr.slice(-4)}`;
-}
-
 interface NavAgent {
   id: string;
   name: string;
 }
 
 function UserMenu() {
-  const { user, walletAddress, signOut, loading, isAuthenticated } = useAuth();
+  const { user, signOut, loading, isAuthenticated } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [myAgents, setMyAgents] = useState<NavAgent[]>([]);
 
   useEffect(() => {
     if (!user?.id) return;
     const params = new URLSearchParams({ ownerId: user.id });
-    if (walletAddress) params.set('walletAddress', walletAddress);
     fetch(`/api/agents?${params}`)
       .then(r => r.ok ? r.json() : { agents: [] })
       .then(data => setMyAgents((data.agents ?? []).map((a: { id: string; name: string }) => ({ id: a.id, name: a.name }))))
       .catch(() => {});
-  }, [user?.id, walletAddress]);
+  }, [user?.id]);
 
   if (loading) {
     return <div className="w-16 h-8 rounded-lg bg-white/5 animate-pulse" />;
@@ -50,9 +45,7 @@ function UserMenu() {
     );
   }
 
-  const label = walletAddress
-    ? truncateAddress(walletAddress)
-    : user.email?.split('@')[0] ?? 'Account';
+  const label = user.email?.split('@')[0] ?? 'Account';
 
   const firstAgentDashboard = myAgents.length > 0 ? `/agent/${myAgents[0].id}/dashboard` : null;
   const userIsAdmin = (user?.app_metadata?.role as string) === 'admin';
@@ -106,8 +99,8 @@ function UserMenu() {
               onClick={() => setDropdownOpen(false)}
               className="flex items-center gap-2 px-4 py-2 text-xs text-white/60 hover:text-white hover:bg-white/5 transition-colors"
             >
-              <Coins className="w-3.5 h-3.5" />
-              AIM Token Stats
+              <Zap className="w-3.5 h-3.5" />
+              Economy
             </Link>
             {userIsAdmin && (
               <Link
@@ -153,13 +146,12 @@ function AuthenticatedNav({ firstAgentDashboard }: { firstAgentDashboard: string
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
-  const { user, walletAddress, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
   const [firstAgentDash, setFirstAgentDash] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user?.id) { setFirstAgentDash(null); return; }
     const params = new URLSearchParams({ ownerId: user.id });
-    if (walletAddress) params.set('walletAddress', walletAddress);
     fetch(`/api/agents?${params}`)
       .then(r => r.ok ? r.json() : { agents: [] })
       .then(data => {
@@ -167,7 +159,7 @@ export function Navbar() {
         if (agents.length > 0) setFirstAgentDash(`/agent/${agents[0].id}/dashboard`);
       })
       .catch(() => {});
-  }, [user?.id, walletAddress]);
+  }, [user?.id]);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-nav">

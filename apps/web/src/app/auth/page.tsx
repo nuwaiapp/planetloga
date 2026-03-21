@@ -1,20 +1,16 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { useWalletModal } from '@solana/wallet-adapter-react-ui';
-import { Bot, Mail, Github, Wallet, CheckCircle } from 'lucide-react';
+import { Bot, Mail, Github, CheckCircle } from 'lucide-react';
 import { getSupabaseBrowser } from '@/lib/supabase-browser';
 import { useAuth } from '@/components/auth-provider';
-import bs58 from 'bs58';
 
 type AuthMode = 'login' | 'signup' | 'reset';
 
-async function resolvePostLoginRedirect(userId: string, walletAddr?: string): Promise<string> {
+async function resolvePostLoginRedirect(userId: string): Promise<string> {
   try {
     const params = new URLSearchParams({ ownerId: userId });
-    if (walletAddr) params.set('walletAddress', walletAddr);
     const res = await fetch(`/api/agents?${params}`);
     if (res.ok) {
       const data = await res.json();
@@ -30,8 +26,6 @@ async function resolvePostLoginRedirect(userId: string, walletAddr?: string): Pr
 export default function AuthPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
-  const { publicKey, signMessage, connected, connecting } = useWallet();
-  const { setVisible: openWalletModal } = useWalletModal();
 
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
@@ -39,82 +33,13 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
-  const pendingWalletSign = useRef(false);
+  const [resetSent, setResetSent] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated && user?.id) {
-      const wa = (user.user_metadata?.wallet_address as string | undefined) ?? undefined;
-      resolvePostLoginRedirect(user.id, wa).then(url => router.replace(url));
+      resolvePostLoginRedirect(user.id).then(url => router.replace(url));
     }
   }, [isAuthenticated, user, router]);
-
-  const performWalletSign = useCallback(async () => {
-    if (!publicKey || !signMessage) return;
-
-    setLoading(true);
-    setError(null);
-    try {
-      const timestamp = Date.now();
-      const message = `Sign in to PlanetLoga.AI\nWallet: ${publicKey.toBase58()}\nTimestamp: ${timestamp}`;
-      const encoded = new TextEncoder().encode(message);
-      const signature = await signMessage(encoded);
-
-      const res = await fetch('/api/auth/wallet-verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          publicKey: publicKey.toBase58(),
-          signature: bs58.encode(signature),
-          message,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error?.message ?? data.error ?? 'Wallet verification failed');
-
-      const supabase = getSupabaseBrowser();
-      const { error: otpErr, data: otpData } = await supabase.auth.verifyOtp({
-        token_hash: data.token_hash,
-        type: 'magiclink',
-      });
-      if (otpErr) throw otpErr;
-
-      const uid = otpData.user?.id;
-      const wa = publicKey?.toBase58();
-      const redirect = uid ? await resolvePostLoginRedirect(uid, wa) : '/marketplace';
-      router.push(redirect);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes('User rejected') || msg.includes('rejected')) {
-        setError('Wallet signature was rejected.');
-      } else {
-        setError(`Wallet sign-in failed: ${msg}`);
-      }
-    } finally {
-      setLoading(false);
-      pendingWalletSign.current = false;
-    }
-  }, [publicKey, signMessage, router]);
-
-  useEffect(() => {
-    if (connected && publicKey && signMessage && pendingWalletSign.current) {
-      performWalletSign();
-    }
-  }, [connected, publicKey, signMessage, performWalletSign]);
-
-  async function handleWallet() {
-    setError(null);
-
-    if (connected && publicKey && signMessage) {
-      await performWalletSign();
-      return;
-    }
-
-    pendingWalletSign.current = true;
-    openWalletModal(true);
-  }
-
-  const [resetSent, setResetSent] = useState(false);
 
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
@@ -157,7 +82,7 @@ export default function AuthPage() {
   }
 
   async function handleGitHub() {
-    setError('GitHub login is not enabled. Use Email or Wallet instead.');
+    setError('GitHub login is not enabled yet. Use Email instead.');
   }
 
   if (isAuthenticated) return null;
@@ -199,19 +124,6 @@ export default function AuthPage() {
         </div>
 
         <div className="space-y-3 mb-6">
-          <button
-            onClick={handleWallet}
-            disabled={loading || connecting}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg glass text-white/80 text-sm font-medium hover:text-white transition-colors disabled:opacity-50"
-          >
-            <Wallet className="w-4 h-4" />
-            {connecting
-              ? 'Connecting...'
-              : connected
-                ? 'Sign in with Wallet'
-                : 'Connect Wallet'}
-          </button>
-
           <button
             onClick={handleGitHub}
             disabled={loading}
