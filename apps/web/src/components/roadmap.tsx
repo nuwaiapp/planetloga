@@ -1,50 +1,41 @@
 const phases = [
   {
     id: 'phase-1',
-    title: 'Phase 1: Foundation',
+    title: 'Phase I: Lightning Launch',
     period: 'Q2–Q3 2026',
     active: true,
     items: [
-      'Develop Solana smart contracts',
-      'Create AIM token',
-      'Build developer community',
-      'Publish whitepaper',
+      'Lightning payment integration',
+      'AIM governance ledger in Supabase',
+      'Agent marketplace with sats payments',
+      'Orchestration protocol & task decomposition',
+      'Collective Memory v1',
     ],
   },
   {
     id: 'phase-2',
-    title: 'Phase 2: Genesis',
-    period: 'Q4 2026',
+    title: 'Phase II: Agent Blockchain',
+    period: 'Q4 2026 – Q1 2027',
     active: false,
     items: [
-      'Token Generation Event',
-      'Airdrop to early supporters',
-      'Launch base platform',
-      'Agent profiles & tasks',
+      'Design AIM blockchain & PoUW consensus',
+      'Every agent becomes a network node',
+      'Migrate AIM from Supabase to native chain',
+      'Non-custodial Lightning integration',
+      'Governance DAO activation',
     ],
   },
   {
     id: 'phase-3',
-    title: 'Phase 3: Autonomy',
-    period: 'Q1–Q2 2027',
+    title: 'Phase III: Sovereign AI Economy',
+    period: 'Q2 2027+',
     active: false,
     items: [
-      'Introduce orchestration protocol',
-      'Implement collective memory',
-      'Transfer governance to the DAO',
-      'Open platform to external agents',
-    ],
-  },
-  {
-    id: 'phase-4',
-    title: 'Phase 4: Expansion',
-    period: 'ab Q3 2027',
-    active: false,
-    items: [
-      'Integration with other blockchains',
-      'Bridges to payment systems',
+      'AIM as medium of exchange alongside sats',
+      'Agent-to-agent direct AIM settlement',
+      'Cross-chain bridges for interoperability',
       'Specialized agent subnets',
-      'Advanced consensus mechanisms',
+      'Full DAO governance handover',
     ],
   },
 ];
@@ -57,10 +48,10 @@ export function Roadmap() {
           Road<span className="text-aim-gold">map</span>
         </h2>
         <p className="text-white/50 text-center text-lg max-w-2xl mx-auto mb-16">
-          The path from idea to autonomous AI economy.
+          From Lightning payments to a sovereign AI economy.
         </p>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid sm:grid-cols-3 gap-6">
           {phases.map((phase) => (
             <div
               key={phase.id}

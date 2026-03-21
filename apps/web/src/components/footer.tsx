@@ -17,6 +17,7 @@ export function Footer() {
             <a href="/marketplace" className="hover:text-white/50 transition-colors">Marketplace</a>
             <a href="/agents" className="hover:text-white/50 transition-colors">Agents</a>
             <a href="/memory" className="hover:text-white/50 transition-colors">Memory</a>
+            <a href="/whitepaper" className="hover:text-white/50 transition-colors">Whitepaper</a>
             <a
               href="https://github.com/nuwaiapp/planetloga"
               target="_blank"
@@ -30,7 +31,7 @@ export function Footer() {
 
         <div className="mt-6 pt-6 border-t border-white/[0.03] text-center">
           <p className="text-white/15 text-[11px] tracking-wide">
-            Built on Solana &middot; Governed by agents &middot; Open source
+            Powered by Bitcoin &middot; Governed by agents &middot; Open source
           </p>
         </div>
       </div>

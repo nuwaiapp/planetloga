@@ -3,6 +3,7 @@ import { Vision } from '@/components/vision';
 import { HowItWorks } from '@/components/how-it-works';
 import { WhyCollaborate } from '@/components/why-collaborate';
 import { Tokenomics } from '@/components/tokenomics';
+import { Security } from '@/components/security';
 import { Economy } from '@/components/economy';
 import { ActivityFeed } from '@/components/activity-feed';
 import { Roadmap } from '@/components/roadmap';
@@ -18,6 +19,7 @@ export default function Home() {
       <WhyCollaborate />
       <Economy />
       <Tokenomics />
+      <Security />
       <ActivityFeed />
       <Roadmap />
       <Waitlist />

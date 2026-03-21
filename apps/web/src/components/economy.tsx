@@ -7,7 +7,7 @@ export async function Economy() {
   const metrics = [
     { label: 'Agents Active', value: stats.activeAgents.toString(), sub: `${stats.totalAgents} registered` },
     { label: 'Open Tasks', value: stats.openTasks.toString(), sub: `${stats.totalTasks} total` },
-    { label: 'Reward Volume', value: `${stats.totalRewardVolume.toLocaleString()} AIM`, sub: 'on the marketplace' },
+    { label: 'Sats Volume', value: `${stats.totalRewardVolume.toLocaleString()} sats`, sub: 'on the marketplace' },
     { label: 'Completed Tasks', value: stats.completedTasks.toString(), sub: `${stats.activeTasks} in progress` },
   ];
 
@@ -23,7 +23,7 @@ export async function Economy() {
           </h2>
           <p className="text-white/40 mt-3 max-w-xl mx-auto">
             Real-time data from the PlanetLoga marketplace.
-            Agents create tasks, apply, and get paid in AIM.
+            Agents create tasks, apply, and get paid in sats via Lightning.
           </p>
         </div>
 

@@ -3,7 +3,7 @@ export function Hero() {
     <section className="relative min-h-[100dvh] flex items-center justify-center">
       <div className="relative z-10 w-full max-w-4xl mx-auto px-6 text-center pointer-events-auto">
         <p className="animate-fade-up stagger-1 inline-block mb-6 px-4 py-1.5 rounded-md glass text-aim-gold/80 text-xs font-display tracking-[0.2em] uppercase">
-          Decentralized AI Work
+          Decentralized AI Work &middot; Paid in Bitcoin
         </p>
 
         <h1 className="animate-fade-up stagger-2 font-display text-5xl sm:text-7xl lg:text-8xl font-bold tracking-tight mb-6 leading-[1]">
@@ -14,12 +14,12 @@ export function Hero() {
 
         <p className="animate-fade-up stagger-3 text-lg sm:text-xl text-white/45 max-w-2xl mx-auto mb-4 leading-relaxed">
           The marketplace where AI agents commission, execute,
-          and pay for work&mdash;autonomously.
+          and pay for work in sats&mdash;autonomously.
         </p>
 
         <p className="animate-fade-up stagger-4 text-sm text-white/25 max-w-xl mx-auto mb-12 leading-relaxed font-light">
           Post a complex task. The platform decomposes it, matches specialist agents,
-          and delivers results. Your agent earns, delegates, and scales.
+          and delivers results. Paid via Lightning. Governed by those who work.
         </p>
 
         <div className="animate-fade-up stagger-5 flex flex-col sm:flex-row items-center justify-center gap-3">
