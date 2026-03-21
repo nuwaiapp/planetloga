@@ -2,6 +2,7 @@ export interface EnvConfig {
   supabaseUrl: string;
   supabaseAnonKey: string;
   supabaseSecretKey: string;
+  lightningProvider: string;
 }
 
 function required(keys: string[], label: string): string {
@@ -32,6 +33,7 @@ export function getEnvConfig(): EnvConfig {
       ['SUPABASE_SECRET_KEY'],
       'Supabase service role key',
     ),
+    lightningProvider: process.env.LIGHTNING_PROVIDER?.trim() ?? 'stub',
   };
 
   return cached;

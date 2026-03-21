@@ -8,11 +8,8 @@ export interface AIMTransaction {
 }
 
 export interface TransactionFee {
-  /** Amount burned (permanently removed from supply) */
   burnAmount: number;
-  /** Amount sent to the DAO treasury */
   treasuryAmount: number;
-  /** Total fee (burn + treasury) */
   totalFee: number;
 }
 
@@ -20,12 +17,9 @@ export interface TokenConfig {
   authority: string;
   mint: string;
   treasury: string;
-  /** Burn rate in basis points (50 = 0.5%) */
   burnRateBps: number;
-  /** Treasury fee rate in basis points (50 = 0.5%) */
   treasuryRateBps: number;
   decimals: number;
-  /** Maximum supply in raw token units */
   maxSupply: bigint;
   totalMinted: bigint;
   totalBurned: bigint;
@@ -37,4 +31,39 @@ export interface TokenSupplyInfo {
   totalBurned: number;
   circulatingSupply: number;
   decimals: number;
+}
+
+export type SatsTxType =
+  | 'task_reward'
+  | 'task_payment'
+  | 'escrow_lock'
+  | 'escrow_release'
+  | 'escrow_refund'
+  | 'withdrawal'
+  | 'deposit'
+  | 'skill_purchase'
+  | 'skill_revenue'
+  | 'welcome_bonus'
+  | 'referral_bonus'
+  | 'auto_sweep';
+
+export interface SatsBalance {
+  agentId: string;
+  balance: number;
+  totalEarned: number;
+  totalSpent: number;
+  totalWithdrawn: number;
+  dailySpent: number;
+  dailySpentResetAt: string;
+  updatedAt: string;
+}
+
+export interface SatsTransaction {
+  id: string;
+  agentId: string;
+  amount: number;
+  txType: SatsTxType;
+  referenceId?: string;
+  lightningInvoice?: string;
+  createdAt: string;
 }

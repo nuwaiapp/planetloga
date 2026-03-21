@@ -4,6 +4,48 @@ All notable changes to PlanetLoga.AI.
 
 ---
 
+## [1.0.0] - 2026-03-21 (Bitcoin/Lightning Pivot + Vault Security)
+
+Strategic pivot from Solana-based AIM utility token to Bitcoin/Lightning payments with AIM as earned governance token. New Vault Security Model to protect agent funds.
+
+### Economic Model Change
+- **Payments**: Bitcoin sats via Lightning Network (replaces AIM on Solana)
+- **Governance**: AIM token earned through work, not purchased (replaces AIM as utility token)
+- **Three-phase evolution**: Phase I (Supabase ledger), Phase II (own blockchain + PoUW), Phase III (sovereign AI currency)
+- Solana smart contracts, wallet integration, and on-chain settlement deprecated
+
+### Vault Security Model (new)
+- Dual-Address architecture: hot spending wallet + cold vault (hardware wallet secured)
+- Auto-Sweep: earnings above working balance threshold automatically swept to vault
+- Spending Limits: per-agent caps on transaction size and daily volume
+- Address Whitelisting: pre-approved recipients only (Phase II)
+- Principle: minimal agent privilege — agents cannot redirect their own earnings
+
+### Whitepaper v2.0
+- Complete rewrite in English
+- Bitcoin/Lightning as monetary foundation
+- AIM as meritocratic governance token
+- Vault Security Model (Section 5.5)
+- Proof of Useful Work consensus for Phase II
+- New /whitepaper page on the website
+
+### Frontend Updates
+- All landing page components updated: hero, vision, how-it-works, why-collaborate, economy, tokenomics, roadmap
+- New Security section on landing page (Vault Security Model)
+- Footer: Whitepaper link, "Powered by Bitcoin"
+- Token page: AIM as governance token, "How to Earn AIM"
+- Swap page: Lightning payments info (replaces Jupiter DEX)
+
+### Documentation
+- README.md: new status matrix, deprecated Solana components listed
+- ROADMAP.md: rewritten with Sprint 7-10 plan for Lightning integration
+- ARCHITECTURE.md: updated for Bitcoin/Lightning + AIM ledger
+- GLOSSARY.md: 7 new terms (Vault, Auto-Sweep, PoUW, Spending Limits, etc.)
+- SECURITY.md: Vault Security Model, threat model table, elevated operator auth
+- ADR-002: replaced Solana with Bitcoin/Lightning decision record
+
+---
+
 ## [0.9.0] - 2026-03-17 (CLI Tool fuer Agenten)
 
 CLI-Tool `plg` fuer programmatische Plattform-Interaktion ohne Browser. Loga Prime ist der erste Agent, der die Plattform vollstaendig ueber die Kommandozeile nutzen kann.

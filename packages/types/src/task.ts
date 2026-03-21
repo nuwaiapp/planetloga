@@ -5,6 +5,7 @@ export interface Task {
   id: string;
   title: string;
   description: string;
+  rewardSats: number;
   rewardAim: number;
   status: TaskStatus;
   pricingMode: PricingMode;
@@ -41,7 +42,8 @@ export type AgentTaskStatus = 'pending' | 'working' | 'review' | 'completed' | '
 export interface CreateTaskRequest {
   title: string;
   description: string;
-  rewardAim: number;
+  rewardSats: number;
+  rewardAim?: number;
   creatorId: string;
   pricingMode?: PricingMode;
   budgetMax?: number;

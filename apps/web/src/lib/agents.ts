@@ -1,5 +1,6 @@
 import { adminSupabase, publicSupabase, type AgentRow } from './supabase';
-import type { Agent, CreateAgentRequest, UpdateAgentRequest } from '@planetloga/types';
+import type { Agent, CreateAgentRequest, UpdateAgentRequest, UpdateVaultConfigRequest } from '@planetloga/types';
+import { DEFAULT_VAULT_CONFIG } from '@planetloga/types';
 import { logActivity } from './activity';
 import { AppError, logServerError } from './errors';
 
@@ -9,6 +10,11 @@ function toAgent(row: AgentRow, capabilities: string[]): Agent {
     name: row.name,
     ownerId: row.owner_id ?? undefined,
     walletAddress: row.wallet_address ?? undefined,
+    spendingAddress: (row as Record<string, unknown>).spending_address as string | undefined,
+    payoutAddress: (row as Record<string, unknown>).payout_address as string | undefined,
+    workingBalanceLimit: Number((row as Record<string, unknown>).working_balance_limit ?? DEFAULT_VAULT_CONFIG.workingBalanceLimit),
+    maxTxAmount: Number((row as Record<string, unknown>).max_tx_amount ?? DEFAULT_VAULT_CONFIG.maxTxAmount),
+    dailySpendingLimit: Number((row as Record<string, unknown>).daily_spending_limit ?? DEFAULT_VAULT_CONFIG.dailySpendingLimit),
     status: row.status as Agent['status'],
     reputation: row.reputation,
     tasksCompleted: row.tasks_completed,
@@ -43,6 +49,8 @@ export async function createAgent(req: CreateAgentRequest): Promise<Agent> {
       name: req.name,
       owner_id: req.ownerId ?? null,
       wallet_address: req.walletAddress ?? null,
+      spending_address: req.spendingAddress ?? null,
+      payout_address: req.payoutAddress ?? null,
       bio: req.bio ?? null,
     })
     .select()
@@ -148,6 +156,7 @@ export async function updateAgent(id: string, req: UpdateAgentRequest): Promise<
   const updates: Record<string, unknown> = {};
   if (req.name !== undefined) updates.name = req.name;
   if (req.walletAddress !== undefined) updates.wallet_address = req.walletAddress;
+  if (req.spendingAddress !== undefined) updates.spending_address = req.spendingAddress;
   if (req.bio !== undefined) updates.bio = req.bio;
   if (req.status !== undefined) updates.status = req.status;
 
@@ -160,6 +169,35 @@ export async function updateAgent(id: string, req: UpdateAgentRequest): Promise<
 
   if (req.capabilities !== undefined) {
     await setCapabilities(id, req.capabilities);
+  }
+
+  return getAgent(id);
+}
+
+export async function updatePayoutAddress(id: string, payoutAddress: string): Promise<Agent | null> {
+  const { error } = await adminSupabase
+    .from('agents')
+    .update({ payout_address: payoutAddress })
+    .eq('id', id);
+
+  if (error) {
+    throw new AppError('UPDATE_FAILED', error.message, 500, { cause: error });
+  }
+
+  return getAgent(id);
+}
+
+export async function updateVaultConfig(id: string, config: UpdateVaultConfigRequest): Promise<Agent | null> {
+  const updates: Record<string, unknown> = {};
+  if (config.workingBalanceLimit !== undefined) updates.working_balance_limit = config.workingBalanceLimit;
+  if (config.maxTxAmount !== undefined) updates.max_tx_amount = config.maxTxAmount;
+  if (config.dailySpendingLimit !== undefined) updates.daily_spending_limit = config.dailySpendingLimit;
+
+  if (Object.keys(updates).length > 0) {
+    const { error } = await adminSupabase.from('agents').update(updates).eq('id', id);
+    if (error) {
+      throw new AppError('UPDATE_FAILED', error.message, 500, { cause: error });
+    }
   }
 
   return getAgent(id);
