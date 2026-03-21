@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import type { User } from '@supabase/supabase-js';
-import { Bot, Menu, X, LogOut, User, Shield, ChevronRight, Zap, Plus } from 'lucide-react';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { Bot, Menu, X, LogOut, User, UserCircle, Shield, ChevronRight, Zap, Plus } from 'lucide-react';
 import { useAuth } from './auth-provider';
 
 const PUBLIC_NAV = [
@@ -29,7 +29,7 @@ function looksLikeWalletLocalPart(local: string): boolean {
  * Top-right label: agent context from URL, then operator vs wallet-pseudo-email.
  */
 function resolveNavAccountLabel(
-  user: User,
+  user: SupabaseUser,
   myAgents: NavAgent[],
   pathname: string,
   isAdmin: boolean,
@@ -138,6 +138,14 @@ function UserMenu() {
                 <div className="my-1 border-t border-white/[0.06]" />
               </>
             )}
+            <Link
+              href="/account"
+              onClick={() => setDropdownOpen(false)}
+              className="flex items-center gap-2 px-4 py-2 text-xs text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+            >
+              <UserCircle className="w-3.5 h-3.5" />
+              Account
+            </Link>
             <Link
               href="/dashboard"
               onClick={() => setDropdownOpen(false)}
