@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import type { User } from '@supabase/supabase-js';
 import { Bot, Menu, X, LogOut, User, Shield, ChevronRight, Zap, Plus } from 'lucide-react';
 import { useAuth } from './auth-provider';
 
@@ -16,7 +18,49 @@ interface NavAgent {
   name: string;
 }
 
+const WALLET_EMAIL_DOMAIN = '@wallet.planetloga.ai';
+
+/** Long base58-like local part from legacy wallet-magic-link accounts */
+function looksLikeWalletLocalPart(local: string): boolean {
+  return local.length >= 32 && /^[a-zA-Z0-9]+$/.test(local);
+}
+
+/**
+ * Top-right label: agent context from URL, then operator vs wallet-pseudo-email.
+ */
+function resolveNavAccountLabel(
+  user: User,
+  myAgents: NavAgent[],
+  pathname: string,
+  isAdmin: boolean,
+): string {
+  const agentMatch = /^\/agent\/([^/]+)/.exec(pathname);
+  if (agentMatch) {
+    const id = agentMatch[1];
+    const agent = myAgents.find((a) => a.id === id);
+    if (agent) return agent.name;
+  }
+
+  if (isAdmin) {
+    const display = (user.user_metadata?.full_name as string | undefined)?.trim();
+    if (display) return display;
+    return 'Admin';
+  }
+
+  const email = user.email ?? '';
+  const local = email.split('@')[0] ?? '';
+
+  if (email.endsWith(WALLET_EMAIL_DOMAIN) || looksLikeWalletLocalPart(local)) {
+    if (myAgents.length === 1) return myAgents[0].name;
+    if (myAgents.length > 1) return 'My agents';
+    return 'Account';
+  }
+
+  return local || 'Account';
+}
+
 function UserMenu() {
+  const pathname = usePathname();
   const { user, signOut, loading, isAuthenticated } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [myAgents, setMyAgents] = useState<NavAgent[]>([]);
@@ -45,19 +89,19 @@ function UserMenu() {
     );
   }
 
-  const label = user.email?.split('@')[0] ?? 'Account';
+  const userIsAdmin = (user?.app_metadata?.role as string) === 'admin';
+  const label = resolveNavAccountLabel(user, myAgents, pathname, userIsAdmin);
 
   const firstAgentDashboard = myAgents.length > 0 ? `/agent/${myAgents[0].id}/dashboard` : null;
-  const userIsAdmin = (user?.app_metadata?.role as string) === 'admin';
 
   return (
     <div className="relative">
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg glass text-white/70 text-xs font-medium hover:text-white transition-colors"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg glass text-white/70 text-xs font-medium hover:text-white transition-colors max-w-[min(100vw-8rem,220px)]"
       >
-        <User className="w-3.5 h-3.5" />
-        {label}
+        <User className="w-3.5 h-3.5 shrink-0" />
+        <span className="truncate text-left">{label}</span>
       </button>
 
       {dropdownOpen && (

@@ -45,7 +45,7 @@ Strategic pivot from Solana-based AIM utility token to Bitcoin/Lightning payment
 - ADR-002: replaced Solana with Bitcoin/Lightning decision record
 
 ### Authenticated app (Sprint 7 follow-up)
-- Navbar: account label uses email handle (not `user_metadata.wallet_address` / Solana)
+- Navbar: account label uses agent name on `/agent/[id]/*`, `user_metadata.full_name` or `Admin` for platform admins, otherwise email handle; legacy `*@wallet.planetloga.ai` / long key-like local parts map to agent name or “My agents” (never raw pubkey)
 - Auth: email/password only; Solana wallet sign-in removed until Lightning-native auth exists
 - `/dashboard`: economy overview (agents, tasks, sats volume) replaces Solana devnet token stats
 - Agent dashboard: sats balance + AIM governance panel; recommended tasks show `reward_sats`
