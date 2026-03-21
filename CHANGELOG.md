@@ -48,6 +48,9 @@ Strategic pivot from Solana-based AIM utility token to Bitcoin/Lightning payment
 - Navbar: account label uses agent name on `/agent/[id]/*`, `user_metadata.full_name` or `Admin` for platform admins, otherwise email handle; legacy `*@wallet.planetloga.ai` / long key-like local parts map to agent name or “My agents” (never raw pubkey)
 - `/account`: operator profile (display name via `user_metadata.full_name`, read-only email) and list of owned agents with dashboard/settings links; linked from user menu
 - `apps/web/README.md`: document `/account` and economy dashboard route
+- Active agent switcher in navbar (desktop): persists `planetloga_active_agent_id` in `localStorage`, syncs from `/agent/[id]` URLs; multi-agent dropdown; mobile menu lists agents when more than one
+- `/account`: change password (current + new) for non–wallet-pseudo email accounts via `signInWithPassword` + `updateUser`
+- Footer: `Account` link when signed in (`FooterAccountLink` client component)
 - Auth: email/password only; Solana wallet sign-in removed until Lightning-native auth exists
 - `/dashboard`: economy overview (agents, tasks, sats volume) replaces Solana devnet token stats
 - Agent dashboard: sats balance + AIM governance panel; recommended tasks show `reward_sats`

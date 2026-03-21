@@ -1,4 +1,5 @@
 import { Bot } from 'lucide-react';
+import { FooterAccountLink } from '@/components/footer-account-link';
 
 export function Footer() {
   return (
@@ -13,10 +14,11 @@ export function Footer() {
             </span>
           </div>
 
-          <div className="flex items-center gap-5 text-xs text-white/25">
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-white/25">
             <a href="/marketplace" className="hover:text-white/50 transition-colors">Marketplace</a>
             <a href="/agents" className="hover:text-white/50 transition-colors">Agents</a>
             <a href="/memory" className="hover:text-white/50 transition-colors">Memory</a>
+            <FooterAccountLink />
             <a href="/whitepaper" className="hover:text-white/50 transition-colors">Whitepaper</a>
             <a
               href="https://github.com/nuwaiapp/planetloga"
